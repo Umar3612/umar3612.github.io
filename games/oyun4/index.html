@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
+     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anadolu Çiftliği - Mobil Sürüm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #87CEEB;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #333;
+        }
+
+        canvas {
+            background-color: #4ade80;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .ui-layer {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            z-index: 10;
+        }
+
+        .pointer-events-auto {
+            pointer-events: auto;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #8B4513;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Envanter Slotları */
+        .slot {
+            width: 55px;
+            height: 55px;
+            border: 3px solid #ccc;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255,255,255,0.9);
+            font-size: 26px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .slot.active {
+            border-color: #ef4444;
+            background: #fff;
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 4px 0 #b91c1c;
+            z-index: 10;
+        }
+        .slot .price {
+            position: absolute;
+            bottom: -8px;
+            font-size: 10px;
+            background: #333;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 4px;
+            width: 90%;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #notification {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: #fbbf24;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 100;
+            text-align: center;
+            white-space: nowrap;
+            border: 2px solid #fbbf24;
+        }
+
+        /* YENİ MOBİL KONTROL DÜZENİ */
+        .controls-container {
+            display: flex;
+            width: 100%;
+            justify-content: space-between; /* İki uca yasla */
+            align-items: flex-end;
+            padding: 0 10px 10px 10px;
+            margin-bottom: 5px;
+        }
+
+        /* Sol ve Sağ Gruplar */
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .pedal-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .steering-row {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        /* Buton Stilleri */
+        .d-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%; /* Tam yuvarlak */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            color: white;
+            user-select: none;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        
+        .d-btn:active, .d-btn.pressed { 
+            background: rgba(255,255,255,0.5); 
+            transform: scale(0.95);
+            box-shadow: none;
+        }
+
+        /* Özelleşmiş Renkler */
+        .btn-gas { border-color: #4ade80; background: rgba(34, 197, 94, 0.2); }
+        .btn-brake { border-color: #f87171; background: rgba(239, 68, 68, 0.2); }
+
+        .action-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(239, 68, 68, 0.9);
+            border: 4px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 34px;
+            color: white;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+            z-index: 20; /* Okların üstüne çıkabilsin gerekirse */
+        }
+        .action-btn:active {
+            transform: scale(0.95);
+            background: rgba(220, 38, 38, 1);
+        }
+
+        /* Bilgi Modal */
+        #infoModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 4px solid #8B4513;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* Yatay Scroll Bar Gizleme */
+        #toolbar::-webkit-scrollbar { display: none; }
+        #toolbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    </style>
+</head>
+<body>
+<a href="../../index.html">⬅ Ana Menü</a>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="ui-layer">
+        <!-- Üst Bar -->
+        <div class="flex justify-between w-full p-2 pointer-events-auto">
+            <div class="panel flex items-center gap-2">
+                <span class="text-2xl">💰</span>
+                <span id="moneyDisplay" class="text-xl font-bold text-green-700">100 TL</span>
+            </div>
+            
+            <!-- Yardım Butonu -->
+            <button id="helpBtn" class="panel w-12 h-12 flex justify-center items-center text-2xl font-bold text-blue-600 hover:bg-blue-50 active:scale-95 transition-transform">
+                ?
+            </button>
+        </div>
+
+        <div id="notification">Bildirim</div>
+
+        <!-- Alt Kontrol Alanı -->
+        <div class="w-full flex flex-col pointer-events-auto">
+            
+            <!-- Ayrık Kontroller Container -->
+            <div class="controls-container">
+                
+                <!-- SOL GRUP: Gaz/Fren (Pedallar) -->
+                <div class="control-group pedal-column">
+                    <div class="d-btn btn-gas" id="btn-up">⬆️</div>
+                    <div class="d-btn btn-brake" id="btn-down">⬇️</div>
+                </div>
+
+                <!-- SAĞ GRUP: Direksiyon + Ortada İşlem Tuşu -->
+                <div class="control-group steering-row">
+                    <div class="d-btn" id="btn-left">⬅️</div>
+                    <!-- İşlem Butonu Ortada -->
+                    <div class="action-btn" id="btn-action">🛠️</div>
+                    <div class="d-btn" id="btn-right">➡️</div>
+                </div>
+                
+            </div>
+
+            <!-- Envanter Toolbar -->
+            <div class="panel flex gap-3 overflow-x-auto w-full p-2 mb-2" id="toolbar">
+                <!-- JS ile dolacak -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bilgi Penceresi -->
+<div id="infoModal">
+    <div class="modal-content pointer-events-auto">
+        <h2 class="text-2xl font-bold text-orange-700 mb-4">Nasıl Oynanır?</h2>
+        <ul class="text-left space-y-2 mb-4">
+            <li>⬆️⬇️ <b>Sol El:</b> Gaz ve Fren (İleri/Geri).</li>
+            <li>⬅️➡️ <b>Sağ El:</b> Direksiyon (Sağ/Sol).</li>
+            <li>🛠️ <b>Orta Tuş:</b> Sür, Sula, Topla!</li>
+            <li>🏠 <b>Köy:</b> Evlere dikkat et!</li>
+        </ul>
+        <button onclick="document.getElementById('infoModal').style.display='none'" class="w-full bg-green-500 text-white py-2 rounded-lg font-bold">Tamam, Anladım!</button>
+    </div>
+</div>
+
+<script>
+/**
+ * OYUN AYARLARI
+ */
+const TILE_SIZE = 50; 
+const MAP_ROWS = 25;
+const MAP_COLS = 25;
+
+// Ürünler
+const CROPS = {
+    wheat: { name: 'Buğday', emoji: '🌾', cost: 10, sell: 20, growthTime: 4000 },
+    corn:  { name: 'Mısır',  emoji: '🌽', cost: 25, sell: 45, growthTime: 8000 },
+    tomato:{ name: 'Domates',emoji: '🍅', cost: 40, sell: 90, growthTime: 12000 },
+    pumpkin:{name: 'Kabak',  emoji: '🎃', cost: 80, sell: 200, growthTime: 20000 }
+};
+
+// Aletler
+const TOOLS = {
+    plow: { name: 'Sür', emoji: '🚜', type: 'tool' },
+    water:{ name: 'Sula', emoji: '💧', type: 'tool' },
+    harvest:{ name: 'Topla', emoji: '🧺', type: 'tool' }
+};
+
+// Oyun Durumu
+let state = {
+    money: 100,
+    tiles: [],
+    selectedItem: 'plow',
+    selectedType: 'tool',
+    tractor: {
+        x: 400,
+        y: 300,
+        angle: 0,
+        speed: 0,
+        maxSpeed: 5,
+        acceleration: 0.25,
+        friction: 0.92,
+        turnSpeed: 0.09,
+        radius: 15 // Çarpışma yarıçapı
+    }
+};
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const keys = {};
+
+/**
+ * HARİTA OLUŞTURMA
+ */
+class Tile {
+    constructor(r, c) {
+        this.r = r;
+        this.c = c;
+        this.type = 'grass'; // grass, soil, house, tree, road
+        this.crop = null;
+        this.watered = false;
+        this.plantedAt = 0;
+        this.fullyGrown = false;
+        this.variant = Math.random(); 
+    }
+}
+
+function init() {
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Harita Oluşturma
+    for (let r = 0; r < MAP_ROWS; r++) {
+        let row = [];
+        for (let c = 0; c < MAP_COLS; c++) {
+            let t = new Tile(r, c);
+            
+            // --- GÜVENLİ BÖLGELER (KONTROLLERİN ALTI) ---
+            // Sol alt köşe (Artık Gaz/Fren burada)
+            const safeLeft = (r > MAP_ROWS - 8 && c < 8);
+            // Sağ alt köşe (Artık Direksiyon + Aksiyon burada)
+            const safeRight = (r > MAP_ROWS - 8 && c > MAP_COLS - 9); // Biraz daha geniş
+
+            // Köy Evi Oluşturma (Rastgele) - Güvenli bölgeler hariç
+            if (!safeLeft && !safeRight) {
+                // Kenarlara yakın yerlere ev koyalım
+                if (r < 2 || r > MAP_ROWS - 3 || c < 2 || c > MAP_COLS - 3) {
+                    if (Math.random() < 0.3) t.type = 'house';
+                    else if (Math.random() < 0.5) t.type = 'tree';
+                } else {
+                    // Ortada da tek tük ağaç olsun
+                    if (Math.random() < 0.05) t.type = 'tree';
+                }
+            }
+
+            // Başlangıç noktası temiz olsun (Orta Alan)
+            if (r > 5 && r < 15 && c > 5 && c < 15) {
+                t.type = 'grass';
+            }
+            
+            row.push(t);
+        }
+        state.tiles.push(row);
+    }
+
+    createToolbar();
+    requestAnimationFrame(gameLoop);
+}
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+/**
+ * ARAYÜZ
+ */
+// Yardım Butonu
+document.getElementById('helpBtn').addEventListener('click', () => {
+    document.getElementById('infoModal').style.display = 'flex';
+});
+
+function createToolbar() {
+    const toolbar = document.getElementById('toolbar');
+    toolbar.innerHTML = '';
+
+    const renderSlot = (key, item, isTool) => {
+        const div = document.createElement('div');
+        div.className = `slot ${state.selectedItem === key ? 'active' : ''}`;
+        div.innerHTML = item.emoji;
+        if (!isTool) div.innerHTML += `<div class="price">${item.cost}</div>`;
+        
+        div.onclick = () => {
+            state.selectedItem = key;
+            state.selectedType = isTool ? 'tool' : 'seed';
+            
+            // Buton ikonunu güncelle
+            const actionBtn = document.getElementById('btn-action');
+            actionBtn.innerHTML = item.emoji;
+            
+            createToolbar();
+        };
+        toolbar.appendChild(div);
+    };
+
+    Object.entries(TOOLS).forEach(([k, v]) => renderSlot(k, v, true));
+    
+    const sep = document.createElement('div');
+    sep.style.cssText = "width:2px; background:#aaa; margin:0 5px; flex-shrink:0;";
+    toolbar.appendChild(sep);
+
+    Object.entries(CROPS).forEach(([k, v]) => renderSlot(k, v, false));
+}
+
+function updateMoney(amt) {
+    state.money += amt;
+    document.getElementById('moneyDisplay').innerText = `${state.money} TL`;
+    showNotification(amt > 0 ? `+${amt} TL` : `${amt} TL`, amt > 0 ? '#4ade80' : '#ef4444');
+}
+
+function showNotification(msg, color='white') {
+    const notif = document.getElementById('notification');
+    notif.innerText = msg;
+    notif.style.color = color;
+    notif.style.borderColor = color;
+    notif.style.opacity = 1;
+    notif.style.top = '30%';
+    setTimeout(() => {
+        notif.style.opacity = 0;
+        notif.style.top = '20%';
+    }, 1500);
+}
+
+/**
+ * OYUN MANTIĞI & FİZİK
+ */
+function update() {
+    // 1. Traktör Hareketi
+    // Gaz / Fren
+    if (keys['ArrowUp'] || keys['w']) state.tractor.speed += state.tractor.acceleration;
+    if (keys['ArrowDown'] || keys['s']) state.tractor.speed -= state.tractor.acceleration;
+
+    // Sürtünme & Hız Sınırı
+    state.tractor.speed *= state.tractor.friction;
+    if (Math.abs(state.tractor.speed) < 0.05) state.tractor.speed = 0;
+    
+    // Hız limitleri
+    state.tractor.speed = Math.max(Math.min(state.tractor.speed, state.tractor.maxSpeed), -state.tractor.maxSpeed/2);
+
+    // Dönüş
+    if (Math.abs(state.tractor.speed) > 0.1) {
+        const dir = state.tractor.speed > 0 ? 1 : -1;
+        if (keys['ArrowLeft'] || keys['a']) state.tractor.angle -= state.tractor.turnSpeed * dir;
+        if (keys['ArrowRight'] || keys['d']) state.tractor.angle += state.tractor.turnSpeed * dir;
+    }
+
+    // 2. Çarpışma Kontrolü (Gelecek Pozisyonu Hesapla)
+    const nextX = state.tractor.x + Math.cos(state.tractor.angle) * state.tractor.speed;
+    const nextY = state.tractor.y + Math.sin(state.tractor.angle) * state.tractor.speed;
+
+    const gridX = Math.floor(nextX / TILE_SIZE);
+    const gridY = Math.floor(nextY / TILE_SIZE);
+
+    let canMove = true;
+    
+    // Harita dışına çıkma
+    if (gridX < 0 || gridX >= MAP_COLS || gridY < 0 || gridY >= MAP_ROWS) {
+        canMove = false;
+        state.tractor.speed *= -0.5; // Geri tepme
+    } 
+    // Engel kontrolü (Ev veya Ağaç)
+    else {
+        const tile = state.tiles[gridY][gridX];
+        if (tile.type === 'house' || tile.type === 'tree') {
+            canMove = false;
+            state.tractor.speed *= -0.5; // Çarpma etkisi
+        }
+    }
+
+    if (canMove) {
+        state.tractor.x = nextX;
+        state.tractor.y = nextY;
+    }
+
+    // 3. Bitki Büyümesi
+    const now = Date.now();
+    state.tiles.forEach(row => {
+        row.forEach(tile => {
+            if (tile.crop && !tile.fullyGrown) {
+                const data = CROPS[tile.crop];
+                const needed = data.growthTime / (tile.watered ? 2 : 1);
+                if (now - tile.plantedAt >= needed) {
+                    tile.fullyGrown = true;
+                    tile.watered = false;
+                }
+            }
+        });
+    });
+}
+
+function performAction() {
+    const gridX = Math.floor(state.tractor.x / TILE_SIZE);
+    const gridY = Math.floor(state.tractor.y / TILE_SIZE);
+
+    if (gridX < 0 || gridX >= MAP_COLS || gridY < 0 || gridY >= MAP_ROWS) return;
+
+    const tile = state.tiles[gridY][gridX];
+
+    // Engel üstünde işlem yapılmaz
+    if (tile.type === 'house' || tile.type === 'tree') {
+        showNotification("Burası uygun değil!");
+        return;
+    }
+
+    // Alet Kullanımı
+    if (state.selectedType === 'tool') {
+        const tool = state.selectedItem;
+        
+        if (tool === 'plow') {
+            if (tile.crop) { showNotification("Ürün varken süremezsin!"); return; }
+            if (tile.type === 'grass') {
+                tile.type = 'soil';
+                // Küçük bir partikül efekti eklenebilir
+            }
+        } else if (tool === 'water') {
+            if (tile.type === 'soil' || (tile.crop && !tile.fullyGrown)) {
+                tile.watered = true;
+                showNotification("Sulandı!", "#60a5fa");
+            }
+        } else if (tool === 'harvest') {
+            if (tile.crop && tile.fullyGrown) {
+                const profit = CROPS[tile.crop].sell;
+                updateMoney(profit);
+                tile.crop = null;
+                tile.fullyGrown = false;
+                tile.type = 'soil';
+            } else if (tile.crop) {
+                showNotification("Daha büyümedi!");
+            }
+        }
+    } 
+    // Tohum Ekimi
+    else if (state.selectedType === 'seed') {
+        if (tile.type !== 'soil') {
+            showNotification("Önce toprağı sür!");
+            return;
+        }
+        if (tile.crop) {
+            showNotification("Dolu alan!");
+            return;
+        }
+
+        const cost = CROPS[state.selectedItem].cost;
+        if (state.money >= cost) {
+            updateMoney(-cost);
+            tile.crop = state.selectedItem;
+            tile.plantedAt = Date.now();
+            tile.fullyGrown = false;
+            tile.watered = false;
+        } else {
+            showNotification("Para yetersiz!", "#ef4444");
+        }
+    }
+}
+
+/**
+ * ÇİZİM
+ */
+function draw() {
+    // Ekranı temizle
+    ctx.fillStyle = '#1e293b'; // Koyu arkaplan (uzay boşluğu gibi)
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+
+    // Kamera Takibi
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    ctx.translate(cx - state.tractor.x, cy - state.tractor.y);
+
+    // 1. Zemin ve Nesneler
+    for (let r = 0; r < MAP_ROWS; r++) {
+        for (let c = 0; c < MAP_COLS; c++) {
+            const tile = state.tiles[r][c];
+            const x = c * TILE_SIZE;
+            const y = r * TILE_SIZE;
+
+            // ZEMİN
+            if (tile.type === 'grass') {
+                ctx.fillStyle = (r+c)%2===0 ? '#4ade80' : '#45d676'; // Damalı çim
+                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            } else if (tile.type === 'soil') {
+                ctx.fillStyle = tile.watered ? '#5D4037' : '#8D6E63';
+                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                ctx.strokeStyle = '#3e2723';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x,y,TILE_SIZE,TILE_SIZE);
+            } else if (tile.type === 'house' || tile.type === 'tree') {
+                // Ev veya ağaç altı da çim olsun
+                ctx.fillStyle = '#4ade80';
+                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            }
+
+            // ÜRÜNLER
+            if (tile.crop) {
+                const data = CROPS[tile.crop];
+                if (tile.fullyGrown) {
+                    ctx.font = '32px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(data.emoji, x + TILE_SIZE/2, y + TILE_SIZE/2);
+                } else {
+                    // Büyüme barı veya küçük filiz
+                    ctx.fillStyle = '#166534';
+                    const progress = Math.min(1, (Date.now() - tile.plantedAt) / data.growthTime);
+                    const size = 5 + (progress * 15);
+                    ctx.beginPath();
+                    ctx.arc(x + TILE_SIZE/2, y + TILE_SIZE/2, size, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    if (tile.watered) {
+                        ctx.fillStyle = '#3b82f6';
+                        ctx.beginPath();
+                        ctx.arc(x + TILE_SIZE - 8, y + 8, 4, 0, Math.PI*2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // YAPILAR (Evler ve Ağaçlar)
+            if (tile.type === 'house') {
+                // Ev Gövdesi
+                ctx.fillStyle = '#fce7f3';
+                ctx.fillRect(x + 5, y + 15, TILE_SIZE - 10, TILE_SIZE - 15);
+                
+                // Kapı
+                ctx.fillStyle = '#9f1239';
+                ctx.fillRect(x + TILE_SIZE/2 - 6, y + 30, 12, TILE_SIZE - 30);
+
+                // Çatı
+                ctx.fillStyle = '#be123c';
+                ctx.beginPath();
+                ctx.moveTo(x, y + 15);
+                ctx.lineTo(x + TILE_SIZE/2, y - 5);
+                ctx.lineTo(x + TILE_SIZE, y + 15);
+                ctx.fill();
+
+            } else if (tile.type === 'tree') {
+                // Gövde
+                ctx.fillStyle = '#78350f';
+                ctx.fillRect(x + TILE_SIZE/2 - 4, y + 20, 8, TILE_SIZE - 20);
+                
+                // Yapraklar
+                ctx.fillStyle = '#15803d';
+                ctx.beginPath();
+                ctx.arc(x + TILE_SIZE/2, y + 15, 18, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            // Seçim Karesi (Traktörün altı)
+            const gridX = Math.floor(state.tractor.x / TILE_SIZE);
+            const gridY = Math.floor(state.tractor.y / TILE_SIZE);
+            if (r === gridY && c === gridX) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+            }
+        }
+    }
+
+    // 2. Traktör
+    ctx.translate(state.tractor.x, state.tractor.y);
+    ctx.rotate(state.tractor.angle);
+    
+    // Gölgelendirme
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(-12, -8, 24, 16);
+
+    // Traktör Çizimi
+    ctx.fillStyle = '#dc2626'; // Gövde
+    ctx.fillRect(-15, -12, 30, 24);
+    
+    ctx.fillStyle = '#fca5a5'; // Motor kapağı detayı
+    ctx.fillRect(0, -8, 10, 16);
+
+    ctx.fillStyle = '#1e1b4b'; // Tekerlekler
+    ctx.fillRect(-14, -20, 10, 8);
+    ctx.fillRect(-14, 12, 10, 8);
+    ctx.fillRect(10, -18, 8, 6);
+    ctx.fillRect(10, 12, 8, 6);
+
+    ctx.fillStyle = '#bfdbfe'; // Cam
+    ctx.fillRect(-10, -8, 8, 16);
+
+    ctx.restore();
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+/**
+ * GİRİŞ İŞLEMLERİ
+ */
+const btnMap = {
+    'btn-up': 'ArrowUp',
+    'btn-down': 'ArrowDown',
+    'btn-left': 'ArrowLeft',
+    'btn-right': 'ArrowRight'
+};
+
+Object.entries(btnMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    const press = (e) => { e.preventDefault(); keys[key] = true; el.classList.add('pressed'); };
+    const release = (e) => { e.preventDefault(); keys[key] = false; el.classList.remove('pressed'); };
+    
+    el.addEventListener('mousedown', press);
+    el.addEventListener('mouseup', release);
+    el.addEventListener('mouseleave', release);
+    el.addEventListener('touchstart', press);
+    el.addEventListener('touchend', release);
+});
+
+// Aksiyon Butonu
+const actionBtn = document.getElementById('btn-action');
+const doAction = (e) => { e.preventDefault(); performAction(); actionBtn.style.transform = "scale(0.9)"; };
+const stopAction = (e) => { e.preventDefault(); actionBtn.style.transform = "scale(1)"; };
+
+actionBtn.addEventListener('mousedown', doAction);
+actionBtn.addEventListener('mouseup', stopAction);
+actionBtn.addEventListener('touchstart', doAction);
+actionBtn.addEventListener('touchend', stopAction);
+
+// Klavye
+window.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    if(e.code === 'Space') performAction();
+});
+window.addEventListener('keyup', e => keys[e.key] = false);
+
+init();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
+     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Hafıza Ustası - Sayı Sıralama</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --app-height: 100dvh;
+        }
+
+        body {
+            height: var(--app-height);
+            touch-action: manipulation;
+        }
+
+        /* Kart Çevirme Animasyonları */
+        .perspective-1000 { perspective: 1000px; }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .card-front {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: bold;
+        }
+        .card-back {
+            background-color: #f3f4f6;
+            transform: rotateY(180deg);
+            border: 2px solid #3b82f6;
+        }
+        
+        /* Dinamik Kart Boyutu - Ekran yüksekliğine göre sınırlama */
+        .card-container {
+            width: 100%;
+            aspect-ratio: 1/1; /* Kare kartlar daha fazla sığar */
+            max-height: 12vh; /* Dikeyde taşmayı önlemek için kritik */
+        }
+
+        /* Hata Efekti */
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* Başarı Efekti */
+        .success-pulse {
+            animation: pulse 0.4s ease-in-out;
+            background-color: #10b981 !important;
+            color: white !important;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-locked {
+            opacity: 0.4;
+            filter: grayscale(1);
+            pointer-events: none;
+        }
+
+        /* Kaydırmayı tamamen kapat */
+        .no-scroll {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white flex flex-col items-center justify-between p-4 font-sans no-scroll">
+<a href="../../index.html">⬅ Ana Menü</a>
+
+    <!-- Menü Ekranı -->
+    <div id="menu-screen" class="w-full max-w-sm bg-slate-800 p-6 rounded-3xl shadow-2xl text-center my-auto">
+        <h1 class="text-3xl font-black mb-2 text-blue-400 tracking-tight">HAFIZA USTASI</h1>
+        <p class="text-slate-400 mb-8 text-sm">Sayıları hatırla ve sırasıyla dokun!</p>
+        
+        <div class="space-y-4">
+            <button id="btn-EASY" onclick="startGame('EASY')" class="w-full py-4 bg-emerald-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg">
+                Kolay (6 Sayı)
+            </button>
+            <button id="btn-MEDIUM" onclick="startGame('MEDIUM')" class="w-full py-4 bg-amber-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg">
+                <span>Orta (12 Sayı)</span>
+                <span class="lock-icon hidden">🔒</span>
+            </button>
+            <button id="btn-HARD" onclick="startGame('HARD')" class="w-full py-4 bg-rose-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg">
+                <span>Zor (18 Sayı)</span>
+                <span class="lock-icon hidden">🔒</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Oyun Ekranı -->
+    <div id="game-screen" class="hidden w-full max-w-md h-full flex flex-col">
+        <!-- Header -->
+        <div class="flex justify-between items-center py-4 px-2 shrink-0">
+            <div class="bg-slate-800 p-2 px-4 rounded-2xl border border-slate-700">
+                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Hedef</p>
+                <p id="target-display" class="text-xl font-black text-blue-400 leading-none">1</p>
+            </div>
+            
+            <div class="text-center">
+                <p id="timer-label" class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Ezberle</p>
+                <p id="countdown" class="text-2xl font-black text-amber-400 leading-none">30</p>
+            </div>
+
+            <button onclick="resetToMenu()" class="p-3 bg-slate-800 rounded-2xl border border-slate-700 active:scale-90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </button>
+        </div>
+
+        <!-- Grid Alanı (Esnek Boyutlu) -->
+        <div class="flex-grow flex items-center justify-center p-2">
+            <div id="game-grid" class="grid w-full gap-2 justify-center content-center max-h-full">
+                <!-- Kartlar -->
+            </div>
+        </div>
+
+        <!-- Footer / Buton -->
+        <div class="py-6 shrink-0 flex justify-center">
+            <button id="ready-btn" onclick="endPreviewEarly()" class="w-full max-w-[200px] py-4 bg-blue-600 rounded-2xl font-black shadow-xl active:scale-90 transition-all text-sm uppercase tracking-widest">
+                HAZIRIM!
+            </button>
+        </div>
+    </div>
+
+    <!-- Sonuç Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md flex items-center justify-center z-50 p-6">
+        <div class="bg-slate-800 p-8 rounded-[40px] text-center w-full max-w-xs border border-slate-700 shadow-2xl">
+            <div id="modal-icon" class="text-6xl mb-4">🎉</div>
+            <h2 id="modal-title" class="text-2xl font-black mb-2 tracking-tight">HARİKA!</h2>
+            <p id="modal-desc" class="text-slate-400 text-sm mb-8 leading-relaxed">Bir sonraki seviyenin kilidi açıldı.</p>
+            <button onclick="resetToMenu()" class="w-full py-4 bg-blue-600 rounded-2xl font-bold text-lg shadow-lg active:scale-95">DEVAM ET</button>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            EASY: { count: 6, cols: 'grid-cols-3', fontSize: 'text-2xl', cardMax: 'max-h-[15vh]' },
+            MEDIUM: { count: 12, cols: 'grid-cols-3', fontSize: 'text-xl', cardMax: 'max-h-[12vh]' },
+            HARD: { count: 18, cols: 'grid-cols-3', fontSize: 'text-lg', cardMax: 'max-h-[10vh]' }
+        };
+
+        const NEXT_LEVEL = { EASY: 'MEDIUM', MEDIUM: 'HARD', HARD: null };
+
+        let gameState = {
+            difficulty: null,
+            expectedNumber: 1,
+            isMemorizing: true,
+            timer: 30,
+            timerInterval: null,
+            unlockedLevels: JSON.parse(localStorage.getItem('unlockedLevels')) || ['EASY']
+        };
+
+        const menuScreen = document.getElementById('menu-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameGrid = document.getElementById('game-grid');
+        const countdownEl = document.getElementById('countdown');
+        const timerLabel = document.getElementById('timer-label');
+        const targetDisplay = document.getElementById('target-display');
+        const readyBtn = document.getElementById('ready-btn');
+
+        const SoundManager = {
+            play(type) {
+                try {
+                    const frequencies = { 'correct': 660, 'wrong': 110, 'win': 880, 'flip': 440 };
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(frequencies[type] || 440, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } catch(e) {}
+            }
+        };
+
+        window.onload = updateMenuButtons;
+
+        function updateMenuButtons() {
+            ['EASY', 'MEDIUM', 'HARD'].forEach(level => {
+                const btn = document.getElementById(`btn-${level}`);
+                const lockIcon = btn.querySelector('.lock-icon');
+                if (gameState.unlockedLevels.includes(level)) {
+                    btn.classList.remove('btn-locked');
+                    if(lockIcon) lockIcon.classList.add('hidden');
+                } else {
+                    btn.classList.add('btn-locked');
+                    if(lockIcon) lockIcon.classList.remove('hidden');
+                }
+            });
+        }
+
+        function startGame(difficulty) {
+            gameState.difficulty = difficulty;
+            gameState.expectedNumber = 1;
+            gameState.isMemorizing = true;
+            gameState.timer = 30;
+            
+            menuScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            readyBtn.classList.remove('hidden');
+            
+            setupBoard();
+            startTimer();
+        }
+
+        function setupBoard() {
+            const config = CONFIG[gameState.difficulty];
+            gameGrid.className = `grid gap-2 w-full justify-center content-center ${config.cols}`;
+            gameGrid.innerHTML = '';
+            
+            let numbers = Array.from({ length: config.count }, (_, i) => i + 1);
+            numbers.sort(() => Math.random() - 0.5);
+            
+            numbers.forEach(num => {
+                gameGrid.appendChild(createCard(num, config));
+            });
+            
+            targetDisplay.innerText = 1;
+            timerLabel.innerText = "Ezberle";
+        }
+
+        function createCard(value, config) {
+            const container = document.createElement('div');
+            // fontSizeClass ve cardMax yükseklik kısıtlamasını uygula
+            container.className = `card-container flipped perspective-1000 ${config.cardMax}`;
+            container.dataset.value = value;
+            container.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front ${config.fontSize}">?</div>
+                    <div class="card-back ${config.fontSize} font-black text-blue-600">${value}</div>
+                </div>
+            `;
+            container.onclick = () => handleCardClick(container);
+            return container;
+        }
+
+        function startTimer() {
+            clearInterval(gameState.timerInterval);
+            countdownEl.innerText = gameState.timer;
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer--;
+                if (gameState.timer >= 0) {
+                    countdownEl.innerText = gameState.timer;
+                }
+                if (gameState.timer <= 0) endPreview();
+            }, 1000);
+        }
+
+        function endPreviewEarly() {
+            gameState.timer = 0;
+            endPreview();
+        }
+
+        function endPreview() {
+            clearInterval(gameState.timerInterval);
+            gameState.isMemorizing = false;
+            readyBtn.classList.add('hidden');
+            timerLabel.innerText = "Sırala";
+            countdownEl.innerText = "BAŞLA";
+            document.querySelectorAll('.card-container').forEach(c => c.classList.remove('flipped'));
+            SoundManager.play('flip');
+        }
+
+        function handleCardClick(card) {
+            if (gameState.isMemorizing || card.classList.contains('flipped')) return;
+            
+            const value = parseInt(card.dataset.value);
+            if (value === gameState.expectedNumber) {
+                card.classList.add('flipped');
+                card.querySelector('.card-back').classList.add('success-pulse');
+                SoundManager.play('correct');
+                gameState.expectedNumber++;
+                
+                if (gameState.expectedNumber > CONFIG[gameState.difficulty].count) {
+                    unlockNextLevel();
+                    showGameOver(true);
+                } else {
+                    targetDisplay.innerText = gameState.expectedNumber;
+                }
+            } else {
+                card.classList.add('shake');
+                SoundManager.play('wrong');
+                setTimeout(() => {
+                    card.classList.remove('shake');
+                    showGameOver(false);
+                }, 400);
+            }
+        }
+
+        function unlockNextLevel() {
+            const next = NEXT_LEVEL[gameState.difficulty];
+            if (next && !gameState.unlockedLevels.includes(next)) {
+                gameState.unlockedLevels.push(next);
+                localStorage.setItem('unlockedLevels', JSON.stringify(gameState.unlockedLevels));
+            }
+        }
+
+        function showGameOver(isWin) {
+            const modal = document.getElementById('modal');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            
+            modal.classList.remove('hidden');
+            if (isWin) {
+                icon.innerText = "🏆";
+                title.innerText = "MÜKEMMEL!";
+                desc.innerText = "Hafızan seni bir üst seviyeye taşıdı!";
+                SoundManager.play('win');
+            } else {
+                icon.innerText = "❌";
+                title.innerText = "HATA!";
+                desc.innerText = `Sıradaki sayı ${gameState.expectedNumber} olmalıydı. Tekrar dene!`;
+            }
+        }
+
+        function resetToMenu() {
+            clearInterval(gameState.timerInterval);
+            document.getElementById('modal').classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            menuScreen.classList.remove('hidden');
+            updateMenuButtons();
+        }
+    </script>
+</body>
+</html>

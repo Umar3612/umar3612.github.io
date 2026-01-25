@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
+     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
+     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Hayvanı Bul - Profesyonel Sürüm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f8fafc;
+            overflow: hidden;
+            touch-action: none;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Modern Bubbly Buttons */
+        .btn-glossy {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.2);
+        }
+        .btn-glossy:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+        }
+        .btn-glossy::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 50%;
+            background: rgba(255,255,255,0.15);
+            pointer-events: none;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            cursor: pointer;
+            touch-action: manipulation;
+            width: 100%;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .card-back {
+            background-color: white;
+            border: 3px solid #4f46e5;
+            transform: rotateY(180deg);
+        }
+
+        .target-item {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .target-found {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            opacity: 0.6;
+            transform: scale(0.85);
+        }
+
+        .target-found::after {
+            content: "✓";
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            background: #22c55e;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotateY(180deg) translateX(0); }
+            25% { transform: rotateY(180deg) translateX(-5px); }
+            75% { transform: rotateY(180deg) translateX(5px); }
+        }
+        .wrong-shake { animation: shake 0.4s; }
+        
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop {
+            0% { transform: scale(0.8); }
+            100% { transform: scale(1); }
+        }
+
+        .rules-overlay {
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="flex flex-col h-[100dvh]">
+<a href="../../index.html">⬅ Ana Menü</a>
+
+<!-- Kompakt Üst Panel -->
+<div id="game-ui" class="hidden flex-shrink-0 w-full max-w-lg mx-auto px-3 pt-3 z-20">
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-2 relative">
+        <div class="flex justify-between items-center mb-2 px-1">
+            <button onclick="Game.showMenu()" class="btn-glossy bg-slate-100 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-xl active:scale-90 transition">
+                MENÜ
+            </button>
+            <div id="timer-badge" class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-rose-100 flex items-center gap-2">
+                <span>Ezberle: 30s</span>
+                <button id="skip-btn" onclick="Game.skipPreview()" class="btn-glossy bg-rose-500 text-white px-2 py-0.5 rounded-lg text-[9px] hover:bg-rose-600">HAZIRIM!</button>
+            </div>
+        </div>
+        
+        <div id="target-list" class="flex justify-center gap-2 flex-wrap min-h-[40px] items-center"></div>
+    </div>
+</div>
+
+<!-- Oyun Alanı -->
+<div class="flex-grow flex items-center justify-center overflow-hidden p-3">
+    <div id="game-board" class="grid w-full max-w-md mx-auto items-center justify-center"></div>
+</div>
+
+<!-- Menü Ekranı -->
+<div id="menu-screen" class="absolute inset-0 bg-indigo-700 z-50 flex flex-col items-center justify-center text-white px-8 text-center">
+    <div class="mb-10 animate-pop">
+        <h1 class="text-5xl font-bold mb-2 text-yellow-300 drop-shadow-[0_5px_0_rgba(0,0,0,0.2)] uppercase italic tracking-tighter">HAYVAN AVI</h1>
+        <p class="text-sm opacity-80 tracking-widest font-medium">HAFIZANI TEST ET</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-[2rem] shadow-2xl w-full max-w-sm">
+        <!-- Kurallar Butonu -->
+        <button onclick="Game.toggleRules(true)" class="btn-glossy w-full bg-slate-100 text-indigo-600 font-bold py-3 rounded-2xl mb-4 text-xs tracking-widest border border-slate-200">
+            ❓ NASIL OYNANIR?
+        </button>
+
+        <h2 class="text-slate-400 font-bold mb-4 text-[10px] uppercase tracking-widest">Zorluk Seç ve Başla</h2>
+        
+        <div class="space-y-4" id="level-buttons"></div>
+        
+        <button onclick="Game.resetProgress()" class="mt-6 text-[10px] text-slate-400 font-bold hover:text-rose-400 transition uppercase tracking-widest">İlerlemeyi Sıfırla</button>
+    </div>
+</div>
+
+<!-- Kurallar Overlay -->
+<div id="rules-overlay" class="hidden absolute inset-0 rules-overlay z-[60] flex items-center justify-center p-6">
+    <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm animate-pop text-slate-800">
+        <h3 class="text-2xl font-bold text-indigo-600 mb-6 flex items-center gap-2">
+            <span>📜</span> Oyun Kuralları
+        </h3>
+        <ul class="space-y-4 text-left text-sm font-medium text-slate-600">
+            <li class="flex gap-3">
+                <span class="text-indigo-500 font-bold">1.</span>
+                <span>Oyun başladığında kartlar <b>30 saniye</b> boyunca açık kalır.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="text-indigo-500 font-bold">2.</span>
+                <span>Üst paneldeki hedef hayvanların yerlerini ezberle.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="text-indigo-500 font-bold">3.</span>
+                <span>Süre bitince (veya "Hazırım"a basınca) kartlar kapanır.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="text-indigo-500 font-bold">4.</span>
+                <span>Sadece hedefteki hayvanları bulmalısın.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="bg-rose-100 text-rose-600 px-1 rounded">⚠️ DİKKAT:</span>
+                <span>Yanlış bir hayvana basarsan oyun anında biter!</span>
+            </li>
+        </ul>
+        <button onclick="Game.toggleRules(false)" class="btn-glossy w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl mt-8 shadow-lg border-b-4 border-indigo-800">
+            ANLADIM!
+        </button>
+    </div>
+</div>
+
+<!-- Game Over Overlay -->
+<div id="game-over-screen" class="hidden absolute inset-0 bg-rose-600/95 z-40 flex flex-col items-center justify-center text-white p-8">
+    <div class="bg-white text-slate-800 p-8 rounded-[2.5rem] text-center shadow-2xl animate-pop w-full max-w-xs">
+        <div class="text-7xl mb-4">😿</div>
+        <h2 class="text-3xl font-bold mb-1 text-rose-600 uppercase">EYVAH!</h2>
+        <p class="text-[13px] text-slate-500 mb-8 font-medium italic leading-snug">O hayvan hedefte yoktu. Hafızanı tazeleyip tekrar dene!</p>
+        <button onclick="Game.showMenu()" class="btn-glossy w-full bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-xl border-b-4 border-rose-800 active:translate-y-1 transition text-lg">TEKRAR DENE</button>
+    </div>
+</div>
+
+<!-- Win Overlay -->
+<div id="win-screen" class="hidden absolute inset-0 bg-emerald-600/95 z-40 flex flex-col items-center justify-center text-white p-8">
+    <div class="bg-white text-slate-800 p-8 rounded-[2.5rem] text-center shadow-2xl animate-pop w-full max-w-xs">
+        <div class="text-7xl mb-4">🐲</div>
+        <h2 class="text-3xl font-bold mb-1 text-emerald-600 uppercase">MÜKEMMEL!</h2>
+        <p id="win-msg" class="text-[13px] text-slate-500 mb-8 font-medium">Keskin bir zekaya sahipsin!</p>
+        <button onclick="Game.showMenu()" class="btn-glossy w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-xl border-b-4 border-emerald-800 active:translate-y-1 transition text-lg">SIRADAKİ</button>
+    </div>
+</div>
+
+<script>
+    const SoundManager = {
+        ctx: null,
+        init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+        playTone(freq, duration, type = 'sine', vol = 0.05) {
+            this.init();
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(); osc.stop(this.ctx.currentTime + duration);
+        },
+        playClick() { this.playTone(900, 0.05); },
+        playFlip() { this.playTone(450, 0.1, 'sine', 0.1); },
+        playCorrect() { this.playTone(550, 0.2); setTimeout(() => this.playTone(1100, 0.3), 80); },
+        playGameOver() { this.playTone(200, 0.5, 'sawtooth', 0.15); },
+        playWin() { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => this.playTone(f, 0.5, 'sine', 0.1), i * 110)); },
+        playTick() { this.playTone(1000, 0.03, 'sine', 0.03); }
+    };
+
+    const Game = {
+        animals: ['🦁', '🐯', '🐻', '🐨', '🐼', '🐹', '🐰', '🦊', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦉', '🦇', '🐺', '🐴', '🐝', '🦋', '🐞', '🐢', '🐙', '🦖', '🦄', '🦒', '🐘', '🦘'],
+        state: { targets: [], found: [], isLocked: true, previewTime: 30 },
+        progress: { easy: true, medium: false, hard: false },
+        timerInterval: null,
+        
+        config: {
+            easy: { id: 'easy', next: 'medium', total: 20, cols: 4, h: 'h-[11vh]', gap: 'gap-2', fs: 'text-3xl', label: 'KOLAY', color: 'bg-emerald-500 border-emerald-700' },
+            medium: { id: 'medium', next: 'hard', total: 30, cols: 5, h: 'h-[10vh]', gap: 'gap-1.5', fs: 'text-2xl', label: 'ORTA', color: 'bg-orange-500 border-orange-700' },
+            hard: { id: 'hard', next: null, total: 40, cols: 5, h: 'h-[8.5vh]', gap: 'gap-1', fs: 'text-xl', label: 'ZOR', color: 'bg-indigo-500 border-indigo-700' }
+        },
+
+        init() {
+            const saved = localStorage.getItem('animalGameProgress_v2');
+            if(saved) this.progress = JSON.parse(saved);
+            this.renderMenu();
+        },
+
+        toggleRules(show) {
+            const overlay = document.getElementById('rules-overlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+                SoundManager.playClick();
+            } else {
+                overlay.classList.add('hidden');
+                SoundManager.playClick();
+            }
+        },
+
+        renderMenu() {
+            const container = document.getElementById('level-buttons');
+            container.innerHTML = '';
+            
+            Object.keys(this.config).forEach(key => {
+                const conf = this.config[key];
+                const isUnlocked = this.progress[key];
+                const btn = document.createElement('button');
+                
+                if(isUnlocked) {
+                    btn.className = `btn-glossy w-full font-bold py-4 rounded-2xl text-white text-lg tracking-wider transition ${conf.color}`;
+                    btn.innerHTML = conf.label;
+                    btn.onclick = () => { SoundManager.playClick(); this.start(key); };
+                } else {
+                    btn.className = `w-full font-bold py-4 rounded-2xl text-slate-400 bg-slate-100 border-b-4 border-slate-200 opacity-70 cursor-not-allowed text-lg`;
+                    btn.innerHTML = `🔒 ${conf.label}`;
+                }
+                container.appendChild(btn);
+            });
+        },
+
+        start(diff) {
+            this.state.isLocked = true;
+            this.state.found = [];
+            this.difficulty = diff;
+            
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('win-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            document.getElementById('skip-btn').classList.remove('hidden');
+            
+            this.setupBoard();
+            this.startTimer();
+        },
+
+        setupBoard() {
+            const conf = this.config[this.difficulty];
+            const board = document.getElementById('game-board');
+            const targetEl = document.getElementById('target-list');
+            board.innerHTML = '';
+            targetEl.innerHTML = '';
+
+            board.className = `grid w-full ${conf.gap} grid-cols-${conf.cols}`;
+
+            let pool = [...this.animals].sort(() => 0.5 - Math.random());
+            let boardItems = [];
+            for(let i=0; i<conf.total; i++) boardItems.push(pool[i % pool.length]);
+            boardItems.sort(() => 0.5 - Math.random());
+
+            const unique = [...new Set(boardItems)];
+            const targetCount = (this.difficulty === 'easy') ? 4 : (this.difficulty === 'medium') ? 5 : 6;
+            this.state.targets = unique.sort(() => 0.5 - Math.random()).slice(0, targetCount);
+
+            this.state.targets.forEach(animal => {
+                const div = document.createElement('div');
+                div.className = "w-10 h-10 bg-slate-50 border-2 border-slate-100 rounded-xl flex items-center justify-center text-xl shadow-inner target-item relative";
+                div.id = `target-${animal}`;
+                div.textContent = animal;
+                targetEl.appendChild(div);
+            });
+
+            boardItems.forEach((animal, i) => {
+                const card = document.createElement('div');
+                card.className = `card-container ${conf.h} flipped animate-pop`;
+                card.dataset.animal = animal;
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front text-[10px] opacity-10 font-bold uppercase tracking-tighter">?</div>
+                        <div class="card-back ${conf.fs}">${animal}</div>
+                    </div>
+                `;
+                card.onclick = () => this.handleCardClick(card);
+                board.appendChild(card);
+            });
+        },
+
+        startTimer() {
+            if(this.timerInterval) clearInterval(this.timerInterval);
+            let timeLeft = this.state.previewTime;
+            const badge = document.querySelector('#timer-badge span');
+            badge.textContent = `Ezberle: ${timeLeft}s`;
+            
+            this.timerInterval = setInterval(() => {
+                timeLeft--;
+                badge.textContent = `Ezberle: ${timeLeft}s`;
+                if(timeLeft <= 5) SoundManager.playTick();
+                
+                if(timeLeft <= 0) {
+                    this.skipPreview();
+                }
+            }, 1000);
+        },
+
+        skipPreview() {
+            if(this.timerInterval) clearInterval(this.timerInterval);
+            this.hideCards();
+            SoundManager.playClick();
+        },
+
+        hideCards() {
+            document.querySelectorAll('.card-container').forEach(c => c.classList.remove('flipped'));
+            document.querySelector('#timer-badge span').textContent = "AV BAŞLADI!";
+            document.getElementById('skip-btn').classList.add('hidden');
+            this.state.isLocked = false;
+        },
+
+        handleCardClick(card) {
+            if(this.state.isLocked || card.classList.contains('flipped')) return;
+
+            const animal = card.dataset.animal;
+            card.classList.add('flipped');
+            SoundManager.playFlip();
+
+            if(this.state.targets.includes(animal) && !this.state.found.includes(animal)) {
+                this.state.isLocked = true;
+                setTimeout(() => {
+                    SoundManager.playCorrect();
+                    this.state.found.push(animal);
+                    const el = document.getElementById(`target-${animal}`);
+                    el.classList.add('target-found');
+                    this.state.isLocked = false;
+                    this.checkWin();
+                }, 300);
+            } else {
+                this.state.isLocked = true;
+                card.querySelector('.card-inner').classList.add('wrong-shake');
+                SoundManager.playGameOver();
+                setTimeout(() => {
+                    document.getElementById('game-over-screen').classList.remove('hidden');
+                }, 500);
+            }
+        },
+
+        checkWin() {
+            if(this.state.found.length === this.state.targets.length) {
+                setTimeout(() => {
+                    SoundManager.playWin();
+                    const nextLevel = this.config[this.difficulty].next;
+                    if(nextLevel) {
+                        this.progress[nextLevel] = true;
+                        localStorage.setItem('animalGameProgress_v2', JSON.stringify(this.progress));
+                        document.getElementById('win-msg').textContent = "Müthiş! Bir sonraki seviye seni bekliyor.";
+                    } else {
+                        document.getElementById('win-msg').textContent = "Hepsini bitirdin! Tam bir avcı uzmanısın.";
+                    }
+                    document.getElementById('win-screen').classList.remove('hidden');
+                }, 400);
+            }
+        },
+
+        showMenu() {
+            if(this.timerInterval) clearInterval(this.timerInterval);
+            this.init();
+            document.getElementById('game-ui').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+            document.getElementById('win-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('rules-overlay').classList.add('hidden');
+        },
+
+        resetProgress() {
+            if(confirm("Tüm ilerlemeni sıfırlamak istiyor musun?")) {
+                this.progress = { easy: true, medium: false, hard: false };
+                localStorage.setItem('animalGameProgress_v2', JSON.stringify(this.progress));
+                this.renderMenu();
+            }
+        }
+    };
+
+    window.onload = () => Game.init();
+    document.body.addEventListener('touchstart', () => SoundManager.init(), {once: true});
+</script>
+</body>
+</html>
