@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
-     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Anadolu Çiftliği - Mobil Sürüm</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
         
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
             font-family: 'Fredoka', sans-serif;
-            background-color: #87CEEB;
-            overflow: hidden;
+            background-color: #333;
+            overflow: hidden; /* Kesin scroll engelleme */
+            position: fixed; /* Mobil tarayıcı lastik etkisini önler */
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
@@ -21,8 +24,8 @@
 
         #game-container {
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -31,7 +34,7 @@
 
         canvas {
             background-color: #4ade80;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: block;
         }
 
         .ui-layer {
@@ -45,7 +48,13 @@
             flex-direction: column;
             justify-content: space-between;
             padding: 10px;
+            /* Çentikli telefonlar için güvenli alan */
+            padding-top: max(10px, env(safe-area-inset-top));
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            padding-left: max(10px, env(safe-area-inset-left));
+            padding-right: max(10px, env(safe-area-inset-right));
             z-index: 10;
+            box-sizing: border-box;
         }
 
         .pointer-events-auto {
@@ -60,17 +69,21 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
-        /* Envanter Slotları */
+        /* Envanter Slotları - Responsive Boyutlandırma */
         .slot {
-            width: 55px;
-            height: 55px;
+            width: 13vmin; /* Ekran boyutuna göre değişir */
+            height: 13vmin;
+            max-width: 55px;
+            max-height: 55px;
+            min-width: 45px;
+            min-height: 45px;
             border: 3px solid #ccc;
             border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
             background: rgba(255,255,255,0.9);
-            font-size: 26px;
+            font-size: clamp(18px, 5vmin, 26px); /* Responsive font */
             cursor: pointer;
             position: relative;
             transition: all 0.2s;
@@ -120,13 +133,12 @@
         .controls-container {
             display: flex;
             width: 100%;
-            justify-content: space-between; /* İki uca yasla */
+            justify-content: space-between;
             align-items: flex-end;
-            padding: 0 10px 10px 10px;
+            padding: 0;
             margin-bottom: 5px;
         }
 
-        /* Sol ve Sağ Gruplar */
         .control-group {
             display: flex;
             align-items: center;
@@ -139,28 +151,32 @@
             flex-direction: column;
             gap: 15px;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .steering-row {
             display: flex;
             flex-direction: row;
-            gap: 8px;
+            gap: 15px; /* Butonlar arası boşluk */
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
-        /* Buton Stilleri */
+        /* Responsive Butonlar */
         .d-btn {
-            width: 70px;
-            height: 70px;
+            width: 15vmin; /* Ekranın kısa kenarının %15'i */
+            height: 15vmin;
+            max-width: 70px;
+            max-height: 70px;
+            min-width: 50px;
+            min-height: 50px;
             background: rgba(255, 255, 255, 0.25);
             border: 2px solid rgba(255, 255, 255, 0.6);
-            border-radius: 50%; /* Tam yuvarlak */
+            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 30px;
+            font-size: clamp(20px, 6vmin, 30px);
             color: white;
             user-select: none;
             cursor: pointer;
@@ -175,30 +191,33 @@
             box-shadow: none;
         }
 
-        /* Özelleşmiş Renkler */
         .btn-gas { border-color: #4ade80; background: rgba(34, 197, 94, 0.2); }
         .btn-brake { border-color: #f87171; background: rgba(239, 68, 68, 0.2); }
 
         .action-btn {
-            width: 80px;
-            height: 80px;
+            width: 18vmin;
+            height: 18vmin;
+            max-width: 80px;
+            max-height: 80px;
+            min-width: 60px;
+            min-height: 60px;
             background: rgba(239, 68, 68, 0.9);
             border: 4px solid #fff;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 34px;
+            font-size: clamp(24px, 7vmin, 34px);
             color: white;
             box-shadow: 0 6px 10px rgba(0,0,0,0.4);
-            z-index: 20; /* Okların üstüne çıkabilsin gerekirse */
+            z-index: 20;
+            margin: 0 5px; /* Sağ sol okların arasına mesafe */
         }
         .action-btn:active {
             transform: scale(0.95);
             background: rgba(220, 38, 38, 1);
         }
 
-        /* Bilgi Modal */
         #infoModal {
             display: none;
             position: fixed;
@@ -217,7 +236,6 @@
             text-align: center;
         }
 
-        /* Yatay Scroll Bar Gizleme */
         #toolbar::-webkit-scrollbar { display: none; }
         #toolbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -225,13 +243,12 @@
 </head>
 <body>
 <a href="../../index.html">⬅ Ana Menü</a>
-
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
 
     <div class="ui-layer">
         <!-- Üst Bar -->
-        <div class="flex justify-between w-full p-2 pointer-events-auto">
+        <div class="flex justify-between w-full pointer-events-auto">
             <div class="panel flex items-center gap-2">
                 <span class="text-2xl">💰</span>
                 <span id="moneyDisplay" class="text-xl font-bold text-green-700">100 TL</span>
@@ -246,7 +263,7 @@
         <div id="notification">Bildirim</div>
 
         <!-- Alt Kontrol Alanı -->
-        <div class="w-full flex flex-col pointer-events-auto">
+        <div class="w-full flex flex-col pointer-events-auto mt-auto">
             
             <!-- Ayrık Kontroller Container -->
             <div class="controls-container">
@@ -268,7 +285,7 @@
             </div>
 
             <!-- Envanter Toolbar -->
-            <div class="panel flex gap-3 overflow-x-auto w-full p-2 mb-2" id="toolbar">
+            <div class="panel flex gap-3 overflow-x-auto w-full p-2" id="toolbar">
                 <!-- JS ile dolacak -->
             </div>
         </div>
@@ -771,3 +788,6 @@ init();
 </script>
 </body>
 </html>
+
+
+       
