@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ritim Refleks 2.0 - Sütun Modu</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --bg: #020617;
+            --lane-line: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: #fff;
+            overflow: hidden;
+            touch-action: none;
+            height: 100dvh;
+        }
+
+        /* Oyun Konteynırı */
+        #app {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            margin: 0 auto;
+            background: #020617;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--lane-line);
+            border-right: 1px solid var(--lane-line);
+        }
+
+        /* Bilgi Paneli */
+        #header {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .stat-label { font-size: 0.7rem; opacity: 0.6; }
+        .stat-value { font-size: 1.2rem; font-weight: 800; display: block; }
+
+        /* Sütunlar */
+        #game-stage {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        .lane {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            border-right: 1px solid var(--lane-line);
+        }
+        .lane:last-child { border-right: none; }
+
+        /* Vuruş Hattı */
+        #hit-line {
+            position: absolute;
+            bottom: 15%;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Bloklar */
+        .tile {
+            position: absolute;
+            width: calc(100% - 4px);
+            left: 2px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-weight: 900;
+            font-size: 0.7rem;
+            color: white;
+            z-index: 10;
+        }
+
+        .tile-short {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            height: 90px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.5);
+        }
+
+        .tile-long {
+            background: rgba(31, 41, 55, 0.8);
+            height: 350px;
+            border: 2px solid var(--secondary);
+        }
+
+        /* İbre (Dolum Çubuğu) */
+        .fill-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #f59e0b, #fbbf24);
+            transition: height 0.05s linear;
+        }
+
+        .indicator-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #fff;
+            box-shadow: 0 0 15px #fff, 0 0 30px var(--secondary);
+            display: none;
+            z-index: 2;
+        }
+
+        .tile-long.active .indicator-line { display: block; }
+        .tile-long.done { background: var(--success); border-color: white; }
+
+        /* Ekranlar */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .hidden { display: none !important; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            box-shadow: none;
+        }
+
+        /* Geri Bildirim */
+        .feedback {
+            position: absolute;
+            font-weight: 900;
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: popUp 0.6s ease-out forwards;
+            z-index: 60;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        @keyframes popUp {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; transform: translateY(-80px); }
+        }
+
+        /* Sallama Efekti */
+        .shake { animation: shake 0.3s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .new-record-badge {
+            background: var(--secondary);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        /* Nasıl Oynanır Modal */
+        #how-to-modal {
+            position: absolute;
+            inset: 20px;
+            background: #111827;
+            border: 2px solid var(--primary);
+            border-radius: 24px;
+            z-index: 200;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .how-to-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .how-to-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html">⬅ Ana Menü</a>
+    <div id="app">
+        <div id="header">
+            <div class="stat-box">
+                <span class="stat-label">PUAN</span>
+                <span id="score-text" class="stat-value">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">CAN</span>
+                <span id="lives-text" class="stat-value">3</span>
+            </div>
+        </div>
+
+        <!-- Giriş Ekranı -->
+        <div id="screen-start" class="overlay">
+            <h1 style="font-size: 3rem; margin: 0; color: var(--primary)">RİTİM 2.0</h1>
+            
+            <div id="high-score-card" style="background: rgba(255, 191, 0, 0.1); border: 2px solid var(--secondary); padding: 15px 30px; border-radius: 20px; margin-top: 20px; margin-bottom: 20px;">
+                <span style="font-size: 0.8rem; letter-spacing: 1px; color: var(--secondary); font-weight: bold; display: block; margin-bottom: 5px;">EN YÜKSEK SKOR</span>
+                <span id="high-score-text" style="font-size: 2.2rem; font-weight: 900; color: #fff;">0</span>
+            </div>
+
+            <button class="btn" onclick="startGame()">BAŞLAT</button>
+            <button class="btn btn-outline" onclick="toggleHowTo(true)">NASIL OYNANIR?</button>
+        </div>
+
+        <!-- Nasıl Oynanır Rehberi -->
+        <div id="how-to-modal" class="hidden">
+            <h2 style="color: var(--primary); margin-top: 0;">Nasıl Oynanır?</h2>
+            
+            <div class="how-to-item">
+                <div class="how-to-icon" style="background: var(--primary)"></div>
+                <div><b>Kısa Blok:</b> Alt taraftaki vuruş çizgisine geldiğinde hızlıca dokun.</div>
+            </div>
+
+            <div class="how-to-item">
+                <div class="how-to-icon" style="background: var(--secondary)"></div>
+                <div><b>Uzun Blok:</b> İbre yukarı çıkana kadar parmağını basılı tut.</div>
+            </div>
+
+            <div class="how-to-item">
+                <div class="how-to-icon" style="background: var(--danger)"></div>
+                <div><b>Dikkat:</b> Blokları kaçırırsan veya uzun blokları erken bırakırsan canın azalır!</div>
+            </div>
+
+            <button class="btn" onclick="toggleHowTo(false)">ANLADIM</button>
+        </div>
+
+        <!-- Bitiş Ekranı -->
+        <div id="screen-over" class="overlay hidden">
+            <button class="btn btn-outline" style="margin-bottom: 30px;" onclick="goToMenu()">🏠 MENÜYE DÖN</button>
+            
+            <h1 style="color: var(--danger)">OYUN BİTTİ</h1>
+            <p id="final-score" style="font-size: 2rem; font-weight: 900; margin: 10px 0;">Skor: 0</p>
+            <div id="new-record-msg" class="new-record-badge hidden">YENİ REKOR! 🏆</div>
+            
+            <div style="margin-top: 10px; font-size: 1rem; opacity: 0.7;">
+                En İyi: <span id="over-high-score">0</span>
+            </div>
+
+            <button class="btn" onclick="startGame()">TEKRAR DENE</button>
+        </div>
+
+        <!-- Oyun Sahası -->
+        <div id="game-stage">
+            <div id="hit-line"></div>
+            <div class="lane" data-lane="0"></div>
+            <div class="lane" data-lane="1"></div>
+            <div class="lane" data-lane="2"></div>
+        </div>
+
+        <div style="height: 50px; background: #000; color: #333; display: flex; align-items: center; justify-content: center; font-size: 10px; letter-spacing: 2px;">
+            ADSENSE REKLAM ALANI
+        </div>
+    </div>
+
+    <script>
+        const lanes = document.querySelectorAll('.lane');
+        const scoreEl = document.getElementById('score-text');
+        const livesEl = document.getElementById('lives-text');
+        const startScreen = document.getElementById('screen-start');
+        const overScreen = document.getElementById('screen-over');
+        const howToModal = document.getElementById('how-to-modal');
+        const highScoreEl = document.getElementById('high-score-text');
+        const overHighScoreEl = document.getElementById('over-high-score');
+        const newRecordMsg = document.getElementById('new-record-msg');
+        
+        let score = 0;
+        let lives = 3;
+        let gameActive = false;
+        let speed = 5;
+        let spawnInterval = 1000;
+        let lastSpawn = 0;
+        let activeTiles = [];
+        let holdingTile = null;
+
+        const playSfx = (freq, dur) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.value = freq;
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + dur);
+            } catch(e) {}
+        };
+
+        function toggleHowTo(show) {
+            howToModal.classList.toggle('hidden', !show);
+        }
+
+        function goToMenu() {
+            overScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            loadHighScore();
+        }
+
+        function loadHighScore() {
+            const high = localStorage.getItem('rrr_lane_high') || 0;
+            highScoreEl.innerText = high;
+            overHighScoreEl.innerText = high;
+        }
+
+        function startGame() {
+            score = 0;
+            lives = 3;
+            speed = 5;
+            spawnInterval = 1000;
+            activeTiles.forEach(t => t.el.remove());
+            activeTiles = [];
+            gameActive = true;
+            
+            scoreEl.innerText = "0";
+            livesEl.innerText = "3";
+            startScreen.classList.add('hidden');
+            overScreen.classList.add('hidden');
+            howToModal.classList.add('hidden');
+            newRecordMsg.classList.add('hidden');
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop(time) {
+            if (!gameActive) return;
+
+            if (time - lastSpawn > spawnInterval) {
+                if (spawnTile()) {
+                    lastSpawn = time;
+                    if (spawnInterval > 450) spawnInterval -= 4;
+                    speed += 0.002;
+                }
+            }
+
+            for (let i = activeTiles.length - 1; i >= 0; i--) {
+                const tile = activeTiles[i];
+                tile.y += speed;
+                tile.el.style.top = tile.y + 'px';
+
+                if (tile.y > window.innerHeight) {
+                    if (!tile.hit || (tile.type === 'long' && !tile.done)) {
+                        handleFail();
+                    }
+                    tile.el.remove();
+                    activeTiles.splice(i, 1);
+                    if (holdingTile === tile) holdingTile = null;
+                }
+
+                if (holdingTile === tile) {
+                    tile.progress += 2.5; 
+                    const fill = tile.el.querySelector('.fill-overlay');
+                    const line = tile.el.querySelector('.indicator-line');
+                    const p = Math.min(tile.progress, 100);
+                    
+                    if (fill) fill.style.height = p + '%';
+                    if (line) line.style.bottom = p + '%';
+
+                    if (tile.progress >= 100 && !tile.done) {
+                        tile.done = true;
+                        tile.el.classList.add('done');
+                        addScore(20, "HARİKA!", tile.lane);
+                        playSfx(600, 0.2);
+                    }
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnTile() {
+            const laneOrder = [0, 1, 2].sort(() => Math.random() - 0.5);
+            const isLong = Math.random() > 0.75;
+            const tileHeight = isLong ? 350 : 90;
+            const spawnY = -tileHeight - 20; 
+            const minBuffer = 50; 
+
+            let selectedLane = -1;
+
+            for (let laneIdx of laneOrder) {
+                const tilesInLane = activeTiles.filter(t => t.lane === laneIdx);
+                const topmostTile = tilesInLane.reduce((min, t) => (t.y < min ? t.y : min), Infinity);
+                if (topmostTile === Infinity || topmostTile > (spawnY + tileHeight + minBuffer)) {
+                    selectedLane = laneIdx;
+                    break;
+                }
+            }
+
+            if (selectedLane === -1) return false;
+
+            const el = document.createElement('div');
+            const type = isLong ? 'long' : 'short';
+            el.className = `tile tile-${type}`;
+            
+            if (isLong) {
+                el.innerHTML = `<div class="fill-overlay"></div><div class="indicator-line"></div><span style="position:relative; z-index:5">BASILI TUT</span>`;
+            } else {
+                el.innerHTML = `<span>DOKUN</span>`;
+            }
+
+            lanes[selectedLane].appendChild(el);
+            activeTiles.push({
+                el, y: spawnY, type, lane: selectedLane, hit: false, progress: 0, done: false, height: tileHeight
+            });
+            return true;
+        }
+
+        function handleInput(laneIdx, isDown) {
+            if (!gameActive) return;
+
+            if (isDown) {
+                const hitZoneMin = window.innerHeight * 0.5;
+                const hitZoneMax = window.innerHeight * 0.9;
+
+                const target = activeTiles
+                    .filter(t => t.lane == laneIdx && !t.hit)
+                    .sort((a, b) => b.y - a.y)
+                    .find(t => {
+                        const tileBottom = t.y + t.height;
+                        const tileTop = t.y;
+                        return tileBottom > hitZoneMin && tileTop < hitZoneMax;
+                    });
+
+                if (target) {
+                    target.hit = true;
+                    if (target.type === 'short') {
+                        target.el.style.opacity = '0.3';
+                        addScore(10, "MÜKEMMEL!", laneIdx);
+                        playSfx(440, 0.1);
+                    } else {
+                        holdingTile = target;
+                        target.el.classList.add('active');
+                    }
+                }
+            } else {
+                if (holdingTile && holdingTile.lane == laneIdx) {
+                    if (!holdingTile.done) {
+                        handleFail();
+                        holdingTile.el.style.background = 'var(--danger)';
+                    }
+                    holdingTile.el.classList.remove('active');
+                    holdingTile = null;
+                }
+            }
+        }
+
+        function addScore(pts, msg, lane) {
+            score += pts;
+            scoreEl.innerText = score;
+            const f = document.createElement('div');
+            f.className = 'feedback';
+            f.style.left = (lane * 33) + 10 + '%';
+            f.style.bottom = '20%';
+            f.style.color = pts > 15 ? 'var(--secondary)' : 'var(--primary)';
+            f.innerText = msg;
+            document.body.appendChild(f);
+            setTimeout(() => f.remove(), 600);
+        }
+
+        function handleFail() {
+            lives--;
+            livesEl.innerText = lives;
+            playSfx(150, 0.3);
+            document.getElementById('app').classList.add('shake');
+            setTimeout(() => document.getElementById('app').classList.remove('shake'), 300);
+            if (lives <= 0) endGame();
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('final-score').innerText = "Skor: " + score;
+            
+            const currentHigh = parseInt(localStorage.getItem('rrr_lane_high') || "0");
+            
+            if (score > currentHigh) {
+                localStorage.setItem('rrr_lane_high', score);
+                newRecordMsg.classList.remove('hidden');
+                playSfx(800, 0.5);
+            }
+            
+            loadHighScore();
+            overScreen.classList.remove('hidden');
+        }
+
+        lanes.forEach(l => {
+            const idx = l.dataset.lane;
+            l.addEventListener('touchstart', e => { e.preventDefault(); handleInput(idx, true); });
+            l.addEventListener('touchend', e => { e.preventDefault(); handleInput(idx, false); });
+            l.addEventListener('mousedown', e => { e.preventDefault(); handleInput(idx, true); });
+            l.addEventListener('mouseup', e => { e.preventDefault(); handleInput(idx, false); });
+        });
+
+        window.onload = loadHighScore;
+    </script>
+</body>
+</html>
