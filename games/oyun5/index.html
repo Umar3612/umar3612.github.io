@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Ritim Refleks 2.0 - Sütun Modu</title>
+    <title>Ritim Refleks Pro - Modern</title>
     <style>
         :root {
             --primary: #6366f1;
             --secondary: #f59e0b;
-            --danger: #ef4444;
+            --danger: #f43f5e;
             --success: #10b981;
             --bg: #020617;
-            --lane-line: rgba(255, 255, 255, 0.1);
+            --lane-border: rgba(99, 102, 241, 0.2);
+            --hit-glow: rgba(99, 102, 241, 0.4);
         }
 
         * {
@@ -29,28 +30,29 @@
             overflow: hidden;
             touch-action: none;
             height: 100dvh;
+            width: 100vw;
         }
 
-        /* Oyun Konteynırı */
+        /* Ana Konteynır */
         #app {
             position: relative;
             width: 100%;
             max-width: 500px;
             height: 100%;
             margin: 0 auto;
-            background: #020617;
+            background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
             display: flex;
             flex-direction: column;
-            border-left: 1px solid var(--lane-line);
-            border-right: 1px solid var(--lane-line);
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        /* Bilgi Paneli */
+        /* Üst Panel */
         #header {
             position: absolute;
-            top: 20px;
+            top: env(safe-area-inset-top, 20px);
             width: 100%;
-            padding: 20px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             z-index: 50;
@@ -60,96 +62,121 @@
         .stat-box {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(5px);
-            padding: 10px 20px;
+            padding: 8px 15px;
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
+            min-width: 80px;
         }
 
-        .stat-label { font-size: 0.7rem; opacity: 0.6; }
+        .stat-label { font-size: 0.65rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 1.2rem; font-weight: 800; display: block; }
 
-        /* Sütunlar */
+        /* Oyun Sahası */
         #game-stage {
             flex: 1;
             display: flex;
             position: relative;
+            z-index: 10;
         }
 
         .lane {
             flex: 1;
             height: 100%;
             position: relative;
-            border-right: 1px solid var(--lane-line);
+            border-right: 1px solid var(--lane-border);
+            transition: background 0.1s;
         }
         .lane:last-child { border-right: none; }
+        .lane.active { background: linear-gradient(to top, var(--hit-glow), transparent); }
 
-        /* Vuruş Hattı */
-        #hit-line {
+        /* Vuruş Hattı Tasarımı */
+        #hit-area-visual {
             position: absolute;
             bottom: 15%;
             width: 100%;
             height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            background: var(--primary);
+            box-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary);
             pointer-events: none;
             z-index: 5;
+            opacity: 0.8;
         }
 
         /* Bloklar */
         .tile {
             position: absolute;
-            width: calc(100% - 4px);
-            left: 2px;
-            border-radius: 6px;
+            width: calc(100% - 12px);
+            left: 6px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            font-weight: 900;
-            font-size: 0.7rem;
+            font-weight: 800;
+            font-size: 0.75rem;
             color: white;
-            z-index: 10;
+            z-index: 20;
+            will-change: transform;
+            transform: translate3d(0, -500px, 0);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .tile-short {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            height: 90px;
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            height: 85px;
             border: 1px solid rgba(255,255,255,0.3);
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.5);
         }
 
         .tile-long {
-            background: rgba(31, 41, 55, 0.8);
-            height: 350px;
+            background: rgba(31, 41, 55, 0.9);
+            height: 240px; /* Boyutu 320'den 240'a çekildi */
             border: 2px solid var(--secondary);
+            overflow: visible; 
         }
 
-        /* İbre (Dolum Çubuğu) */
         .fill-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             height: 0%;
-            background: linear-gradient(to top, #f59e0b, #fbbf24);
-            transition: height 0.05s linear;
+            background: linear-gradient(to top, rgba(245, 158, 11, 0.3), rgba(251, 191, 36, 0.5));
+            z-index: 1;
         }
 
-        .indicator-line {
+        .tile-long::before {
+            content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 6px;
-            background: #fff;
-            box-shadow: 0 0 15px #fff, 0 0 30px var(--secondary);
-            display: none;
-            z-index: 2;
+            left: 50%;
+            top: 10%;
+            bottom: 10%;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-50%);
+            border-radius: 2px;
+            z-index: 0;
         }
 
-        .tile-long.active .indicator-line { display: block; }
-        .tile-long.done { background: var(--success); border-color: white; }
+        .moving-handle {
+            position: absolute;
+            left: 50%;
+            bottom: 10%; 
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
+            box-shadow: 0 0 15px #fff, 0 0 30px var(--secondary);
+            z-index: 5;
+            display: none;
+        }
+
+        .tile-long.active .moving-handle {
+            display: block;
+        }
+
+        .tile-long.done { background: var(--success); border-color: #fff; box-shadow: 0 0 20px var(--success); }
 
         /* Ekranlar */
         .overlay {
@@ -171,104 +198,76 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 16px 50px;
+            padding: 16px;
             font-size: 1.1rem;
             font-weight: bold;
             border-radius: 16px;
             cursor: pointer;
             margin-top: 15px;
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-            width: 80%;
+            width: 85%;
             max-width: 300px;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
         }
 
-        .btn:active { transform: scale(0.95); }
+        .btn:active { transform: scale(0.96); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); box-shadow: none; }
 
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            box-shadow: none;
-        }
-
-        /* Geri Bildirim */
         .feedback {
             position: absolute;
             font-weight: 900;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             pointer-events: none;
-            animation: popUp 0.6s ease-out forwards;
             z-index: 60;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            text-transform: uppercase;
+            animation: feedbackPop 0.5s ease-out forwards;
         }
 
-        @keyframes popUp {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 0; transform: translateY(-80px); }
+        @keyframes feedbackPop {
+            0% { transform: scale(0.5) translateY(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2) translateY(-70px); opacity: 0; }
         }
 
-        /* Sallama Efekti */
-        .shake { animation: shake 0.3s ease-in-out; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+        .shake { animation: appShake 0.2s ease-in-out; }
+        @keyframes appShake {
+            0%, 100% { transform: translate3d(0,0,0); }
+            25% { transform: translate3d(-8px,0,0); }
+            75% { transform: translate3d(8px,0,0); }
         }
 
-        .new-record-badge {
-            background: var(--secondary);
-            color: #000;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 900;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            animation: pulse 1s infinite alternate;
-        }
-
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
-        }
-
-        /* Nasıl Oynanır Modal */
+        /* Modal */
         #how-to-modal {
             position: absolute;
             inset: 20px;
-            background: #111827;
+            background: #0f172a;
             border: 2px solid var(--primary);
-            border-radius: 24px;
+            border-radius: 25px;
             z-index: 200;
-            padding: 20px;
+            padding: 25px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        .how-to-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            text-align: left;
+        .how-box {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
             width: 100%;
-        }
-
-        .how-to-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            flex-shrink: 0;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body>
-    <a href="../../index.html">⬅ Ana Menü</a>
+    <a href="../../index.html">⬅ Ana Menü</a> 
     <div id="app">
         <div id="header">
             <div class="stat-box">
-                <span class="stat-label">PUAN</span>
+                <span class="stat-label">SKOR</span>
                 <span id="score-text" class="stat-value">0</span>
             </div>
             <div class="stat-box">
@@ -277,65 +276,44 @@
             </div>
         </div>
 
-        <!-- Giriş Ekranı -->
+        <!-- Başlangıç Ekranı -->
         <div id="screen-start" class="overlay">
-            <h1 style="font-size: 3rem; margin: 0; color: var(--primary)">RİTİM 2.0</h1>
-            
-            <div id="high-score-card" style="background: rgba(255, 191, 0, 0.1); border: 2px solid var(--secondary); padding: 15px 30px; border-radius: 20px; margin-top: 20px; margin-bottom: 20px;">
-                <span style="font-size: 0.8rem; letter-spacing: 1px; color: var(--secondary); font-weight: bold; display: block; margin-bottom: 5px;">EN YÜKSEK SKOR</span>
-                <span id="high-score-text" style="font-size: 2.2rem; font-weight: 900; color: #fff;">0</span>
+            <h1 style="color: var(--primary); font-size: 3.2rem; margin: 0; font-weight: 900; letter-spacing: -1px;">RİTİM PRO</h1>
+            <div style="margin: 25px 0; padding: 15px 30px; background: rgba(245, 158, 11, 0.1); border: 2px solid var(--secondary); border-radius: 20px;">
+                <small style="color:var(--secondary); font-weight: bold; letter-spacing: 1px;">EN YÜKSEK SKOR</small>
+                <div id="high-score-text" style="font-size: 2.2rem; font-weight: 900;">0</div>
             </div>
-
-            <button class="btn" onclick="startGame()">BAŞLAT</button>
+            <button class="btn" onclick="startGame()">OYUNA BAŞLA</button>
             <button class="btn btn-outline" onclick="toggleHowTo(true)">NASIL OYNANIR?</button>
         </div>
 
-        <!-- Nasıl Oynanır Rehberi -->
+        <!-- Rehber Modalı -->
         <div id="how-to-modal" class="hidden">
             <h2 style="color: var(--primary); margin-top: 0;">Nasıl Oynanır?</h2>
-            
-            <div class="how-to-item">
-                <div class="how-to-icon" style="background: var(--primary)"></div>
-                <div><b>Kısa Blok:</b> Alt taraftaki vuruş çizgisine geldiğinde hızlıca dokun.</div>
-            </div>
-
-            <div class="how-to-item">
-                <div class="how-to-icon" style="background: var(--secondary)"></div>
-                <div><b>Uzun Blok:</b> İbre yukarı çıkana kadar parmağını basılı tut.</div>
-            </div>
-
-            <div class="how-to-item">
-                <div class="how-to-icon" style="background: var(--danger)"></div>
-                <div><b>Dikkat:</b> Blokları kaçırırsan veya uzun blokları erken bırakırsan canın azalır!</div>
-            </div>
-
+            <div class="how-box">🔵 <b>Kısa Blok:</b> Çizgiye geldiğinde hemen dokun ve bırak.</div>
+            <div class="how-box">🟠 <b>Uzun Blok:</b> Yuvarlak en üste çıkana kadar basılı tut.</div>
+            <div class="how-box">⚠️ <b>Can Kaybı:</b> Kaçırırsan veya erken bırakırsan canın gider.</div>
             <button class="btn" onclick="toggleHowTo(false)">ANLADIM</button>
         </div>
 
-        <!-- Bitiş Ekranı -->
+        <!-- Oyun Sonu Ekranı -->
         <div id="screen-over" class="overlay hidden">
-            <button class="btn btn-outline" style="margin-bottom: 30px;" onclick="goToMenu()">🏠 MENÜYE DÖN</button>
-            
-            <h1 style="color: var(--danger)">OYUN BİTTİ</h1>
-            <p id="final-score" style="font-size: 2rem; font-weight: 900; margin: 10px 0;">Skor: 0</p>
-            <div id="new-record-msg" class="new-record-badge hidden">YENİ REKOR! 🏆</div>
-            
-            <div style="margin-top: 10px; font-size: 1rem; opacity: 0.7;">
-                En İyi: <span id="over-high-score">0</span>
-            </div>
-
+            <button class="btn btn-outline" style="margin-bottom: 40px;" onclick="goToMenu()">🏠 ANA MENÜ</button>
+            <h1 style="color: var(--danger); font-size: 3rem;">EYVAH!</h1>
+            <p id="final-score" style="font-size: 1.8rem; font-weight: 800; margin: 10px 0;">Skor: 0</p>
             <button class="btn" onclick="startGame()">TEKRAR DENE</button>
         </div>
 
-        <!-- Oyun Sahası -->
+        <!-- Oyun Alanı -->
         <div id="game-stage">
-            <div id="hit-line"></div>
+            <div id="hit-area-visual"></div>
             <div class="lane" data-lane="0"></div>
             <div class="lane" data-lane="1"></div>
             <div class="lane" data-lane="2"></div>
         </div>
 
-        <div style="height: 50px; background: #000; color: #333; display: flex; align-items: center; justify-content: center; font-size: 10px; letter-spacing: 2px;">
+        <!-- Reklam Alanı -->
+        <div style="height: 60px; background: #000; color: #444; display: flex; align-items: center; justify-content: center; font-size: 10px; letter-spacing: 2px; z-index: 60;">
             ADSENSE REKLAM ALANI
         </div>
     </div>
@@ -348,33 +326,35 @@
         const overScreen = document.getElementById('screen-over');
         const howToModal = document.getElementById('how-to-modal');
         const highScoreEl = document.getElementById('high-score-text');
-        const overHighScoreEl = document.getElementById('over-high-score');
-        const newRecordMsg = document.getElementById('new-record-msg');
+        const app = document.getElementById('app');
         
         let score = 0;
         let lives = 3;
         let gameActive = false;
-        let speed = 5;
-        let spawnInterval = 1000;
+        let speed = 6.5;
+        let spawnInterval = 900;
         let lastSpawn = 0;
         let activeTiles = [];
         let holdingTile = null;
 
-        const playSfx = (freq, dur) => {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.frequency.value = freq;
-                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + dur);
-            } catch(e) {}
+        // Performanslı AudioContext
+        let audioCtx = null;
+        const initAudio = () => {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         };
 
-        function toggleHowTo(show) {
-            howToModal.classList.toggle('hidden', !show);
-        }
+        const playSfx = (freq, dur) => {
+            if(!audioCtx || audioCtx.state === 'suspended') return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+        };
+
+        function toggleHowTo(show) { howToModal.classList.toggle('hidden', !show); }
 
         function goToMenu() {
             overScreen.classList.add('hidden');
@@ -383,27 +363,19 @@
         }
 
         function loadHighScore() {
-            const high = localStorage.getItem('rrr_lane_high') || 0;
-            highScoreEl.innerText = high;
-            overHighScoreEl.innerText = high;
+            highScoreEl.innerText = localStorage.getItem('rrr_pro_v3') || 0;
         }
 
         function startGame() {
-            score = 0;
-            lives = 3;
-            speed = 5;
-            spawnInterval = 1000;
+            initAudio();
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            
+            score = 0; lives = 3; speed = 6.5; spawnInterval = 900;
             activeTiles.forEach(t => t.el.remove());
             activeTiles = [];
             gameActive = true;
-            
-            scoreEl.innerText = "0";
-            livesEl.innerText = "3";
-            startScreen.classList.add('hidden');
-            overScreen.classList.add('hidden');
-            howToModal.classList.add('hidden');
-            newRecordMsg.classList.add('hidden');
-            
+            scoreEl.innerText = "0"; livesEl.innerText = "3";
+            startScreen.classList.add('hidden'); overScreen.classList.add('hidden');
             requestAnimationFrame(gameLoop);
         }
 
@@ -413,104 +385,96 @@
             if (time - lastSpawn > spawnInterval) {
                 if (spawnTile()) {
                     lastSpawn = time;
-                    if (spawnInterval > 450) spawnInterval -= 4;
-                    speed += 0.002;
+                    if (spawnInterval > 420) spawnInterval -= 3;
+                    speed += 0.0035;
                 }
             }
 
+            const stageH = window.innerHeight;
             for (let i = activeTiles.length - 1; i >= 0; i--) {
                 const tile = activeTiles[i];
                 tile.y += speed;
-                tile.el.style.top = tile.y + 'px';
+                tile.el.style.transform = `translate3d(0, ${tile.y}px, 0)`;
 
-                if (tile.y > window.innerHeight) {
-                    if (!tile.hit || (tile.type === 'long' && !tile.done)) {
-                        handleFail();
-                    }
+                if (tile.y > stageH) {
+                    if (!tile.hit || (tile.type === 'long' && !tile.done)) handleFail();
                     tile.el.remove();
                     activeTiles.splice(i, 1);
                     if (holdingTile === tile) holdingTile = null;
                 }
 
                 if (holdingTile === tile) {
-                    tile.progress += 2.5; 
-                    const fill = tile.el.querySelector('.fill-overlay');
-                    const line = tile.el.querySelector('.indicator-line');
+                    tile.progress += 2.8; 
                     const p = Math.min(tile.progress, 100);
+                    if (tile.fill) tile.fill.style.height = p + '%';
                     
-                    if (fill) fill.style.height = p + '%';
-                    if (line) line.style.bottom = p + '%';
+                    if (tile.handle) {
+                        const position = 10 + (p * 0.8);
+                        tile.handle.style.bottom = position + '%';
+                    }
 
                     if (tile.progress >= 100 && !tile.done) {
                         tile.done = true;
                         tile.el.classList.add('done');
-                        addScore(20, "HARİKA!", tile.lane);
+                        addScore(25, "MÜKEMMEL!", tile.lane);
                         playSfx(600, 0.2);
                     }
                 }
             }
-
             requestAnimationFrame(gameLoop);
         }
 
         function spawnTile() {
             const laneOrder = [0, 1, 2].sort(() => Math.random() - 0.5);
             const isLong = Math.random() > 0.75;
-            const tileHeight = isLong ? 350 : 90;
-            const spawnY = -tileHeight - 20; 
-            const minBuffer = 50; 
+            const h = isLong ? 240 : 85; // Boyut 320'den 240'a çekildi
+            const spawnY = -h - 60;
 
-            let selectedLane = -1;
-
-            for (let laneIdx of laneOrder) {
-                const tilesInLane = activeTiles.filter(t => t.lane === laneIdx);
-                const topmostTile = tilesInLane.reduce((min, t) => (t.y < min ? t.y : min), Infinity);
-                if (topmostTile === Infinity || topmostTile > (spawnY + tileHeight + minBuffer)) {
-                    selectedLane = laneIdx;
-                    break;
+            let lane = -1;
+            for (let l of laneOrder) {
+                const tiles = activeTiles.filter(t => t.lane === l);
+                const top = tiles.reduce((m, t) => (t.y < m ? t.y : m), Infinity);
+                if (top === Infinity || top > (spawnY + h + 70)) {
+                    lane = l; break;
                 }
             }
 
-            if (selectedLane === -1) return false;
+            if (lane === -1) return false;
 
             const el = document.createElement('div');
-            const type = isLong ? 'long' : 'short';
-            el.className = `tile tile-${type}`;
-            
+            el.className = `tile tile-${isLong ? 'long' : 'short'}`;
             if (isLong) {
-                el.innerHTML = `<div class="fill-overlay"></div><div class="indicator-line"></div><span style="position:relative; z-index:5">BASILI TUT</span>`;
-            } else {
-                el.innerHTML = `<span>DOKUN</span>`;
+                el.innerHTML = `<div class="fill-overlay"></div><div class="moving-handle"></div>`;
             }
+            lanes[lane].appendChild(el);
 
-            lanes[selectedLane].appendChild(el);
             activeTiles.push({
-                el, y: spawnY, type, lane: selectedLane, hit: false, progress: 0, done: false, height: tileHeight
+                el, y: spawnY, type: isLong ? 'long' : 'short', lane,
+                hit: false, progress: 0, done: false, h,
+                fill: el.querySelector('.fill-overlay'),
+                handle: el.querySelector('.moving-handle')
             });
             return true;
         }
 
         function handleInput(laneIdx, isDown) {
             if (!gameActive) return;
-
+            const laneEl = lanes[laneIdx];
+            
             if (isDown) {
-                const hitZoneMin = window.innerHeight * 0.5;
-                const hitZoneMax = window.innerHeight * 0.9;
-
+                laneEl.classList.add('active');
+                const hMin = window.innerHeight * 0.45;
+                const hMax = window.innerHeight * 0.9;
                 const target = activeTiles
                     .filter(t => t.lane == laneIdx && !t.hit)
                     .sort((a, b) => b.y - a.y)
-                    .find(t => {
-                        const tileBottom = t.y + t.height;
-                        const tileTop = t.y;
-                        return tileBottom > hitZoneMin && tileTop < hitZoneMax;
-                    });
+                    .find(t => (t.y + t.h) > hMin && t.y < hMax);
 
                 if (target) {
                     target.hit = true;
                     if (target.type === 'short') {
-                        target.el.style.opacity = '0.3';
-                        addScore(10, "MÜKEMMEL!", laneIdx);
+                        target.el.style.opacity = '0.2';
+                        addScore(10, "İYİ!", laneIdx);
                         playSfx(440, 0.1);
                     } else {
                         holdingTile = target;
@@ -518,10 +482,11 @@
                     }
                 }
             } else {
+                laneEl.classList.remove('active');
                 if (holdingTile && holdingTile.lane == laneIdx) {
                     if (!holdingTile.done) {
                         handleFail();
-                        holdingTile.el.style.background = 'var(--danger)';
+                        holdingTile.el.style.backgroundColor = 'var(--danger)';
                     }
                     holdingTile.el.classList.remove('active');
                     holdingTile = null;
@@ -536,34 +501,26 @@
             f.className = 'feedback';
             f.style.left = (lane * 33) + 10 + '%';
             f.style.bottom = '20%';
-            f.style.color = pts > 15 ? 'var(--secondary)' : 'var(--primary)';
+            f.style.color = pts > 20 ? 'var(--secondary)' : 'var(--primary)';
             f.innerText = msg;
             document.body.appendChild(f);
-            setTimeout(() => f.remove(), 600);
+            setTimeout(() => f.remove(), 500);
         }
 
         function handleFail() {
             lives--;
             livesEl.innerText = lives;
-            playSfx(150, 0.3);
-            document.getElementById('app').classList.add('shake');
-            setTimeout(() => document.getElementById('app').classList.remove('shake'), 300);
+            playSfx(120, 0.2);
+            app.classList.add('shake');
+            setTimeout(() => app.classList.remove('shake'), 200);
             if (lives <= 0) endGame();
         }
 
         function endGame() {
             gameActive = false;
             document.getElementById('final-score').innerText = "Skor: " + score;
-            
-            const currentHigh = parseInt(localStorage.getItem('rrr_lane_high') || "0");
-            
-            if (score > currentHigh) {
-                localStorage.setItem('rrr_lane_high', score);
-                newRecordMsg.classList.remove('hidden');
-                playSfx(800, 0.5);
-            }
-            
-            loadHighScore();
+            const high = parseInt(localStorage.getItem('rrr_pro_v3') || "0");
+            if (score > high) localStorage.setItem('rrr_pro_v3', score);
             overScreen.classList.remove('hidden');
         }
 
@@ -571,11 +528,11 @@
             const idx = l.dataset.lane;
             l.addEventListener('touchstart', e => { e.preventDefault(); handleInput(idx, true); });
             l.addEventListener('touchend', e => { e.preventDefault(); handleInput(idx, false); });
-            l.addEventListener('mousedown', e => { e.preventDefault(); handleInput(idx, true); });
-            l.addEventListener('mouseup', e => { e.preventDefault(); handleInput(idx, false); });
+            l.addEventListener('mousedown', e => { handleInput(idx, true); });
+            l.addEventListener('mouseup', e => { handleInput(idx, false); });
         });
 
-        window.onload = loadHighScore;
+        loadHighScore();
     </script>
 </body>
 </html>
