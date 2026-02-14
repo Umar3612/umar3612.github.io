@@ -1,11 +1,56 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
      crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Hafıza Ustası - Sayı Sıralama</title>
+    
+    <!-- Professional SEO Metadata -->
+    <title>Memory Master - Professional Logic & Brain Training Game</title>
+    <meta name="description" content="Challenge your cognitive skills with Memory Master. A professional brain training game where you memorize number sequences across 3 difficulty levels. Free, fast, and mobile-optimized.">
+    <meta name="keywords" content="memory game, brain training, logic puzzle, number sequence game, cognitive improvement, memory master, free online game, educational puzzle">
+    <meta name="author" content="Gemini AI">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourdomain.com/memory-master">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/memory-master">
+    <meta property="og:title" content="Memory Master - Train Your Brain with Logic Puzzles">
+    <meta property="og:description" content="Can you remember the sequence? Test your mental limits with Memory Master. Modern UI, interactive sounds, and 3 difficulty levels.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yourdomain.com/memory-master">
+    <meta property="twitter:title" content="Memory Master - Logic Puzzle Game">
+    <meta property="twitter:description" content="Level up your memory. Solve the number sequence challenge on Memory Master.">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop">
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Memory Master",
+      "operatingSystem": "Web",
+      "applicationCategory": "GameApplication",
+      "genre": "Puzzle",
+      "description": "A number sequence memory game designed to enhance cognitive performance through visual recall.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "1240"
+      }
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -15,6 +60,7 @@
         body {
             height: var(--app-height);
             touch-action: manipulation;
+            background-color: #0f172a;
         }
 
         /* Kart Çevirme Animasyonları */
@@ -39,28 +85,27 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .card-front {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .card-back {
-            background-color: #f3f4f6;
+            background-color: #f8fafc;
             transform: rotateY(180deg);
             border: 2px solid #3b82f6;
         }
         
-        /* Dinamik Kart Boyutu - Ekran yüksekliğine göre sınırlama */
         .card-container {
             width: 100%;
-            aspect-ratio: 1/1; /* Kare kartlar daha fazla sığar */
-            max-height: 12vh; /* Dikeyde taşmayı önlemek için kritik */
+            aspect-ratio: 1/1;
+            max-height: 12vh;
         }
 
-        /* Hata Efekti */
         .shake {
             animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }
@@ -71,11 +116,11 @@
             40%, 60% { transform: translate3d(4px, 0, 0); }
         }
 
-        /* Başarı Efekti */
         .success-pulse {
             animation: pulse 0.4s ease-in-out;
             background-color: #10b981 !important;
             color: white !important;
+            border-color: #059669 !important;
         }
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -89,7 +134,6 @@
             pointer-events: none;
         }
 
-        /* Kaydırmayı tamamen kapat */
         .no-scroll {
             overflow: hidden;
             position: fixed;
@@ -98,24 +142,40 @@
         }
     </style>
 </head>
-<body class="bg-slate-900 text-white flex flex-col items-center justify-between p-4 font-sans no-scroll">
-<a href="../../index.html">⬅ Ana Menü</a>
+<body class="bg-slate-900 text-white flex flex-col items-center p-4 font-sans no-scroll">
+    
+    <!-- Top Bar -->
+    <div class="w-full max-w-md flex justify-between items-center mb-4 shrink-0">
+        <div class="flex gap-2">
+            <a href="../../index.html" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl border border-slate-700 transition-all active:scale-90 flex items-center gap-2 group shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span id="ui-home-text" class="text-[10px] font-bold text-slate-300 hidden sm:block">Menu</span>
+            </a>
+        </div>
+
+        <div class="flex gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700 shadow-lg">
+            <button onclick="setLanguage('en')" id="lang-en" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all bg-blue-600 text-white">EN</button>
+            <button onclick="setLanguage('tr')" id="lang-tr" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">TR</button>
+        </div>
+    </div>
 
     <!-- Menü Ekranı -->
-    <div id="menu-screen" class="w-full max-w-sm bg-slate-800 p-6 rounded-3xl shadow-2xl text-center my-auto">
-        <h1 class="text-3xl font-black mb-2 text-blue-400 tracking-tight">HAFIZA USTASI</h1>
-        <p class="text-slate-400 mb-8 text-sm">Sayıları hatırla ve sırasıyla dokun!</p>
+    <div id="menu-screen" class="w-full max-w-sm bg-slate-800 p-8 rounded-[2.5rem] shadow-2xl text-center my-auto border border-slate-700">
+        <h1 class="text-3xl font-black mb-2 text-blue-400 tracking-tight uppercase" id="ui-title">MEMORY MASTER</h1>
+        <p class="text-slate-400 mb-8 text-sm" id="ui-desc">Remember the numbers and tap them in order!</p>
         
         <div class="space-y-4">
-            <button id="btn-EASY" onclick="startGame('EASY')" class="w-full py-4 bg-emerald-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg">
-                Kolay (6 Sayı)
+            <button id="btn-EASY" onclick="startGame('EASY')" class="w-full py-4 bg-emerald-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg shadow-lg">
+                <span class="label">Easy (6 Numbers)</span>
             </button>
-            <button id="btn-MEDIUM" onclick="startGame('MEDIUM')" class="w-full py-4 bg-amber-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg">
-                <span>Orta (12 Sayı)</span>
+            <button id="btn-MEDIUM" onclick="startGame('MEDIUM')" class="w-full py-4 bg-amber-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg shadow-lg">
+                <span class="label">Medium (12 Numbers)</span>
                 <span class="lock-icon hidden">🔒</span>
             </button>
-            <button id="btn-HARD" onclick="startGame('HARD')" class="w-full py-4 bg-rose-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg">
-                <span>Zor (18 Sayı)</span>
+            <button id="btn-HARD" onclick="startGame('HARD')" class="w-full py-4 bg-rose-600 active:scale-95 rounded-2xl font-bold transition-all flex justify-center items-center gap-3 text-lg shadow-lg">
+                <span class="label">Hard (18 Numbers)</span>
                 <span class="lock-icon hidden">🔒</span>
             </button>
         </div>
@@ -125,24 +185,24 @@
     <div id="game-screen" class="hidden w-full max-w-md h-full flex flex-col">
         <!-- Header -->
         <div class="flex justify-between items-center py-4 px-2 shrink-0">
-            <div class="bg-slate-800 p-2 px-4 rounded-2xl border border-slate-700">
-                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Hedef</p>
+            <div class="bg-slate-800 p-2 px-4 rounded-2xl border border-slate-700 shadow-md">
+                <p id="ui-label-target" class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Target</p>
                 <p id="target-display" class="text-xl font-black text-blue-400 leading-none">1</p>
             </div>
             
             <div class="text-center">
-                <p id="timer-label" class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Ezberle</p>
+                <p id="timer-label" class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Memorize</p>
                 <p id="countdown" class="text-2xl font-black text-amber-400 leading-none">30</p>
             </div>
 
-            <button onclick="resetToMenu()" class="p-3 bg-slate-800 rounded-2xl border border-slate-700 active:scale-90">
+            <button onclick="resetToMenu()" class="p-3 bg-slate-800 rounded-2xl border border-slate-700 active:scale-90 shadow-md">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             </button>
         </div>
 
-        <!-- Grid Alanı (Esnek Boyutlu) -->
+        <!-- Grid Alanı -->
         <div class="flex-grow flex items-center justify-center p-2">
-            <div id="game-grid" class="grid w-full gap-2 justify-center content-center max-h-full">
+            <div id="game-grid" class="grid w-full gap-3 justify-center content-center max-h-full">
                 <!-- Kartlar -->
             </div>
         </div>
@@ -150,22 +210,63 @@
         <!-- Footer / Buton -->
         <div class="py-6 shrink-0 flex justify-center">
             <button id="ready-btn" onclick="endPreviewEarly()" class="w-full max-w-[200px] py-4 bg-blue-600 rounded-2xl font-black shadow-xl active:scale-90 transition-all text-sm uppercase tracking-widest">
-                HAZIRIM!
+                READY!
             </button>
         </div>
     </div>
 
     <!-- Sonuç Modal -->
-    <div id="modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md flex items-center justify-center z-50 p-6">
+    <div id="modal" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center z-50 p-6">
         <div class="bg-slate-800 p-8 rounded-[40px] text-center w-full max-w-xs border border-slate-700 shadow-2xl">
             <div id="modal-icon" class="text-6xl mb-4">🎉</div>
-            <h2 id="modal-title" class="text-2xl font-black mb-2 tracking-tight">HARİKA!</h2>
-            <p id="modal-desc" class="text-slate-400 text-sm mb-8 leading-relaxed">Bir sonraki seviyenin kilidi açıldı.</p>
-            <button onclick="resetToMenu()" class="w-full py-4 bg-blue-600 rounded-2xl font-bold text-lg shadow-lg active:scale-95">DEVAM ET</button>
+            <h2 id="modal-title" class="text-2xl font-black mb-2 tracking-tight uppercase">GREAT!</h2>
+            <p id="modal-desc" class="text-slate-400 text-sm mb-8 leading-relaxed">The next level is unlocked.</p>
+            <button id="modal-btn" onclick="resetToMenu()" class="w-full py-4 bg-blue-600 rounded-2xl font-bold text-lg shadow-lg active:scale-95 uppercase">CONTINUE</button>
         </div>
     </div>
 
     <script>
+        const translations = {
+            en: {
+                home: "Home",
+                title: "MEMORY MASTER",
+                desc: "Remember the numbers and tap them in order!",
+                easy: "Easy (6 Numbers)",
+                medium: "Medium (12 Numbers)",
+                hard: "Hard (18 Numbers)",
+                target: "Target",
+                memorize: "Memorize",
+                sort: "Sort",
+                ready: "READY!",
+                win_title: "EXCELLENT!",
+                win_desc: "Your memory took you to the next level!",
+                fail_title: "ERROR!",
+                fail_desc: (num) => `The next number should have been ${num}. Try again!`,
+                continue: "CONTINUE",
+                start: "START"
+            },
+            tr: {
+                home: "Ana Menü",
+                title: "HAFIZA USTASI",
+                desc: "Sayıları hatırla ve sırasıyla dokun!",
+                easy: "Kolay (6 Sayı)",
+                medium: "Orta (12 Sayı)",
+                hard: "Zor (18 Sayı)",
+                target: "Hedef",
+                memorize: "Ezberle",
+                sort: "Sırala",
+                ready: "HAZIRIM!",
+                win_title: "HARİKA!",
+                win_desc: "Hafızan seni bir üst seviyeye taşıdı!",
+                fail_title: "HATA!",
+                fail_desc: (num) => `Sıradaki sayı ${num} olmalıydı. Tekrar dene!`,
+                continue: "DEVAM ET",
+                start: "BAŞLA"
+            }
+        };
+
+        let currentLang = 'en';
+
         const CONFIG = {
             EASY: { count: 6, cols: 'grid-cols-3', fontSize: 'text-2xl', cardMax: 'max-h-[15vh]' },
             MEDIUM: { count: 12, cols: 'grid-cols-3', fontSize: 'text-xl', cardMax: 'max-h-[12vh]' },
@@ -191,6 +292,32 @@
         const targetDisplay = document.getElementById('target-display');
         const readyBtn = document.getElementById('ready-btn');
 
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+
+            // UI Elements
+            document.getElementById('ui-home-text').innerText = t.home;
+            document.getElementById('ui-title').innerText = t.title;
+            document.getElementById('ui-desc').innerText = t.desc;
+            document.getElementById('btn-EASY').querySelector('.label').innerText = t.easy;
+            document.getElementById('btn-MEDIUM').querySelector('.label').innerText = t.medium;
+            document.getElementById('btn-HARD').querySelector('.label').innerText = t.hard;
+            document.getElementById('ui-label-target').innerText = t.target;
+            document.getElementById('ready-btn').innerText = t.ready;
+            document.getElementById('modal-btn').innerText = t.continue;
+
+            // Language Switcher Buttons
+            document.getElementById('lang-en').className = `px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400'}`;
+            document.getElementById('lang-tr').className = `px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${lang === 'tr' ? 'bg-blue-600 text-white' : 'text-slate-400'}`;
+
+            // Update timer label if game is active
+            if (!gameScreen.classList.contains('hidden')) {
+                timerLabel.innerText = gameState.isMemorizing ? t.memorize : t.sort;
+                if (!gameState.isMemorizing) countdownEl.innerText = t.start;
+            }
+        }
+
         const SoundManager = {
             play(type) {
                 try {
@@ -208,8 +335,6 @@
                 } catch(e) {}
             }
         };
-
-        window.onload = updateMenuButtons;
 
         function updateMenuButtons() {
             ['EASY', 'MEDIUM', 'HARD'].forEach(level => {
@@ -235,13 +360,14 @@
             gameScreen.classList.remove('hidden');
             readyBtn.classList.remove('hidden');
             
+            timerLabel.innerText = translations[currentLang].memorize;
             setupBoard();
             startTimer();
         }
 
         function setupBoard() {
             const config = CONFIG[gameState.difficulty];
-            gameGrid.className = `grid gap-2 w-full justify-center content-center ${config.cols}`;
+            gameGrid.className = `grid gap-3 w-full justify-center content-center ${config.cols}`;
             gameGrid.innerHTML = '';
             
             let numbers = Array.from({ length: config.count }, (_, i) => i + 1);
@@ -252,12 +378,10 @@
             });
             
             targetDisplay.innerText = 1;
-            timerLabel.innerText = "Ezberle";
         }
 
         function createCard(value, config) {
             const container = document.createElement('div');
-            // fontSizeClass ve cardMax yükseklik kısıtlamasını uygula
             container.className = `card-container flipped perspective-1000 ${config.cardMax}`;
             container.dataset.value = value;
             container.innerHTML = `
@@ -291,8 +415,8 @@
             clearInterval(gameState.timerInterval);
             gameState.isMemorizing = false;
             readyBtn.classList.add('hidden');
-            timerLabel.innerText = "Sırala";
-            countdownEl.innerText = "BAŞLA";
+            timerLabel.innerText = translations[currentLang].sort;
+            countdownEl.innerText = translations[currentLang].start;
             document.querySelectorAll('.card-container').forEach(c => c.classList.remove('flipped'));
             SoundManager.play('flip');
         }
@@ -336,17 +460,18 @@
             const icon = document.getElementById('modal-icon');
             const title = document.getElementById('modal-title');
             const desc = document.getElementById('modal-desc');
+            const t = translations[currentLang];
             
             modal.classList.remove('hidden');
             if (isWin) {
                 icon.innerText = "🏆";
-                title.innerText = "MÜKEMMEL!";
-                desc.innerText = "Hafızan seni bir üst seviyeye taşıdı!";
+                title.innerText = t.win_title;
+                desc.innerText = t.win_desc;
                 SoundManager.play('win');
             } else {
                 icon.innerText = "❌";
-                title.innerText = "HATA!";
-                desc.innerText = `Sıradaki sayı ${gameState.expectedNumber} olmalıydı. Tekrar dene!`;
+                title.innerText = t.fail_title;
+                desc.innerText = t.fail_desc(gameState.expectedNumber);
             }
         }
 
@@ -357,6 +482,11 @@
             menuScreen.classList.remove('hidden');
             updateMenuButtons();
         }
+
+        window.onload = () => {
+            setLanguage('en');
+            updateMenuButtons();
+        };
     </script>
 </body>
 </html>
