@@ -1,12 +1,52 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
+     crossorigin="anonymous"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
      crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Umar Games | Eğlenceli ve Eğitici Web Oyunları</title>
-    <meta name="description" content="Umar Games - Çocuklar için en iyi hafıza, hız ve strateji oyunları.">
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>Umar Games | Fun and Educational Web Games</title>
+    <meta name="title" content="Umar Games | Fun and Educational Web Games">
+    <meta name="description" content="Umar Games - Best memory, speed, and strategy games for kids. Play free online web games, including puzzles, math games, and reflex challenges without registration.">
+    <meta name="keywords" content="web games, educational games, free online games, kids games, puzzle games, memory games, Umar Games, play games without registration">
+    <meta name="author" content="Umar Games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://umargames.com/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://umargames.com/">
+    <meta property="og:title" content="Umar Games | Fun and Educational Web Games">
+    <meta property="og:description" content="Umar Games - Best memory, speed, and strategy games for kids. Play free online web games without registration.">
+    <meta property="og:image" content="https://umargames.com/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://umargames.com/">
+    <meta property="twitter:title" content="Umar Games | Fun and Educational Web Games">
+    <meta property="twitter:description" content="Umar Games - Best memory, speed, and strategy games for kids. Play free online web games without registration.">
+    <meta property="twitter:image" content="https://umargames.com/og-image.png">
+
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://umargames.com/",
+      "name": "Umar Games",
+      "description": "Fun and Educational Web Games for Kids",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://umargames.com/?s={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +61,7 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Temel Ayarlar */
+        /* Base Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
@@ -37,7 +77,7 @@
         a { text-decoration: none; color: inherit; cursor: pointer; }
         ul { list-style: none; }
 
-        /* Navigasyon */
+        /* Navigation */
         nav {
             display: flex;
             justify-content: space-between;
@@ -68,7 +108,7 @@
         }
         .nav-links a:hover { color: var(--primary); }
 
-        /* Hero Bölümü */
+        /* Hero Section */
         .hero {
             padding: 6rem 5% 4rem;
             text-align: center;
@@ -89,7 +129,7 @@
             font-size: 1.1rem;
         }
 
-        /* Reklam Alanı (AdSense Placeholder) */
+        /* AdSense Placeholder */
         .adsense-placeholder {
             max-width: 970px;
             margin: 2rem auto;
@@ -101,9 +141,9 @@
             color: #4b5563;
             font-size: 0.8rem;
         }
-        .adsense-placeholder::before { content: "REKLAM ALANI (ADSENSE)"; display: block; margin-bottom: 5px; font-weight: bold; }
+        .adsense-placeholder::before { content: "ADVERTISING SPACE (ADSENSE)"; display: block; margin-bottom: 5px; font-weight: bold; }
 
-        /* Oyun Grid Yapısı */
+        /* Game Grid Layout */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
         
         .section-title {
@@ -131,7 +171,7 @@
             margin-bottom: 5rem;
         }
 
-        /* Tüm kartı tıklanabilir yapan stil */
+        /* Game Card Styles */
         .game-card {
             background: var(--bg-card);
             border-radius: 1.5rem;
@@ -170,7 +210,7 @@
         .game-info h3 { margin-bottom: 0.5rem; font-size: 1.3rem; }
         .game-info p { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1.5rem; flex-grow: 1; }
 
-        /* Buton Görünümlü Div */
+        /* Button UI */
         .btn-play-ui {
             background: rgba(56, 189, 248, 0.1);
             color: var(--primary);
@@ -187,7 +227,7 @@
             border-color: var(--primary);
         }
 
-        /* İçerik Sayfaları (AdSense için) */
+        /* Content Sections */
         .content-section {
             display: none;
             padding: 4rem 0;
@@ -227,7 +267,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Mobil Uyumluluk */
+        /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .nav-links { display: none; }
             .hero h1 { font-size: 2.2rem; }
@@ -240,71 +280,221 @@
     <nav>
         <a href="#" onclick="showPage('home')" class="logo">UMAR GAMES</a>
         <div class="nav-links">
-            <a href="#" onclick="showPage('home')">Anasayfa</a>
-            <a href="#games">Oyunlar</a>
-            <a href="#" onclick="showPage('about')">Hakkımızda</a>
-            <a href="#" onclick="showPage('contact')">İletişim</a>
+            <a href="#" onclick="showPage('home')">Home</a>
+            <a href="#games">Games</a>
+            <a href="#" onclick="showPage('about')">About Us</a>
+            <a href="#" onclick="showPage('contact')">Contact</a>
         </div>
     </nav>
 
     <div id="page-home" class="page-container">
         <section class="hero">
-            <h1>Oyun Dünyasına Hoş Geldiniz</h1>
-            <p>Eğitici, geliştirici ve tamamen ücretsiz web oyunları. Kayıt olmadan hemen oynamaya başlayın.</p>
+            <h1>Welcome to the World of Games</h1>
+            <p>Educational, developmental, and completely free web games. Start playing immediately without registration.</p>
             <div class="adsense-placeholder" style="height: 90px; max-width: 728px;"></div>
         </section>
 
         <section id="games" class="container">
-            <h2 class="section-title">Popüler Oyunlar</h2>
+            <h2 class="section-title">Popular Games</h2>
             <div class="game-grid">
                 
-                <!-- Oyun 1: Hayvan Bulma -->
-                <a href="games/oyun1/index.html" class="game-card">
+                <!-- Game 1 -->
+                <a href="games/games1/index.html" class="game-card">
                     <div class="game-thumb">🔍</div>
                     <div class="game-info">
-                        <h3>Hayvan Bulma</h3>
-                        <p>Dikkat ve odaklanma gerektiren eğlenceli bir bulmaca deneyimi.</p>
-                        <div class="btn-play-ui">Şimdi Oyna</div>
+                        <h3>Find the Animal</h3>
+                        <p>A fun puzzle experience requiring attention and focus.</p>
+                        <div class="btn-play-ui">Play Now</div>
                     </div>
                 </a>
 
-                <!-- Oyun 2: Hayvan Eşleştirme -->
-                <a href="games/oyun2/index.html" class="game-card">
+                <!-- Game 2 -->
+                <a href="games/games2/index.html" class="game-card">
                     <div class="game-thumb">🦁</div>
                     <div class="game-info">
-                        <h3>Hayvan Eşleştirme</h3>
-                        <p>Hafızanı test et ve aynı hayvanları en kısa sürede eşleştir.</p>
-                        <div class="btn-play-ui">Şimdi Oyna</div>
+                        <h3>Animal Matching</h3>
+                        <p>Test your memory and match the same animals as fast as possible.</p>
+                        <div class="btn-play-ui">Play Now</div>
                     </div>
                 </a>
 
-                <!-- Oyun 3: Sayı Sıralama -->
-                <a href="games/oyun3/index.html" class="game-card">
+                <!-- Game 3 -->
+                <a href="games/games3/index.html" class="game-card">
                     <div class="game-thumb">🔢</div>
                     <div class="game-info">
-                        <h3>Sayı Sıralama</h3>
-                        <p>Hız ve matematik zekasını birleştiren dinamik bir oyun.</p>
-                        <div class="btn-play-ui">Şimdi Oyna</div>
+                        <h3>Number Sorting</h3>
+                        <p>A dynamic game combining speed and mathematical intelligence.</p>
+                        <div class="btn-play-ui">Play Now</div>
                     </div>
                 </a>
 
-                <!-- Oyun 4: Çiftçi Oyunu -->
-                <a href="games/oyun4/index.html" class="game-card">
+                <!-- Game 4 -->
+                <a href="games/games4/index.html" class="game-card">
                     <div class="game-thumb">🚜</div>
                     <div class="game-info">
-                        <h3>Çiftçi Oyunu</h3>
-                        <p>Kendi çiftliğini yönet, hasat yap ve en yüksek puanı topla.</p>
-                        <div class="btn-play-ui">Şimdi Oyna</div>
+                        <h3>Farmer Game</h3>
+                        <p>Manage your own farm, harvest, and collect the highest score.</p>
+                        <div class="btn-play-ui">Play Now</div>
                     </div>
                 </a>
 
-                <!-- Oyun 5: Refleks Oyunu -->
-                <a href="games/oyun5/index.html" class="game-card">
+                <!-- Game 5 -->
+                <a href="games/games5/index.html" class="game-card">
                     <div class="game-thumb">⚡</div>
                     <div class="game-info">
-                        <h3>Hızlı Refleks</h3>
-                        <p>Hızını test et! Doğru anı bekle, basılı tut ve dokun; en yüksek skora ulaş.</p>
-                        <div class="btn-play-ui">Şimdi Oyna</div>
+                        <h3>Fast Reflex</h3>
+                        <p>Test your speed! Wait for the right moment, hold and tap; reach the highest score.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 6 -->
+                <a href="games/games6/index.html" class="game-card">
+                    <div class="game-thumb">🚀</div>
+                    <div class="game-info">
+                        <h3>Colorful Rocket</h3>
+                        <p>Target and pop balls of the same color as the rocket! Match colors, reach high scores.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 7 -->
+                <a href="games/games7/index.html" class="game-card">
+                    <div class="game-thumb">🧩</div>
+                    <div class="game-info">
+                        <h3>Number Patterns</h3>
+                        <p>Discover mysterious patterns between numbers and use logic to find the correct answer.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 8 -->
+                <a href="games/games8/index.html" class="game-card">
+                    <div class="game-thumb">🖼️</div>
+                    <div class="game-info">
+                        <h3>Changing Objects</h3>
+                        <p>Track subtle details in images, find changing objects, and mark them quickly to collect points.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 9 -->
+                <a href="games/games9/index.html" class="game-card">
+                    <div class="game-thumb">🗼</div>
+                    <div class="game-info">
+                        <h3>Circle Sorting</h3>
+                        <p>Sort colorful circles on poles from largest to smallest, complete the tower, and prove your wits.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 10 -->
+                <a href="games/games10/index.html" class="game-card">
+                    <div class="game-thumb">🃏</div>
+                    <div class="game-info">
+                        <h3>Pishti</h3>
+                        <p>Play the traditional Turkish card game Pishti; collect cards and defeat opponents with tactics.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 11 -->
+                <a href="games/games11/index.html" class="game-card">
+                    <div class="game-thumb">🧪</div>
+                    <div class="game-info">
+                        <h3>Color Liquids</h3>
+                        <p>Pour magic colored liquids between tubes to match colors and clear the level.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 12 -->
+                <a href="games/games12/index.html" class="game-card">
+                    <div class="game-thumb">🐍</div>
+                    <div class="game-info">
+                        <h3>Snake Game</h3>
+                        <p>Control the hungry snake, catch fleeing bugs, and reach the high score without hitting obstacles.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 13 -->
+                <a href="games/games13/index.html" class="game-card">
+                    <div class="game-thumb">🧱</div>
+                    <div class="game-info">
+                        <h3>Block Placement</h3>
+                        <p>Strategically place shaped blocks, complete rows, and clear the screen for a record score.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 14 -->
+                <a href="games/games14/index.html" class="game-card">
+                    <div class="game-thumb">👾</div>
+                    <div class="game-info">
+                        <h3>Monster Escape</h3>
+                        <p>Collect keys in dark labyrinths, escape from the monster chasing you, and find the exit.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 15 -->
+                <a href="games/games15/index.html" class="game-card">
+                    <div class="game-thumb">🍭</div>
+                    <div class="game-info">
+                        <h3>Candy Blast</h3>
+                        <p>Bring colorful candies together, make combos, and blast all candies in this sweet world.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 16 -->
+                <a href="games/games16/index.html" class="game-card">
+                    <div class="game-thumb">🎨</div>
+                    <div class="game-info">
+                        <h3>Color Connect</h3>
+                        <p>Connect dots of the same color without overlapping lines to fill the entire board.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 17 -->
+                <a href="games/games17/index.html" class="game-card">
+                    <div class="game-thumb">⚔️</div>
+                    <div class="game-info">
+                        <h3>Monster Hunter</h3>
+                        <p>Defeat enemies, use your strategy, and declare victory by killing the final big boss.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 18 -->
+                <a href="games/games18/index.html" class="game-card">
+                    <div class="game-thumb">🎲🪜</div>
+                    <div class="game-info">
+                        <h3>Snakes and Ladders</h3>
+                        <p>Be the first to reach victory without getting stuck in obstacles! Climb your way to the top.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 19 -->
+                <a href="games/games19/index.html" class="game-card">
+                    <div class="game-thumb">🐺🚢</div>
+                    <div class="game-info">
+                        <h3>Wolf and Sheep</h3>
+                        <p>Cross the river safely! Get the wolf and sheep across without any trouble using logic.</p>
+                        <div class="btn-play-ui">Play Now</div>
+                    </div>
+                </a>
+
+                <!-- Game 20 - Uno -->
+                <a href="games/games20/index.html" class="game-card">
+                    <div class="game-thumb">🎴</div>
+                    <div class="game-info">
+                        <h3>Uno</h3>
+                        <p>Are you ready to play Uno? Match colors and numbers, outsmart your opponents, and be the first to get rid of all your cards!</p>
+                        <div class="btn-play-ui">Play Now</div>
                     </div>
                 </a>
 
@@ -312,30 +502,30 @@
         </section>
     </div>
 
-    <!-- HAKKIMIZDA SAYFASI -->
+    <!-- ABOUT PAGE -->
     <section id="page-about" class="content-section container">
         <div class="content-card">
-            <h2>Hakkımızda</h2>
-            <p>Umar Games, çocuklar ve genç yetişkinler için güvenli, eğitici ve eğlenceli bir oyun ortamı sunmak amacıyla kurulmuş bir platformdur.</p>
-            <p>Web teknolojilerindeki en son gelişmeleri kullanarak, tarayıcı üzerinden herhangi bir indirme yapmadan oynanabilen yüksek kaliteli oyunlar geliştiriyoruz. Vizyonumuz, öğrenmeyi eğlenceyle birleştiren oyun mekanikleriyle zihinsel gelişime katkıda bulunmaktır.</p>
+            <h2>About Us</h2>
+            <p>Umar Games is a platform founded to provide a safe, educational, and fun gaming environment for children and young adults.</p>
+            <p>Using the latest developments in web technology, we develop high-quality games that can be played via browser without any downloads. Our vision is to contribute to mental development with game mechanics that combine learning with entertainment.</p>
         </div>
     </section>
 
-    <!-- İLETİŞİM SAYFASI -->
+    <!-- CONTACT PAGE -->
     <section id="page-contact" class="content-section container">
         <div class="content-card">
-            <h2>İletişim</h2>
-            <p>Bizimle her türlü görüş, öneri veya reklam işbirliği için iletişime geçebilirsiniz.</p>
-            <p><strong>E-posta:</strong> iletisim@umargames.com</p>
-            <p><strong>Lokasyon:</strong> İstanbul, Türkiye</p>
+            <h2>Contact</h2>
+            <p>You can contact us for any opinions, suggestions, or advertising collaborations.</p>
+            <p><strong>Email:</strong> contact@umargames.com</p>
+            <p><strong>Location:</strong> Istanbul, Turkey</p>
         </div>
     </section>
 
-    <!-- GİZLİLİK POLİTİKASI SAYFASI -->
+    <!-- PRIVACY POLICY PAGE -->
     <section id="page-privacy" class="content-section container">
         <div class="content-card">
-            <h2>Gizlilik Politikası</h2>
-            <p>Umar Games gizliliğinize önem verir. Web sitemiz doğrudan kişisel veri toplamaz; ancak AdSense gibi ortaklarımız ilgi alanına dayalı reklamlar için çerez kullanabilir.</p>
+            <h2>Privacy Policy</h2>
+            <p>Umar Games values your privacy. Our website does not collect personal data directly; however, partners like AdSense may use cookies for interest-based advertising.</p>
         </div>
     </section>
 
@@ -347,25 +537,40 @@
         <div class="container footer-content">
             <div class="footer-col">
                 <div class="logo">UMAR GAMES</div>
-                <p style="font-size: 0.8rem; margin-top: 10px; color: var(--text-dim);">Eğlencenin ve eğitimin yeni adresi.</p>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: var(--text-dim);">Your new destination for fun and education.</p>
             </div>
             <div class="footer-col">
-                <h4>Kurumsal</h4>
-                <a href="#" onclick="showPage('about')">Hakkımızda</a>
-                <a href="#" onclick="showPage('contact')">İletişim</a>
-                <a href="#" onclick="showPage('privacy')">Gizlilik Politikası</a>
+                <h4>Corporate</h4>
+                <a href="#" onclick="showPage('about')">About Us</a>
+                <a href="#" onclick="showPage('contact')">Contact</a>
+                <a href="#" onclick="showPage('privacy')">Privacy Policy</a>
             </div>
             <div class="footer-col">
-                <h4>Oyunlar</h4>
-                <a href="games/oyun1/index.html">Hayvan Bulma</a>
-                <a href="games/oyun2/index.html">Hayvan Eşleştirme</a>
-                <a href="games/oyun3/index.html">Sayı Sıralama</a>
-                <a href="games/oyun4/index.html">Çiftçi Oyunu</a>
-                <a href="games/oyun5/index.html">Hızlı Refleks</a>
+                <h4>Games</h4>
+                <a href="games/games1/index.html">Find the Animal</a>
+                <a href="games/games2/index.html">Animal Matching</a>
+                <a href="games/games3/index.html">Number Sorting</a>
+                <a href="games/games4/index.html">Farmer Game</a>
+                <a href="games/games5/index.html">Fast Reflex</a>
+                <a href="games/games6/index.html">Colorful Rocket</a>
+                <a href="games/games7/index.html">Number Patterns</a>
+                <a href="games/games8/index.html">Changing Objects</a>
+                <a href="games/games9/index.html">Circle Sorting</a>
+                <a href="games/games10/index.html">Pishti</a>
+                <a href="games/games11/index.html">Color Liquids</a>
+                <a href="games/games12/index.html">Snake Game</a>
+                <a href="games/games13/index.html">Block Placement</a>
+                <a href="games/games14/index.html">Monster Escape</a>
+                <a href="games/games15/index.html">Candy Blast</a>
+                <a href="games/games16/index.html">Color Connect</a>
+                <a href="games/games17/index.html">Monster Hunter</a>
+                <a href="games/games18/index.html">Snakes and Ladders</a>
+                <a href="games/games19/index.html">Wolf and Sheep</a>
+                <a href="games/games20/index.html">Uno</a>
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2024 Umar Games. Tüm hakları saklıdır. GitHub Pages üzerinde gururla yayınlanmaktadır.
+            &copy; 2026 Umar Games. All rights reserved. Proudly published on GitHub Pages.
         </div>
     </footer>
 
@@ -386,5 +591,3 @@
     </script>
 </body>
 </html>
-
-
