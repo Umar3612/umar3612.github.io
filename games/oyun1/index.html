@@ -3,11 +3,44 @@
 <head>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
      crossorigin="anonymous"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
-     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Hayvanı Bul - Profesyonel Sürüm</title>
+    
+    <!-- Professional SEO Metadata -->
+    <title id="seo-title">Hayvanı Bul - Profesyonel Hafıza ve Zeka Oyunu</title>
+    <meta name="description" content="Hayvanı Bul ile hafızanı test et! Modern tasarımı, 3 farklı zorluk seviyesi ve eğlenceli hayvan figürleriyle zihnini geliştiren profesyonel bir zeka oyunu.">
+    <meta name="keywords" content="hafıza oyunu, zeka oyunu, hayvan bulmaca, memory game, brain puzzle, çocuk oyunları, eğitici oyunlar, zihin egzersizi">
+    <meta name="author" content="Gemini AI">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hayvanı Bul - Profesyonel Hafıza Oyunu">
+    <meta property="og:description" content="Görsel hafızanı test etmeye hazır mısın? Hedef hayvanları bul, seviyeleri tamamla ve uzman bir avcı ol!">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1000&auto=format&fit=crop">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Hayvanı Bul - Zeka Oyunu">
+    <meta property="twitter:description" content="Eğlenceli ve zorlayıcı bir hafıza deneyimi. Hemen oyna!">
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Hayvanı Bul (Animal Hunt)",
+      "operatingSystem": "Web",
+      "applicationCategory": "GameApplication",
+      "genre": "Puzzle",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "TRY"
+      }
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -27,7 +60,6 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* Modern Bubbly Buttons */
         .btn-glossy {
             position: relative;
             overflow: hidden;
@@ -140,21 +172,20 @@
     </style>
 </head>
 <body class="flex flex-col h-[100dvh]">
-<a href="../../index.html">⬅ Ana Menü</a>
 
 <!-- Kompakt Üst Panel -->
 <div id="game-ui" class="hidden flex-shrink-0 w-full max-w-lg mx-auto px-3 pt-3 z-20">
     <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-2 relative">
         <div class="flex justify-between items-center mb-2 px-1">
-            <button onclick="Game.showMenu()" class="btn-glossy bg-slate-100 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-xl active:scale-90 transition">
+            <button onclick="Game.showMenu()" class="btn-glossy bg-slate-100 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-xl active:scale-90 transition uppercase" id="ui-menu-btn">
                 MENÜ
             </button>
+
             <div id="timer-badge" class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-rose-100 flex items-center gap-2">
-                <span>Ezberle: 30s</span>
-                <button id="skip-btn" onclick="Game.skipPreview()" class="btn-glossy bg-rose-500 text-white px-2 py-0.5 rounded-lg text-[9px] hover:bg-rose-600">HAZIRIM!</button>
+                <span id="ui-timer-text">Ezberle: 30s</span>
+                <button id="skip-btn" onclick="Game.skipPreview()" class="btn-glossy bg-rose-500 text-white px-2 py-0.5 rounded-lg text-[9px] hover:bg-rose-600 uppercase">HAZIRIM!</button>
             </div>
         </div>
-        
         <div id="target-list" class="flex justify-center gap-2 flex-wrap min-h-[40px] items-center"></div>
     </div>
 </div>
@@ -166,22 +197,36 @@
 
 <!-- Menü Ekranı -->
 <div id="menu-screen" class="absolute inset-0 bg-indigo-700 z-50 flex flex-col items-center justify-center text-white px-8 text-center">
-    <div class="mb-10 animate-pop">
-        <h1 class="text-5xl font-bold mb-2 text-yellow-300 drop-shadow-[0_5px_0_rgba(0,0,0,0.2)] uppercase italic tracking-tighter">HAYVAN AVI</h1>
-        <p class="text-sm opacity-80 tracking-widest font-medium">HAFIZANI TEST ET</p>
+    
+    <!-- Şık Ana Menü Butonu (Sol Üst Köşe) -->
+    <a href="../../index.html" class="absolute top-6 left-6 bg-slate-800 hover:bg-slate-700 px-3 py-2.5 rounded-xl border border-slate-700 transition-all active:scale-90 flex items-center gap-2 group shadow-lg" aria-label="Main Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        <span id="ui-back-menu" class="text-[10px] font-bold text-slate-200 hidden sm:block">Ana Menü</span>
+    </a>
+
+    <!-- Language Toggle (Sağ Üst Köşe) -->
+    <div class="absolute top-6 right-6 flex gap-1 bg-white/10 p-1 rounded-xl border border-white/20">
+        <button onclick="Game.setLanguage('en')" id="lang-en" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all">EN</button>
+        <button onclick="Game.setLanguage('tr')" id="lang-tr" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all">TR</button>
+    </div>
+
+    <div class="mb-8 animate-pop">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-2 text-yellow-300 drop-shadow-[0_4px_0_rgba(0,0,0,0.2)] uppercase italic tracking-tighter" id="ui-title">HAYVAN AVI</h1>
+        <p class="text-xs opacity-80 tracking-widest font-medium uppercase" id="ui-subtitle">HAFIZANI TEST ET</p>
     </div>
 
     <div class="bg-white p-6 rounded-[2rem] shadow-2xl w-full max-w-sm">
-        <!-- Kurallar Butonu -->
-        <button onclick="Game.toggleRules(true)" class="btn-glossy w-full bg-slate-100 text-indigo-600 font-bold py-3 rounded-2xl mb-4 text-xs tracking-widest border border-slate-200">
+        <button onclick="Game.toggleRules(true)" class="btn-glossy w-full bg-slate-100 text-indigo-600 font-bold py-3 rounded-2xl mb-4 text-xs tracking-widest border border-slate-200 uppercase" id="ui-rules-btn">
             ❓ NASIL OYNANIR?
         </button>
 
-        <h2 class="text-slate-400 font-bold mb-4 text-[10px] uppercase tracking-widest">Zorluk Seç ve Başla</h2>
+        <h2 class="text-slate-400 font-bold mb-4 text-[10px] uppercase tracking-widest" id="ui-difficulty-title">Zorluk Seç ve Başla</h2>
         
         <div class="space-y-4" id="level-buttons"></div>
         
-        <button onclick="Game.resetProgress()" class="mt-6 text-[10px] text-slate-400 font-bold hover:text-rose-400 transition uppercase tracking-widest">İlerlemeyi Sıfırla</button>
+        <button onclick="Game.resetProgress()" class="mt-6 text-[10px] text-slate-400 font-bold hover:text-rose-400 transition uppercase tracking-widest" id="ui-reset-btn">İlerlemeyi Sıfırla</button>
     </div>
 </div>
 
@@ -189,31 +234,10 @@
 <div id="rules-overlay" class="hidden absolute inset-0 rules-overlay z-[60] flex items-center justify-center p-6">
     <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm animate-pop text-slate-800">
         <h3 class="text-2xl font-bold text-indigo-600 mb-6 flex items-center gap-2">
-            <span>📜</span> Oyun Kuralları
+            <span>📜</span> <span id="ui-rules-title">Oyun Kuralları</span>
         </h3>
-        <ul class="space-y-4 text-left text-sm font-medium text-slate-600">
-            <li class="flex gap-3">
-                <span class="text-indigo-500 font-bold">1.</span>
-                <span>Oyun başladığında kartlar <b>30 saniye</b> boyunca açık kalır.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="text-indigo-500 font-bold">2.</span>
-                <span>Üst paneldeki hedef hayvanların yerlerini ezberle.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="text-indigo-500 font-bold">3.</span>
-                <span>Süre bitince (veya "Hazırım"a basınca) kartlar kapanır.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="text-indigo-500 font-bold">4.</span>
-                <span>Sadece hedefteki hayvanları bulmalısın.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="bg-rose-100 text-rose-600 px-1 rounded">⚠️ DİKKAT:</span>
-                <span>Yanlış bir hayvana basarsan oyun anında biter!</span>
-            </li>
-        </ul>
-        <button onclick="Game.toggleRules(false)" class="btn-glossy w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl mt-8 shadow-lg border-b-4 border-indigo-800">
+        <ul class="space-y-4 text-left text-sm font-medium text-slate-600" id="ui-rules-list"></ul>
+        <button onclick="Game.toggleRules(false)" class="btn-glossy w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl mt-8 shadow-lg border-b-4 border-indigo-800 uppercase" id="ui-rules-close">
             ANLADIM!
         </button>
     </div>
@@ -223,9 +247,9 @@
 <div id="game-over-screen" class="hidden absolute inset-0 bg-rose-600/95 z-40 flex flex-col items-center justify-center text-white p-8">
     <div class="bg-white text-slate-800 p-8 rounded-[2.5rem] text-center shadow-2xl animate-pop w-full max-w-xs">
         <div class="text-7xl mb-4">😿</div>
-        <h2 class="text-3xl font-bold mb-1 text-rose-600 uppercase">EYVAH!</h2>
-        <p class="text-[13px] text-slate-500 mb-8 font-medium italic leading-snug">O hayvan hedefte yoktu. Hafızanı tazeleyip tekrar dene!</p>
-        <button onclick="Game.showMenu()" class="btn-glossy w-full bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-xl border-b-4 border-rose-800 active:translate-y-1 transition text-lg">TEKRAR DENE</button>
+        <h2 class="text-3xl font-bold mb-1 text-rose-600 uppercase" id="ui-over-title">EYVAH!</h2>
+        <p class="text-[13px] text-slate-500 mb-8 font-medium italic leading-snug" id="ui-over-msg">O hayvan hedefte yoktu. Hafızanı tazeleyip tekrar dene!</p>
+        <button onclick="Game.showMenu()" class="btn-glossy w-full bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-xl border-b-4 border-rose-800 active:translate-y-1 transition text-lg uppercase" id="ui-retry-btn">TEKRAR DENE</button>
     </div>
 </div>
 
@@ -233,9 +257,9 @@
 <div id="win-screen" class="hidden absolute inset-0 bg-emerald-600/95 z-40 flex flex-col items-center justify-center text-white p-8">
     <div class="bg-white text-slate-800 p-8 rounded-[2.5rem] text-center shadow-2xl animate-pop w-full max-w-xs">
         <div class="text-7xl mb-4">🐲</div>
-        <h2 class="text-3xl font-bold mb-1 text-emerald-600 uppercase">MÜKEMMEL!</h2>
+        <h2 class="text-3xl font-bold mb-1 text-emerald-600 uppercase" id="ui-win-title">MÜKEMMEL!</h2>
         <p id="win-msg" class="text-[13px] text-slate-500 mb-8 font-medium">Keskin bir zekaya sahipsin!</p>
-        <button onclick="Game.showMenu()" class="btn-glossy w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-xl border-b-4 border-emerald-800 active:translate-y-1 transition text-lg">SIRADAKİ</button>
+        <button onclick="Game.showMenu()" class="btn-glossy w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-xl border-b-4 border-emerald-800 active:translate-y-1 transition text-lg uppercase" id="ui-next-btn">SIRADAKİ</button>
     </div>
 </div>
 
@@ -264,20 +288,132 @@
 
     const Game = {
         animals: ['🦁', '🐯', '🐻', '🐨', '🐼', '🐹', '🐰', '🦊', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦉', '🦇', '🐺', '🐴', '🐝', '🦋', '🐞', '🐢', '🐙', '🦖', '🦄', '🦒', '🐘', '🦘'],
-        state: { targets: [], found: [], isLocked: true, previewTime: 30 },
+        state: { targets: [], found: [], isLocked: true, previewTime: 30, currentLang: 'en' },
         progress: { easy: true, medium: false, hard: false },
         timerInterval: null,
         
+        translations: {
+            en: {
+                seo_title: "Animal Hunt - Professional Memory & Brain Puzzle Game",
+                title: "ANIMAL HUNT",
+                subtitle: "TEST YOUR MEMORY",
+                rules_btn: "❓ HOW TO PLAY?",
+                diff_title: "Select Difficulty & Start",
+                reset_btn: "Reset Progress",
+                back_menu: "Main Menu",
+                menu_btn: "MENU",
+                memorize: "Memorize: ",
+                ready_btn: "I'M READY!",
+                hunt_started: "HUNT STARTED!",
+                easy: "EASY", medium: "MEDIUM", hard: "HARD",
+                rules_title: "Game Rules",
+                rules_list: [
+                    "Cards stay open for <b>30 seconds</b> when the game starts.",
+                    "Memorize the positions of target animals in the top panel.",
+                    "Cards close when time runs out (or you click 'I'm Ready').",
+                    "You must only find the target animals.",
+                    "<span class='bg-rose-100 text-rose-600 px-1 rounded'>⚠️ WARNING:</span> If you click a wrong animal, the game ends immediately!"
+                ],
+                rules_close: "GOT IT!",
+                over_title: "OH NO!",
+                over_msg: "That animal wasn't in the targets. Refresh your memory and try again!",
+                retry_btn: "TRY AGAIN",
+                win_title: "EXCELLENT!",
+                win_msg_next: "Awesome! The next level is waiting for you.",
+                win_msg_finish: "You finished them all! You're a true hunter expert.",
+                next_btn: "NEXT LEVEL",
+                confirm_reset: "Do you want to reset all your progress?"
+            },
+            tr: {
+                seo_title: "Hayvanı Bul - Profesyonel Hafıza ve Zeka Oyunu",
+                title: "HAYVAN AVI",
+                subtitle: "HAFIZANI TEST ET",
+                rules_btn: "❓ NASIL OYNANIR?",
+                diff_title: "Zorluk Seç ve Başla",
+                reset_btn: "İlerlemeyi Sıfırla",
+                back_menu: "Ana Menü",
+                menu_btn: "MENÜ",
+                memorize: "Ezberle: ",
+                ready_btn: "HAZIRIM!",
+                hunt_started: "AV BAŞLADI!",
+                easy: "KOLAY", medium: "ORTA", hard: "ZOR",
+                rules_title: "Oyun Kuralları",
+                rules_list: [
+                    "Oyun başladığında kartlar <b>30 saniye</b> boyunca açık kalır.",
+                    "Üst paneldeki hedef hayvanların yerlerini ezberle.",
+                    "Süre bitince (veya 'Hazırım'a basınca) kartlar kapanır.",
+                    "Sadece hedefteki hayvanları bulmalısın.",
+                    "<span class='bg-rose-100 text-rose-600 px-1 rounded'>⚠️ DİKKAT:</span> Yanlış bir hayvana basarsan oyun anında biter!"
+                ],
+                rules_close: "ANLADIM!",
+                over_title: "EYVAH!",
+                over_msg: "O hayvan hedefte yoktu. Hafızanı tazeleyip tekrar dene!",
+                retry_btn: "TEKRAR DENE",
+                win_title: "MÜKEMMEL!",
+                win_msg_next: "Müthiş! Bir sonraki seviye seni bekliyor.",
+                win_msg_finish: "Hepsini bitirdin! Tam bir avcı uzmanısın.",
+                next_btn: "SIRADAKİ",
+                confirm_reset: "Tüm ilerlemeni sıfırlamak istiyor musun?"
+            }
+        },
+
         config: {
-            easy: { id: 'easy', next: 'medium', total: 20, cols: 4, h: 'h-[11vh]', gap: 'gap-2', fs: 'text-3xl', label: 'KOLAY', color: 'bg-emerald-500 border-emerald-700' },
-            medium: { id: 'medium', next: 'hard', total: 30, cols: 5, h: 'h-[10vh]', gap: 'gap-1.5', fs: 'text-2xl', label: 'ORTA', color: 'bg-orange-500 border-orange-700' },
-            hard: { id: 'hard', next: null, total: 40, cols: 5, h: 'h-[8.5vh]', gap: 'gap-1', fs: 'text-xl', label: 'ZOR', color: 'bg-indigo-500 border-indigo-700' }
+            easy: { id: 'easy', next: 'medium', total: 20, cols: 4, h: 'h-[11vh]', gap: 'gap-2', fs: 'text-3xl', color: 'bg-emerald-500 border-emerald-700' },
+            medium: { id: 'medium', next: 'hard', total: 30, cols: 5, h: 'h-[10vh]', gap: 'gap-1.5', fs: 'text-2xl', color: 'bg-orange-500 border-orange-700' },
+            hard: { id: 'hard', next: null, total: 40, cols: 5, h: 'h-[8.5vh]', gap: 'gap-1', fs: 'text-xl', color: 'bg-indigo-500 border-indigo-700' }
+        },
+
+        setLanguage(lang) {
+            this.state.currentLang = lang;
+            localStorage.setItem('animalGameLang', lang);
+            
+            const t = this.translations[lang];
+            
+            // SEO & Head Update
+            document.title = t.seo_title;
+            
+            // Update Menu
+            document.getElementById('ui-title').innerText = t.title;
+            document.getElementById('ui-subtitle').innerText = t.subtitle;
+            document.getElementById('ui-rules-btn').innerText = t.rules_btn;
+            document.getElementById('ui-difficulty-title').innerText = t.diff_title;
+            document.getElementById('ui-reset-btn').innerText = t.reset_btn;
+            document.getElementById('ui-back-menu').innerText = t.back_menu;
+            
+            // Update UI & Overlays
+            document.getElementById('ui-menu-btn').innerText = t.menu_btn;
+            document.getElementById('skip-btn').innerText = t.ready_btn;
+            document.getElementById('ui-rules-title').innerText = t.rules_title;
+            document.getElementById('ui-rules-close').innerText = t.rules_close;
+            document.getElementById('ui-over-title').innerText = t.over_title;
+            document.getElementById('ui-over-msg').innerText = t.over_msg;
+            document.getElementById('ui-retry-btn').innerText = t.retry_btn;
+            document.getElementById('ui-win-title').innerText = t.win_title;
+            document.getElementById('ui-next-btn').innerText = t.next_btn;
+            
+            // Update Rules List
+            const list = document.getElementById('ui-rules-list');
+            list.innerHTML = '';
+            t.rules_list.forEach((rule, i) => {
+                const li = document.createElement('li');
+                li.className = "flex gap-3";
+                li.innerHTML = `<span class="text-indigo-500 font-bold">${i+1}.</span> <span>${rule}</span>`;
+                list.appendChild(li);
+            });
+
+            // Update Toggle Styles
+            document.getElementById('lang-en').className = `px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${lang === 'en' ? 'bg-white text-indigo-700 shadow-lg' : 'text-white/60 hover:text-white'}`;
+            document.getElementById('lang-tr').className = `px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${lang === 'tr' ? 'bg-white text-indigo-700 shadow-lg' : 'text-white/60 hover:text-white'}`;
+            
+            this.renderMenu();
         },
 
         init() {
-            const saved = localStorage.getItem('animalGameProgress_v2');
-            if(saved) this.progress = JSON.parse(saved);
-            this.renderMenu();
+            const savedProg = localStorage.getItem('animalGameProgress_v2');
+            if(savedProg) this.progress = JSON.parse(savedProg);
+            
+            const savedLang = localStorage.getItem('animalGameLang') || 'en';
+            this.setLanguage(savedLang);
         },
 
         toggleRules(show) {
@@ -294,19 +430,21 @@
         renderMenu() {
             const container = document.getElementById('level-buttons');
             container.innerHTML = '';
+            const t = this.translations[this.state.currentLang];
             
             Object.keys(this.config).forEach(key => {
                 const conf = this.config[key];
                 const isUnlocked = this.progress[key];
                 const btn = document.createElement('button');
+                const label = t[key];
                 
                 if(isUnlocked) {
                     btn.className = `btn-glossy w-full font-bold py-4 rounded-2xl text-white text-lg tracking-wider transition ${conf.color}`;
-                    btn.innerHTML = conf.label;
+                    btn.innerHTML = label;
                     btn.onclick = () => { SoundManager.playClick(); this.start(key); };
                 } else {
                     btn.className = `w-full font-bold py-4 rounded-2xl text-slate-400 bg-slate-100 border-b-4 border-slate-200 opacity-70 cursor-not-allowed text-lg`;
-                    btn.innerHTML = `🔒 ${conf.label}`;
+                    btn.innerHTML = `🔒 ${label}`;
                 }
                 container.appendChild(btn);
             });
@@ -371,12 +509,14 @@
         startTimer() {
             if(this.timerInterval) clearInterval(this.timerInterval);
             let timeLeft = this.state.previewTime;
-            const badge = document.querySelector('#timer-badge span');
-            badge.textContent = `Ezberle: ${timeLeft}s`;
+            const badge = document.querySelector('#ui-timer-text');
+            const t = this.translations[this.state.currentLang];
+            
+            badge.textContent = `${t.memorize} ${timeLeft}s`;
             
             this.timerInterval = setInterval(() => {
                 timeLeft--;
-                badge.textContent = `Ezberle: ${timeLeft}s`;
+                badge.textContent = `${t.memorize} ${timeLeft}s`;
                 if(timeLeft <= 5) SoundManager.playTick();
                 
                 if(timeLeft <= 0) {
@@ -392,8 +532,9 @@
         },
 
         hideCards() {
+            const t = this.translations[this.state.currentLang];
             document.querySelectorAll('.card-container').forEach(c => c.classList.remove('flipped'));
-            document.querySelector('#timer-badge span').textContent = "AV BAŞLADI!";
+            document.querySelector('#ui-timer-text').textContent = t.hunt_started;
             document.getElementById('skip-btn').classList.add('hidden');
             this.state.isLocked = false;
         },
@@ -430,12 +571,13 @@
                 setTimeout(() => {
                     SoundManager.playWin();
                     const nextLevel = this.config[this.difficulty].next;
+                    const t = this.translations[this.state.currentLang];
                     if(nextLevel) {
                         this.progress[nextLevel] = true;
                         localStorage.setItem('animalGameProgress_v2', JSON.stringify(this.progress));
-                        document.getElementById('win-msg').textContent = "Müthiş! Bir sonraki seviye seni bekliyor.";
+                        document.getElementById('win-msg').textContent = t.win_msg_next;
                     } else {
-                        document.getElementById('win-msg').textContent = "Hepsini bitirdin! Tam bir avcı uzmanısın.";
+                        document.getElementById('win-msg').textContent = t.win_msg_finish;
                     }
                     document.getElementById('win-screen').classList.remove('hidden');
                 }, 400);
@@ -453,7 +595,8 @@
         },
 
         resetProgress() {
-            if(confirm("Tüm ilerlemeni sıfırlamak istiyor musun?")) {
+            const t = this.translations[this.state.currentLang];
+            if(confirm(t.confirm_reset)) {
                 this.progress = { easy: true, medium: false, hard: false };
                 localStorage.setItem('animalGameProgress_v2', JSON.stringify(this.progress));
                 this.renderMenu();
