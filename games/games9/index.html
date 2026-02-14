@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Professional SEO Metadata -->
+    <title>Hanoi Triangle - Professional Logic & Brain Puzzle Game</title>
+    <meta name="description" content="Challenge your mind with Hanoi Triangle, a modern twist on the classic Tower of Hanoi. Features 3 difficulty levels, mobile-optimized gameplay, and intuitive touch controls.">
+    <meta name="keywords" content="Hanoi Tower, Tower of Hanoi, Logic Game, Brain Puzzle, Hanoi Triangle, Mind Game, Educational Game, Math Puzzle">
+    <meta name="author" content="Gemini AI">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hanoi Triangle - Professional Logic Puzzle">
+    <meta property="og:description" content="Master the classic Hanoi puzzle with our unique triangle layout. 5, 6, and 7 ring levels available.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1606326666490-3d774aba3a5a?q=80&w=1000&auto=format&fit=crop">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Hanoi Triangle - Logic Puzzle">
+    <meta property="twitter:description" content="Can you solve the 7-ring challenge? Experience the modern Tower of Hanoi.">
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Hanoi Triangle",
+      "operatingSystem": "Web",
+      "applicationCategory": "GameApplication",
+      "genre": "Puzzle",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --ring-transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+            touch-action: none;
+            color: white;
+            overflow: hidden;
+            height: 100dvh;
+            width: 100vw;
+        }
+
+        .main-wrapper {
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem;
+            box-sizing: border-box;
+        }
+
+        .header-panel {
+            flex: 0 0 auto;
+        }
+
+        .game-board {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .peg-row-top {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            max-height: 35%;
+        }
+
+        .status-zone {
+            flex: 0 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .peg-row-bottom {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            align-items: flex-end;
+            position: relative;
+            max-height: 35%;
+        }
+
+        .peg-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            max-width: 200px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+        }
+
+        .top-peg-wrapper {
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .peg-bar {
+            width: 10px;
+            border-radius: 5px;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .peg-bar-down {
+            height: 90%;
+            top: 0;
+            background: linear-gradient(to bottom, #64748b, #334155);
+        }
+
+        .peg-bar-up {
+            height: 90%;
+            bottom: 0;
+            background: linear-gradient(to top, #64748b, #334155);
+        }
+
+        .peg-base-line {
+            position: absolute;
+            bottom: 0;
+            width: 90%;
+            height: 4px;
+            background: #1e293b;
+            border-radius: 2px;
+            left: 5%;
+        }
+
+        .ring {
+            height: 22px;
+            border-radius: 5px;
+            position: absolute;
+            z-index: 5;
+            transition: var(--ring-transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 11px;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .top-peg .ring { top: var(--offset); }
+        .bottom-peg .ring { bottom: var(--offset); }
+
+        .ring.locked {
+            z-index: 100;
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+            border-color: rgba(255,255,255,0.8);
+        }
+
+        .level-btn.locked {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        
+        <!-- Header Panel -->
+        <div class="header-panel max-w-xl mx-auto w-full">
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex gap-2">
+                    <!-- Updated Home Button with House Symbol and Text -->
+                    <a href="../../index.html" class="bg-slate-800 hover:bg-slate-700 px-3 py-2.5 rounded-xl border border-slate-700 transition-all active:scale-90 flex items-center gap-2 group shadow-lg" aria-label="Main Menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span id="ui-home-text" class="text-[10px] font-bold text-slate-300 hidden sm:block">Ana Menü</span>
+                    </a>
+                    
+                    <!-- Tutorial Button -->
+                    <button onclick="toggleTutorial(true)" class="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl border border-slate-700 transition-all active:scale-90" aria-label="How to play">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-black text-blue-500 leading-none">HANOI</h1>
+                        <span id="ui-subtitle" class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Mobile Pro</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-end gap-1.5">
+                    <div class="flex gap-1 bg-slate-800 p-0.5 rounded border border-slate-700">
+                        <button onclick="setLanguage('en')" id="lang-en" class="px-1.5 py-0.5 rounded text-[8px] font-bold transition-all bg-blue-600">EN</button>
+                        <button onclick="setLanguage('tr')" id="lang-tr" class="px-1.5 py-0.5 rounded text-[8px] font-bold transition-all text-slate-400">TR</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="bg-slate-800 rounded-lg px-2 py-0.5 border border-slate-700 text-center">
+                            <span id="ui-moves" class="text-[7px] block text-slate-500 font-bold uppercase">Moves</span>
+                            <span id="move-count" class="text-sm font-black">0</span>
+                        </div>
+                        <button onclick="initGame()" class="bg-slate-700 hover:bg-slate-600 p-1.5 rounded-lg transition-all active:scale-90" aria-label="Reset game">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level Selectors -->
+            <div class="flex gap-1" id="level-selector">
+                <button onclick="changeLevel(5)" id="btn-5" class="level-btn flex-1 py-2 rounded-lg font-black text-[9px] border border-slate-800 bg-slate-800/50 active">5 Rings</button>
+                <button onclick="changeLevel(6)" id="btn-6" class="level-btn locked flex-1 py-2 rounded-lg font-black text-[9px] border border-slate-800 bg-slate-800/50">6 Rings 🔒</button>
+                <button onclick="changeLevel(7)" id="btn-7" class="level-btn locked flex-1 py-2 rounded-lg font-black text-[9px] border border-slate-800 bg-slate-800/50">7 Rings 🔒</button>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+        <main class="game-board">
+            <div class="peg-row-top">
+                <div class="top-peg-wrapper">
+                    <div onclick="handlePegClick(0)" class="peg-container top-peg">
+                        <div class="peg-bar peg-bar-down"></div>
+                        <div id="peg-0-rings" class="w-full relative h-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-zone">
+                <div id="status-text" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                    Click to select a ring
+                </div>
+            </div>
+
+            <div class="peg-row-bottom">
+                <div onclick="handlePegClick(1)" class="peg-container bottom-peg">
+                    <div class="peg-bar peg-bar-up"></div>
+                    <div class="peg-base-line"></div>
+                    <div id="peg-1-rings" class="w-full relative h-full"></div>
+                </div>
+                <div onclick="handlePegClick(2)" class="peg-container bottom-peg">
+                    <div class="peg-bar peg-bar-up"></div>
+                    <div class="peg-base-line"></div>
+                    <div id="peg-2-rings" class="w-full relative h-full"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="tutorial-modal" class="fixed inset-0 modal-overlay hidden flex-col items-center justify-center z-[300] p-6">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-xs w-full shadow-2xl">
+            <h2 id="tut-title" class="text-xl font-black text-blue-500 mb-3 uppercase">How to Play?</h2>
+            <ul id="tut-list" class="text-slate-400 text-[11px] space-y-2 text-left list-disc pl-4"></ul>
+            <button onclick="toggleTutorial(false)" id="tut-close" class="mt-6 w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-all">Got it</button>
+        </div>
+    </div>
+
+    <div id="win-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl hidden flex-col items-center justify-center z-[200] p-8 text-center">
+        <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-2xl mb-4 shadow-xl">🎉</div>
+        <h2 id="win-title" class="text-3xl font-black mb-1 tracking-tighter uppercase">WELL DONE!</h2>
+        <p id="win-message" class="text-slate-400 mb-6 text-sm font-medium"></p>
+        <button onclick="advanceLevel()" id="win-next" class="w-full max-w-xs bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl text-lg transition-all active:scale-95 shadow-xl">NEXT LEVEL</button>
+    </div>
+
+    <script>
+        let currentLang = 'en';
+        let ringCount = 5;
+        let unlockedLevel = 5;
+        let pegs = [[], [], []];
+        let moves = 0;
+        let selectedPeg = null;
+        
+        const colors = ['#f87171', '#fbbf24', '#34d399', '#22d3ee', '#60a5fa', '#a78bfa', '#f472b6'];
+
+        const translations = {
+            en: {
+                subtitle: "Mobile Pro Layout",
+                home: "Main Menu",
+                moves: "Moves", rings: "Rings", status_ready: "READY",
+                status_locked: "Locked", status_cancel: "Canceled",
+                status_error: "ERROR!", status_moved: "Moved",
+                status_level_locked: "LOCKED!",
+                tut_title: "How to Play?",
+                tut_items: [
+                    "Stack all rings on the bottom-right peg.",
+                    "No larger ring on top of a smaller one.",
+                    "Rings are scattered at the start.",
+                    "Top peg: Stack top to bottom.",
+                    "Bottom pegs: Stack bottom to top."
+                ],
+                tut_close: "Got it", win_title: "WELL DONE!", win_msg: "moves taken.",
+                win_next: "NEXT LEVEL", win_finish: "FINISHED!",
+                click_to_start: "Click to select"
+            },
+            tr: {
+                subtitle: "Mobil Pro Düzen",
+                home: "Ana Menü",
+                moves: "Hamle", rings: "Halka", status_ready: "HAZIR",
+                status_locked: "Kilitlendi", status_cancel: "İptal",
+                status_error: "HATA!", status_moved: "Taşındı",
+                status_level_locked: "KİLİTLİ!",
+                tut_title: "Nasıl Oynanır?",
+                tut_items: [
+                    "Tüm halkaları en sağdaki çubukta toplayın.",
+                    "Büyük halka küçüğün üzerine gelemez.",
+                    "Halkalar dağınık başlar.",
+                    "Üst çubuk: Yukarıdan aşağı dizilir.",
+                    "Alt çubuklar: Aşağıdan yukarı dizilir."
+                ],
+                tut_close: "Anladım", win_title: "BAŞARDIN!", win_msg: "hamlede bitti.",
+                win_next: "SIRADAKİ SEVİYE", win_finish: "OYUN BİTTİ!",
+                click_to_start: "Seçmek için tıkla"
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('lang-en').className = `px-1.5 py-0.5 rounded text-[8px] font-bold transition-all ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400'}`;
+            document.getElementById('lang-tr').className = `px-1.5 py-0.5 rounded text-[8px] font-bold transition-all ${lang === 'tr' ? 'bg-blue-600 text-white' : 'text-slate-400'}`;
+            
+            const t = translations[lang];
+            document.getElementById('ui-subtitle').innerText = t.subtitle;
+            document.getElementById('ui-home-text').innerText = t.home;
+            document.getElementById('ui-moves').innerText = t.moves;
+            document.getElementById('tut-title').innerText = t.tut_title;
+            document.getElementById('tut-close').innerText = t.tut_close;
+            document.getElementById('win-title').innerText = t.win_title;
+            document.getElementById('win-next').innerText = ringCount < 7 ? t.win_next : t.win_finish;
+            document.getElementById('status-text').innerText = t.click_to_start;
+            
+            const list = document.getElementById('tut-list');
+            list.innerHTML = '';
+            t.tut_items.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                list.appendChild(li);
+            });
+            updateLevelButtons();
+        }
+
+        function initGame() {
+            pegs = [[], [], []];
+            moves = 0;
+            selectedPeg = null;
+            document.getElementById('move-count').innerText = moves;
+            updateStatus(translations[currentLang].status_ready, "text-slate-400");
+            
+            let allRings = Array.from({length: ringCount}, (_, i) => i + 1);
+            allRings.sort(() => Math.random() - 0.5);
+            allRings.forEach(ring => {
+                const randomPeg = Math.floor(Math.random() * 3);
+                pegs[randomPeg].push(ring);
+            });
+            pegs.forEach(peg => peg.sort((a, b) => b - a));
+            if (pegs[2].length === ringCount) return initGame();
+            render();
+        }
+
+        function changeLevel(n) {
+            if (n > unlockedLevel) {
+                updateStatus(translations[currentLang].status_level_locked, "text-red-500");
+                return;
+            }
+            ringCount = n;
+            updateLevelButtons();
+            initGame();
+        }
+
+        function updateLevelButtons() {
+            [5, 6, 7].forEach(level => {
+                const btn = document.getElementById(`btn-${level}`);
+                const ringTxt = translations[currentLang].rings;
+                if (level === ringCount) {
+                    btn.className = "level-btn flex-1 py-2 rounded-lg font-black text-[9px] border border-blue-500 bg-blue-600 text-white shadow-lg active";
+                    btn.innerHTML = `${level} ${ringTxt}`;
+                } else if (level <= unlockedLevel) {
+                    btn.className = "level-btn flex-1 py-2 rounded-lg font-black text-[9px] border border-slate-700 bg-slate-700 text-slate-300";
+                    btn.innerHTML = `${level} ${ringTxt}`;
+                } else {
+                    btn.className = "level-btn locked flex-1 py-2 rounded-lg font-black text-[9px] border border-slate-800 bg-slate-900 text-slate-600";
+                    btn.innerHTML = `${level} ${ringTxt} 🔒`;
+                }
+            });
+        }
+
+        function handlePegClick(pegIndex) {
+            const t = translations[currentLang];
+            if (selectedPeg === null) {
+                if (pegs[pegIndex].length === 0) return;
+                selectedPeg = pegIndex;
+                updateStatus(t.status_locked, "text-blue-400");
+                render();
+            } else {
+                if (selectedPeg === pegIndex) {
+                    selectedPeg = null;
+                    updateStatus(t.status_cancel, "text-slate-400");
+                    render();
+                    return;
+                }
+                const ringToMove = pegs[selectedPeg][pegs[selectedPeg].length - 1];
+                const targetTop = pegs[pegIndex][pegs[pegIndex].length - 1];
+                if (targetTop && ringToMove > targetTop) {
+                    updateStatus(t.status_error, "text-rose-500 font-bold");
+                    return;
+                }
+                pegs[pegIndex].push(pegs[selectedPeg].pop());
+                moves++;
+                document.getElementById('move-count').innerText = moves;
+                selectedPeg = null;
+                updateStatus(t.status_moved, "text-emerald-400");
+                render();
+                checkWin();
+            }
+        }
+
+        function render() {
+            for (let i = 0; i < 3; i++) {
+                const container = document.getElementById(`peg-${i}-rings`);
+                container.innerHTML = '';
+                pegs[i].forEach((ringSize, index) => {
+                    const ringEl = document.createElement('div');
+                    const isLocked = (selectedPeg === i && index === pegs[i].length - 1);
+                    ringEl.className = `ring ${isLocked ? 'locked' : ''}`;
+                    const widthPercent = 25 + (ringSize * (70 / 7)); 
+                    ringEl.style.width = `${widthPercent}%`;
+                    ringEl.style.left = `${(100 - widthPercent) / 2}%`;
+                    ringEl.style.backgroundColor = colors[ringSize - 1];
+                    const offset = index * 24;
+                    ringEl.style.setProperty('--offset', `${offset}px`);
+                    if (isLocked) {
+                        if (i === 0) ringEl.style.top = `${offset + 40}px`;
+                        else ringEl.style.bottom = `${offset + 40}px`;
+                    }
+                    ringEl.innerText = ringSize;
+                    container.appendChild(ringEl);
+                });
+            }
+        }
+
+        function updateStatus(msg, colorClass) {
+            const box = document.getElementById('status-text');
+            box.innerText = msg;
+            box.className = `text-[10px] font-bold uppercase tracking-widest text-center h-4 transition-all ${colorClass}`;
+        }
+
+        function checkWin() {
+            if (pegs[2].length === ringCount) {
+                const modal = document.getElementById('win-modal');
+                const winMsg = document.getElementById('win-message');
+                winMsg.innerText = `${moves} ${translations[currentLang].win_msg}`;
+                if (ringCount === unlockedLevel && unlockedLevel < 7) {
+                    unlockedLevel++;
+                    updateLevelButtons();
+                }
+                modal.classList.replace('hidden', 'flex');
+            }
+        }
+
+        function advanceLevel() {
+            document.getElementById('win-modal').classList.replace('flex', 'hidden');
+            if (ringCount < 7) changeLevel(ringCount + 1);
+            else initGame();
+        }
+
+        function toggleTutorial(show) {
+            document.getElementById('tutorial-modal').classList.toggle('hidden', !show);
+            document.getElementById('tutorial-modal').classList.toggle('flex', show);
+        }
+
+        window.onload = () => {
+            setLanguage('en'); 
+            initGame();
+        };
+    </script>
+</body>
+</html>

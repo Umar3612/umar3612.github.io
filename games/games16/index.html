@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- SEO Meta Etiketleri -->
+    <title>Neon Akış - 30 Seviye Mantık ve Bağlantı Bulmacası</title>
+    <meta name="description" content="Neon Akış: 30 seviyelik heyecan verici bir mantık ve bulmaca oyunu. Aynı renkteki noktaları çakışmadan birleştir, 30 saniyelik süre sınırında yarışı kazan!">
+    <meta name="keywords" content="bulmaca, mantık oyunu, neon flow, noktaları birleştir, ücretsiz oyun, puzzle game, logic game, connect the dots, free browser game, zeka oyunları">
+    <meta name="author" content="Neon Flow">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph (Facebook, WhatsApp, Discord) -->
+    <meta property="og:title" content="Neon Akış - Mantık ve Bağlantı Bulmacası">
+    <meta property="og:description" content="Noktaları çakışmadan birleştir ve 30 saniyede bölümü tamamla! 30 seviyelik neon maratonuna hazır mısın?">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Neon Flow">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Neon Akış - Neon Flow Puzzle">
+    <meta name="twitter:description" content="Hızlı düşün, noktaları birleştir! 30 saniye süren var. Neon grafiklerle eşsiz bir bulmaca deneyimi.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            touch-action: none;
+            overflow: hidden;
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        canvas {
+            touch-action: none;
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            cursor: crosshair;
+        }
+        .neon-text {
+            text-shadow: 0 0 8px currentColor;
+        }
+        .game-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .game-btn:active {
+            transform: scale(0.92);
+            filter: brightness(1.2);
+        }
+        #win-overlay, #complete-overlay, #start-overlay, #how-to-play-overlay, #fail-overlay {
+            display: none;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 50;
+        }
+        #start-overlay {
+            display: flex; /* Başlangıçta görünür */
+            z-index: 100;
+        }
+        .safe-padding {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        /* Modal Animation */
+        .modal-enter {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .time-critical {
+            color: #ef4444;
+            animation: pulse-red 1s infinite;
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen p-4 safe-padding">
+
+    <!-- Başlangıç / Dil Seçimi Ekranı -->
+    <div id="start-overlay" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+        <!-- Ana Menü (Ev) Butonu -->
+        <a href="../../index.html" class="absolute top-8 left-8 flex items-center gap-2 text-slate-400 hover:text-white transition-colors group">
+            <div class="p-2 bg-slate-800 rounded-xl border border-slate-700 group-hover:border-cyan-500/50 group-hover:bg-slate-700 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span class="text-[10px] font-black uppercase tracking-widest hidden sm:inline">⬅ Ana Menü</span>
+        </a>
+
+        <div class="mb-12">
+            <h1 class="text-5xl md:text-7xl font-black neon-text text-cyan-400 uppercase tracking-tighter leading-none">NEON</h1>
+            <h1 class="text-5xl md:text-7xl font-black neon-text text-indigo-500 uppercase tracking-tighter leading-none">FLOW</h1>
+        </div>
+        
+        <div class="flex flex-col gap-4 w-full max-w-xs">
+            <button onclick="game.setLanguage('en')" class="game-btn bg-cyan-500 text-slate-900 py-4 rounded-2xl font-black text-xl shadow-[0_0_20px_rgba(34,211,238,0.3)] uppercase">ENGLISH</button>
+            <button onclick="game.setLanguage('tr')" class="game-btn bg-indigo-600 text-white py-4 rounded-2xl font-black text-xl shadow-[0_0_20px_rgba(79,70,229,0.3)] uppercase">TÜRKÇE</button>
+            
+            <button onclick="game.toggleHowToPlay(true)" class="game-btn mt-6 flex items-center justify-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors py-2 group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span class="text-[11px] font-black uppercase tracking-[0.2em]">Nasıl Oynanır? / How to Play?</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Nasıl Oynanır Bilgilendirme -->
+    <div id="how-to-play-overlay" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-slate-900/90 p-8 rounded-[2rem] border border-slate-700/50 max-w-sm shadow-2xl modal-enter">
+            <div class="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-cyan-400 border border-cyan-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            
+            <h2 class="text-2xl font-black text-white mb-6 uppercase tracking-tight">Kılavuz / Guide</h2>
+            
+            <div class="text-left space-y-6">
+                <div class="flex gap-4">
+                    <div class="text-cyan-400 font-bold text-xs pt-1 tracking-wider">TR</div>
+                    <p class="text-slate-300 text-sm leading-relaxed font-medium">Aynı renkteki noktaları sürükleyerek birbirine bağlayın. Çizgiler çakışamaz. Her seviye için 30 saniyeniz var!</p>
+                </div>
+                <div class="h-[1px] bg-slate-800 w-full opacity-50"></div>
+                <div class="flex gap-4">
+                    <div class="text-indigo-400 font-bold text-xs pt-1 tracking-wider">EN</div>
+                    <p class="text-slate-300 text-sm leading-relaxed font-medium">Connect same-colored dots by dragging. Paths cannot cross. You have 30 seconds for each level!</p>
+                </div>
+            </div>
+
+            <button onclick="game.toggleHowToPlay(false)" class="game-btn w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl font-black mt-10 shadow-lg uppercase tracking-widest text-xs border border-slate-700">ANLADIM / GOT IT</button>
+        </div>
+    </div>
+
+    <!-- Başlık Bölümü -->
+    <div class="w-full max-w-md flex justify-between items-center mb-2 px-2">
+        <div class="flex flex-col">
+            <h1 id="ui-title" class="text-xl md:text-2xl font-black neon-text text-cyan-400 tracking-tighter uppercase leading-none">NEON FLOW</h1>
+            <p id="level-display" class="text-[10px] md:text-xs font-black opacity-60 text-indigo-300 uppercase mt-1">Level 1 / 30</p>
+        </div>
+        <div class="text-right">
+            <div id="timer" class="text-lg md:text-xl font-mono font-black text-white leading-none">00:30</div>
+            <div id="best-time" class="text-[9px] md:text-[10px] opacity-40 font-black uppercase tracking-wider mt-1">Best: --:--</div>
+        </div>
+    </div>
+
+    <!-- Oyun Alanı -->
+    <div id="game-container" class="relative w-full flex-grow flex items-center justify-center overflow-hidden">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Kazandın Ekranı -->
+        <div id="win-overlay" class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl text-center">
+            <div class="text-center p-6">
+                <h2 id="win-title" class="text-4xl md:text-6xl font-black text-white mb-2 neon-text text-green-400 uppercase tracking-tighter">TEBRİKLER!</h2>
+                <p id="win-msg" class="text-slate-400 mb-8 text-sm md:text-base font-medium">Tüm bağlantılar kuruldu.</p>
+                <button id="next-btn" onclick="game.nextLevel()" class="game-btn bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-12 py-4 rounded-full font-black text-lg md:text-xl shadow-[0_0_20px_rgba(34,211,238,0.5)] uppercase">
+                    İLERİ
+                </button>
+            </div>
+        </div>
+
+        <!-- Kaybettin Ekranı -->
+        <div id="fail-overlay" class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl text-center">
+            <div class="text-center p-6">
+                <h2 id="fail-title" class="text-4xl md:text-6xl font-black text-white mb-2 neon-text text-red-500 uppercase tracking-tighter">YANDIN!</h2>
+                <p id="fail-msg" class="text-slate-400 mb-8 text-sm md:text-base font-medium text-center">Süre bitti. Tekrar dene!</p>
+                <button id="retry-btn" onclick="game.resetLevel()" class="game-btn bg-red-500 hover:bg-red-400 text-white px-12 py-4 rounded-full font-black text-lg md:text-xl shadow-[0_0_20px_rgba(239,68,68,0.5)] uppercase">
+                    TEKRAR DENE
+                </button>
+            </div>
+        </div>
+
+        <!-- Oyun Tamamlandı Ekranı -->
+        <div id="complete-overlay" class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl text-center">
+            <div class="text-center p-6">
+                <h2 id="finish-title" class="text-4xl md:text-6xl font-black text-white mb-2 neon-text text-yellow-400 uppercase tracking-tighter">EFSANE!</h2>
+                <p id="finish-msg" class="text-slate-400 mb-8 text-sm md:text-base font-medium">30 seviyelik maratonu bitirdiniz!</p>
+                <button id="restart-btn" onclick="game.restartGame()" class="game-btn bg-indigo-500 hover:bg-indigo-400 text-white px-12 py-4 rounded-full font-black text-lg md:text-xl shadow-[0_0_20px_rgba(79,70,229,0.5)] uppercase">
+                    TEKRAR OYNA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kontrol Butonları -->
+    <div class="w-full max-w-md mt-4 mb-2">
+        <button onclick="game.resetLevel()" class="game-btn w-full bg-slate-800 border border-slate-700 py-4 rounded-2xl flex flex-col items-center justify-center shadow-lg">
+            <span id="btn-clear" class="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">TEMİZLE / CLEAR</span>
+        </button>
+    </div>
+
+    <div id="ui-footer" class="text-[9px] opacity-20 text-center uppercase tracking-[0.4em] font-black py-4">
+        Mouse veya Dokunmatik • Noktaları Birleştir
+    </div>
+
+    <script>
+        const COLORS = ['#f43f5e', '#10b981', '#3b82f6', '#f59e0b', '#a855f7', '#f97316', '#06b6d4', '#ec4899', '#84cc16'];
+        const MAX_LEVELS = 30;
+        const LEVEL_TIME = 30; 
+
+        const TRANSLATIONS = {
+            tr: {
+                title: "NEON FLOW",
+                level: "Seviye",
+                best: "En İyi",
+                clear: "TEMİZLE",
+                win: "TEBRİKLER!",
+                winMsg: "Tüm bağlantılar kuruldu.",
+                next: "İLERİ",
+                failTitle: "YANDIN!",
+                failMsg: "Süre bitti. Tekrar dene!",
+                retry: "TEKRAR DENE",
+                finishTitle: "EFSANE!",
+                finishMsg: "30 seviyelik maratonu bitirdiniz!",
+                restart: "TEKRAR OYNA",
+                footer: "Mouse veya Dokunmatik • Noktaları Birleştir"
+            },
+            en: {
+                title: "NEON FLOW",
+                level: "Level",
+                best: "Best",
+                clear: "CLEAR",
+                win: "CONGRATULATIONS!",
+                winMsg: "All connections established.",
+                next: "NEXT LEVEL",
+                failTitle: "GAME OVER!",
+                failMsg: "Time's up. Try again!",
+                retry: "RETRY",
+                finishTitle: "LEGEND!",
+                finishMsg: "You finished the 30-level marathon!",
+                restart: "PLAY AGAIN",
+                footer: "Mouse or Touch • Connect the Dots"
+            }
+        };
+
+        class FlowGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.currentLevelIdx = parseInt(localStorage.getItem('flow_level') || '0');
+                this.lang = localStorage.getItem('flow_lang') || 'en';
+                
+                this.grid = [];
+                this.paths = {};
+                this.isDrawing = false;
+                this.currentColor = null;
+                this.timerInterval = null;
+                this.timeLeft = LEVEL_TIME;
+                this.gameStarted = false;
+                this.isGameOver = false;
+
+                // Ses Sentezleyici Ayarları
+                this.audioCtx = null;
+                
+                this.init();
+            }
+
+            // Web Audio API Sentezleyici
+            initAudio() {
+                if (!this.audioCtx) {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playTone(freq, type, duration, vol = 0.1) {
+                if (!this.audioCtx) return;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, this.audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(this.audioCtx.currentTime + duration);
+            }
+
+            soundClick() { this.playTone(600, 'sine', 0.1, 0.15); }
+            soundConnect() { this.playTone(800, 'triangle', 0.15, 0.1); }
+            soundWin() {
+                this.playTone(523.25, 'sine', 0.3); // C5
+                setTimeout(() => this.playTone(659.25, 'sine', 0.3), 100); // E5
+                setTimeout(() => this.playTone(783.99, 'sine', 0.4), 200); // G5
+            }
+            soundFail() {
+                this.playTone(200, 'sawtooth', 0.5, 0.1);
+                setTimeout(() => this.playTone(150, 'sawtooth', 0.5, 0.1), 200);
+            }
+
+            init() {
+                this.setupListeners();
+                window.addEventListener('resize', () => { if(this.gameStarted) this.resizeCanvas(); });
+                document.getElementById('start-overlay').style.display = 'flex';
+            }
+
+            setLanguage(l) {
+                this.initAudio();
+                this.soundClick();
+                this.lang = l;
+                localStorage.setItem('flow_lang', l);
+                document.getElementById('start-overlay').style.display = 'none';
+                this.gameStarted = true;
+                this.loadLevel(this.currentLevelIdx);
+            }
+
+            toggleHowToPlay(show) {
+                this.initAudio();
+                this.soundClick();
+                document.getElementById('how-to-play-overlay').style.display = show ? 'flex' : 'none';
+            }
+
+            updateUI() {
+                const t = TRANSLATIONS[this.lang];
+                document.getElementById('ui-title').innerText = t.title;
+                document.getElementById('btn-clear').innerText = t.clear;
+                document.getElementById('win-title').innerText = t.win;
+                document.getElementById('win-msg').innerText = t.winMsg;
+                document.getElementById('next-btn').innerText = t.next;
+                document.getElementById('fail-title').innerText = t.failTitle;
+                document.getElementById('fail-msg').innerText = t.failMsg;
+                document.getElementById('retry-btn').innerText = t.retry;
+                document.getElementById('finish-title').innerText = t.finishTitle;
+                document.getElementById('finish-msg').innerText = t.finishMsg;
+                document.getElementById('restart-btn').innerText = t.restart;
+                document.getElementById('ui-footer').innerText = t.footer;
+                
+                const best = localStorage.getItem(`flow_best_${this.currentLevelIdx}`);
+                document.getElementById('best-time').innerText = `${t.best}: ${best ? best : '--:--'}`;
+                document.getElementById('level-display').innerText = `${t.level} ${this.currentLevelIdx + 1} / ${MAX_LEVELS}`;
+            }
+
+            setupListeners() {
+                const onStart = (e) => {
+                    if(!this.gameStarted || this.isGameOver) return;
+                    const pos = this.getPointerPos(e);
+                    this.startPath(pos.x, pos.y);
+                };
+                const onMove = (e) => {
+                    if (!this.isDrawing || !this.gameStarted || this.isGameOver) return;
+                    const pos = this.getPointerPos(e);
+                    this.continuePath(pos.x, pos.y);
+                };
+                const onEnd = () => {
+                    if(!this.gameStarted || this.isGameOver) return;
+                    this.isDrawing = false;
+                    this.currentColor = null;
+                    this.checkWin();
+                };
+
+                this.canvas.addEventListener('mousedown', onStart);
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onEnd);
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    onStart(e.touches[0]);
+                }, { passive: false });
+                window.addEventListener('touchmove', (e) => {
+                    onMove(e.touches[0]);
+                }, { passive: false });
+                window.addEventListener('touchend', onEnd);
+            }
+
+            getPointerPos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                const x = Math.floor(((e.clientX - rect.left) * scaleX) / this.cellSize);
+                const y = Math.floor(((e.clientY - rect.top) * scaleY) / this.cellSize);
+                return { x, y };
+            }
+
+            resizeCanvas() {
+                const container = document.getElementById('game-container');
+                const padding = 24;
+                const size = Math.min(container.clientWidth - padding, container.clientHeight - padding, 450);
+                this.canvas.width = size;
+                this.canvas.height = size;
+                this.cellSize = size / this.size;
+                this.draw();
+            }
+
+            generateSolvableLevel(size, colorCount) {
+                let internalGrid = Array(size).fill().map(() => Array(size).fill(-1));
+                let colorsUsed = 0;
+                let pairs = [];
+
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        if (internalGrid[y][x] === -1 && colorsUsed < colorCount) {
+                            let path = this.randomWalk(x, y, internalGrid, colorsUsed, size);
+                            if (path.length >= 2) {
+                                pairs.push({ c: colorsUsed, p1: path[0], p2: path[path.length - 1] });
+                                colorsUsed++;
+                            }
+                        }
+                    }
+                }
+                return { size, pairs };
+            }
+
+            randomWalk(sx, sy, grid, color, size) {
+                let path = [{x: sx, y: sy}];
+                grid[sy][sx] = color;
+                let cx = sx, cy = sy;
+                const targetLen = Math.floor((size * size) / 6) + 2;
+
+                for (let i = 0; i < targetLen; i++) {
+                    let dirs = [{x:1, y:0}, {x:-1, y:0}, {x:0, y:1}, {x:0, y:-1}].sort(() => Math.random() - 0.5);
+                    let moved = false;
+                    for (let d of dirs) {
+                        let nx = cx + d.x, ny = cy + d.y;
+                        if (nx >= 0 && nx < size && ny >= 0 && ny < size && grid[ny][nx] === -1) {
+                            grid[ny][nx] = color;
+                            cx = nx; cy = ny;
+                            path.push({x: cx, y: cy});
+                            moved = true;
+                            break;
+                        }
+                    }
+                    if (!moved) break;
+                }
+                return path;
+            }
+
+            loadLevel(idx) {
+                if (idx >= MAX_LEVELS) {
+                    this.soundWin();
+                    document.getElementById('complete-overlay').style.display = 'flex';
+                    this.isGameOver = true;
+                    return;
+                }
+
+                this.currentLevelIdx = idx;
+                localStorage.setItem('flow_level', this.currentLevelIdx);
+                this.size = 5 + Math.floor(idx / 5); 
+                let colorCount = 3 + Math.floor(idx / 4);
+                colorCount = Math.min(colorCount, COLORS.length);
+                
+                const level = this.generateSolvableLevel(this.size, colorCount);
+                this.levelPairs = level.pairs;
+                
+                this.grid = Array(this.size).fill().map(() => Array(this.size).fill(null));
+                this.paths = {};
+                
+                this.levelPairs.forEach(pair => {
+                    this.grid[pair.p1.y][pair.p1.x] = { color: pair.c, isEndpoint: true };
+                    this.grid[pair.p2.y][pair.p2.x] = { color: pair.c, isEndpoint: true };
+                    this.paths[pair.c] = [];
+                });
+
+                this.updateUI();
+                document.getElementById('win-overlay').style.display = 'none';
+                document.getElementById('complete-overlay').style.display = 'none';
+                document.getElementById('fail-overlay').style.display = 'none';
+                
+                this.isGameOver = false;
+                this.timeLeft = LEVEL_TIME;
+                this.resizeCanvas();
+                this.draw();
+                this.startTimer();
+            }
+
+            startPath(x, y) {
+                if (x < 0 || x >= this.size || y < 0 || y >= this.size) return;
+                const cell = this.grid[y][x];
+                if (cell) {
+                    this.isDrawing = true;
+                    this.currentColor = cell.color;
+                    this.paths[this.currentColor] = [{x, y}];
+                    this.draw();
+                }
+            }
+
+            continuePath(x, y) {
+                if (x < 0 || x >= this.size || y < 0 || y >= this.size || !this.isDrawing) return;
+                const path = this.paths[this.currentColor];
+                const last = path[path.length - 1];
+                if (Math.abs(x - last.x) + Math.abs(y - last.y) !== 1) return;
+
+                const targetCell = this.grid[y][x];
+                let occupiedByOther = false;
+                Object.keys(this.paths).forEach(c => {
+                    if (parseInt(c) !== this.currentColor && this.paths[c].some(p => p.x === x && p.y === y)) {
+                        occupiedByOther = true;
+                    }
+                });
+                if (occupiedByOther) return;
+
+                if (targetCell && targetCell.color === this.currentColor && targetCell.isEndpoint) {
+                    if (x === path[0].x && y === path[0].y) return;
+                    path.push({x, y});
+                    this.isDrawing = false;
+                    this.soundConnect(); // Bağlantı sesi
+                    this.draw();
+                    return;
+                }
+
+                if (targetCell && targetCell.color !== this.currentColor) return;
+
+                const selfIdx = path.findIndex(p => p.x === x && p.y === y);
+                if (selfIdx !== -1) {
+                    this.paths[this.currentColor] = path.slice(0, selfIdx + 1);
+                } else {
+                    this.paths[this.currentColor].push({x, y});
+                }
+                this.draw();
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.strokeStyle = '#1e293b';
+                this.ctx.lineWidth = 1;
+                for (let i = 0; i <= this.size; i++) {
+                    this.ctx.beginPath(); this.ctx.moveTo(i * this.cellSize, 0); this.ctx.lineTo(i * this.cellSize, this.canvas.height); this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.moveTo(0, i * this.cellSize); this.ctx.lineTo(this.canvas.width, i * this.cellSize); this.ctx.stroke();
+                }
+
+                Object.keys(this.paths).forEach(colorIdx => {
+                    const path = this.paths[colorIdx];
+                    if (path.length < 1) return;
+                    const color = COLORS[colorIdx % COLORS.length];
+                    this.ctx.strokeStyle = color;
+                    this.ctx.lineWidth = this.cellSize * 0.42;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineJoin = 'round';
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.shadowColor = color;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(path[0].x * this.cellSize + this.cellSize/2, path[0].y * this.cellSize + this.cellSize/2);
+                    for (let i = 1; i < path.length; i++) this.ctx.lineTo(path[i].x * this.cellSize + this.cellSize/2, path[i].y * this.cellSize + this.cellSize/2);
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
+                });
+
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const cell = this.grid[y][x];
+                        if (cell && cell.isEndpoint) {
+                            const color = COLORS[cell.color % COLORS.length];
+                            this.ctx.fillStyle = color;
+                            this.ctx.beginPath();
+                            this.ctx.arc(x * this.cellSize + this.cellSize/2, y * this.cellSize + this.cellSize/2, this.cellSize * 0.35, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            this.ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                            this.ctx.beginPath();
+                            this.ctx.arc(x * this.cellSize + this.cellSize/2, y * this.cellSize + this.cellSize/2, this.cellSize * 0.12, 0, Math.PI * 2);
+                            this.ctx.fill();
+                        }
+                    }
+                }
+            }
+
+            checkWin() {
+                let allConnected = true;
+                this.levelPairs.forEach(pair => {
+                    const path = this.paths[pair.c];
+                    if (path.length < 2) { allConnected = false; return; }
+                    const start = path[0], end = path[path.length - 1];
+                    const p1 = pair.p1, p2 = pair.p2;
+                    const connected = ((start.x === p1.x && start.y === p1.y && end.x === p2.x && end.y === p2.y) ||
+                                     (start.x === p2.x && start.y === p2.y && end.x === p1.x && end.y === p1.y));
+                    if (!connected) allConnected = false;
+                });
+
+                if (allConnected) {
+                    this.handleWin();
+                }
+            }
+
+            handleWin() {
+                clearInterval(this.timerInterval);
+                this.soundWin(); // Kazanma sesi
+                const best = localStorage.getItem(`flow_best_${this.currentLevelIdx}`);
+                const timeTaken = LEVEL_TIME - this.timeLeft;
+                const timeStr = this.formatTime(timeTaken);
+                if (!best || timeStr < best) localStorage.setItem(`flow_best_${this.currentLevelIdx}`, timeStr);
+                document.getElementById('win-overlay').style.display = 'flex';
+                this.isGameOver = true;
+            }
+
+            handleFail() {
+                clearInterval(this.timerInterval);
+                this.soundFail(); // Kaybetme sesi
+                document.getElementById('fail-overlay').style.display = 'flex';
+                this.isGameOver = true;
+            }
+
+            nextLevel() { 
+                this.soundClick();
+                this.loadLevel(this.currentLevelIdx + 1); 
+            }
+            resetLevel() { 
+                this.soundClick();
+                this.loadLevel(this.currentLevelIdx); 
+            }
+
+            startTimer() {
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                document.getElementById('timer').classList.remove('time-critical');
+                this.updateTimerDisplay();
+                
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateTimerDisplay();
+                    
+                    if (this.timeLeft <= 5) {
+                        document.getElementById('timer').classList.add('time-critical');
+                    }
+                    
+                    if (this.timeLeft <= 0) {
+                        this.handleFail();
+                    }
+                }, 1000);
+            }
+
+            updateTimerDisplay() {
+                document.getElementById('timer').innerText = this.formatTime(this.timeLeft);
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                return `${mins}:${secs}`;
+            }
+
+            restartGame() {
+                this.soundClick();
+                localStorage.removeItem('flow_level');
+                this.loadLevel(0);
+            }
+        }
+
+        const game = new FlowGame();
+    </script>
+</body>
+</html>

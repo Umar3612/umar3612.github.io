@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO META TAGS START -->
+    <meta name="description" content="Play Arcade Shooter - An intense space shooter game with epic boss battles, weapon power-ups, and challenging levels. Available in English and Turkish.">
+    <meta name="keywords" content="arcade shooter, space game, html5 game, boss battle, powerups, shooting game, uzay oyunu, tarayıcı oyunu, aksiyon oyunu">
+    <meta name="author" content="Arcade Shooter Team">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#050505">
+
+    <!-- Open Graph / Facebook (Sosyal Medya Paylaşımı İçin) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Arcade Shooter - Boss & PowerUps">
+    <meta property="og:description" content="Defeat enemies, upgrade your weapons, and survive the boss battles in this intense arcade shooter! Play now for free.">
+    <meta property="og:site_name" content="Arcade Shooter">
+    <!-- Placeholder image URL -->
+    <meta property="og:image" content="https://via.placeholder.com/1200x630/050505/00ffff?text=Arcade+Shooter">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Arcade Shooter - Boss & PowerUps">
+    <meta name="twitter:description" content="Test your reflexes in this fast-paced space shooter. Beat the bosses and reach the final level!">
+    <meta name="twitter:image" content="https://via.placeholder.com/1200x630/050505/00ffff?text=Arcade+Shooter">
+    <!-- SEO META TAGS END -->
+
+    <title>Arcade Shooter - Boss & PowerUps</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #050505;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            max-height: 800px;
+            background: #000;
+            box-shadow: 0 0 20px rgba(0,255,255,0.2);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+            color: #0ff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Boss Can Barı */
+        #boss-ui {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            display: none; /* Başlangıçta gizli */
+        }
+        #boss-hp-bar {
+            width: 100%;
+            height: 10px;
+            background: #330000;
+            border: 2px solid #ff0000;
+        }
+        #boss-hp-fill {
+            width: 100%;
+            height: 100%;
+            background: #ff0000;
+            transition: width 0.1s;
+        }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #0ff;
+            display: none;
+            z-index: 10;
+        }
+
+        /* Başlangıç Ekranı */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #start-screen h1 {
+            color: #0ff;
+            font-size: 40px;
+            text-shadow: 0 0 20px #0ff;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* YENİ EKLENEN ANA MENÜ BUTONU STİLİ */
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: #0ff;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #0ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.5);
+        }
+        .home-btn:hover {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 15px #0ff;
+        }
+
+        /* Nasıl Oynanır Paneli */
+        #instructions-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 30;
+            display: none;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+        }
+        
+        #instructions-panel h2 {
+            color: #0ff;
+            margin-top: 0;
+            border-bottom: 1px solid #0ff;
+            padding-bottom: 10px;
+        }
+        
+        #instructions-panel p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        /* Güçlendirme Mesajı */
+        #powerup-msg {
+            position: absolute;
+            top: 40%;
+            width: 100%;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .btn {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: 0.2s;
+            width: 200px;
+            text-transform: uppercase;
+        }
+        .btn:hover {
+            background: #fff;
+            box-shadow: 0 0 15px #0ff;
+        }
+        .btn:active { transform: scale(0.95); }
+
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 14px;
+            width: auto;
+            margin-top: 20px;
+            background: transparent;
+            border: 2px solid #0ff;
+            color: #0ff;
+        }
+        .btn-small:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Başlangıç / Dil Seçimi Ekranı -->
+    <div id="start-screen">
+        <!-- ANA MENÜ BUTONU BURAYA EKLENDİ -->
+        <a href="../../index.html" class="home-btn" onclick="playBtnSound()">🏠 ⬅ Ana Menü</a>
+
+        <h1>ARCADE SHOOTER</h1>
+        <button class="btn" onclick="startGame('en')">ENGLISH</button>
+        <button class="btn" onclick="startGame('tr')">TÜRKÇE</button>
+        
+        <!-- Nasıl Oynanır Butonu -->
+        <button class="btn btn-small" onclick="toggleInstructions(true)">HOW TO PLAY / NASIL OYNANIR</button>
+    </div>
+
+    <!-- Nasıl Oynanır Paneli -->
+    <div id="instructions-panel">
+        <h2>INSTRUCTIONS / TALİMATLAR</h2>
+        <p>
+            <strong>MOVE / HAREKET:</strong><br>
+            Drag your finger or mouse.<br>
+            <span style="color:#aaa; font-size:14px;">Parmağınızı veya fareyi sürükleyin.</span>
+        </p>
+        <p>
+            <strong>SHOOT / ATEŞ:</strong><br>
+            Automatic firing.<br>
+            <span style="color:#aaa; font-size:14px;">Otomatik ateş eder.</span>
+        </p>
+        <p>
+            <strong>GOAL / AMAÇ:</strong><br>
+            Destroy enemies & Bosses!<br>
+            <span style="color:#aaa; font-size:14px;">Düşmanları ve Bossları yok edin!</span>
+        </p>
+        <button class="btn" onclick="toggleInstructions(false)" style="width:120px; font-size:16px; padding:10px;">OK</button>
+    </div>
+
+    <div id="ui-layer">
+        <div id="score">SCORE: 0</div>
+        <div id="level">LEVEL: 1</div>
+    </div>
+
+    <div id="boss-ui">
+        <div id="boss-label" style="text-align:center; color:#ff3333; font-size:14px; margin-bottom:5px;">BOSS</div>
+        <div id="boss-hp-bar"><div id="boss-hp-fill"></div></div>
+    </div>
+
+    <div id="powerup-msg">POWERUP ACQUIRED!</div>
+
+    <div id="game-over">
+        <h1 id="game-over-title" style="color: #ff3333; margin: 0;">GAME OVER</h1>
+        <p id="final-score" style="font-size: 20px; margin: 15px 0;">SCORE: 0</p>
+        <button id="restart-btn" class="btn" onclick="restartGame()">TRY AGAIN</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const levelEl = document.getElementById('level');
+    const bossUi = document.getElementById('boss-ui');
+    const bossHpFill = document.getElementById('boss-hp-fill');
+    const powerupMsg = document.getElementById('powerup-msg');
+    const gameOverPanel = document.getElementById('game-over');
+    const finalScoreText = document.getElementById('final-score');
+    const startScreen = document.getElementById('start-screen');
+    const instructionsPanel = document.getElementById('instructions-panel');
+    
+    // --- GELİŞMİŞ SES SİSTEMİ (Web Audio API) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Gürültü (Noise) Tamponu Oluşturma (Patlamalar için)
+    let noiseBuffer = null;
+    function createNoiseBuffer() {
+        if (!audioCtx) return;
+        const bufferSize = audioCtx.sampleRate * 2; // 2 saniyelik gürültü
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        noiseBuffer = buffer;
+    }
+
+    // Buton Sesi: Fütüristik, kısa, yüksek frekanslı "Blip"
+    function playBtnSound() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        // Frekansı 1200Hz'den 0'a çok hızlı düşür (Lazer/Tık sesi gibi)
+        osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    // Düşman Ölümü: Arcade tarzı "Crunch" patlaması
+    function playEnemyDeathSound() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        // Sawtooth dalga daha "yırtıcı" bir ses verir
+        osc.type = 'sawtooth';
+        // Frekansı orta seviyeden aşağı doğru kaydır
+        osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.2);
+
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+    }
+
+    // Boss Ölümü: Derin, gürültülü patlama (Noise Buffer kullanarak)
+    function playBossDeathSound() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (!noiseBuffer) createNoiseBuffer();
+
+        const source = audioCtx.createBufferSource();
+        source.buffer = noiseBuffer;
+        
+        const gain = audioCtx.createGain();
+        // Lowpass filtre sesi boğuklaştırır, daha "derin" bir patlama hissi verir
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        
+        // Bağlantılar: Source -> Filter -> Gain -> Destination
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        // Filtre frekansını düşür (Patlamanın yayılması)
+        filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 1.5);
+
+        // Ses seviyesi (uzun sönümlenme)
+        gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+
+        source.start();
+        source.stop(audioCtx.currentTime + 1.5);
+    }
+
+    // Dil Verileri
+    const langData = {
+        en: {
+            score: "SCORE",
+            level: "LEVEL",
+            boss: "BOSS",
+            gameOver: "GAME OVER",
+            victory: "VICTORY!",
+            restart: "TRY AGAIN",
+            powerups: [
+                "DOUBLE SHOT ACQUIRED!",
+                "TRIPLE SHOT ACQUIRED!",
+                "SPREAD SHOT ACQUIRED!"
+            ]
+        },
+        tr: {
+            score: "SKOR",
+            level: "SEVİYE",
+            boss: "BÖLÜM CANAVARI",
+            gameOver: "OYUN BİTTİ",
+            victory: "KAZANDIN!",
+            restart: "TEKRAR DENE",
+            powerups: [
+                "ÇİFT ATIŞ KAZANILDI!",
+                "ÜÇLÜ ATIŞ KAZANILDI!",
+                "YAYLIM ATEŞİ KAZANILDI!"
+            ]
+        }
+    };
+    
+    let currentLang = 'en';
+
+    // --- OYUN AYARLARI ---
+    let score = 0;
+    let level = 1;
+    let isGameOver = false;
+    let bossActive = false;
+    
+    // Oyuncu Özellikleri
+    let player = { 
+        x: 0, y: 0, 
+        size: 40, 
+        powerLevel: 1, // 1: Tekli, 2: Çift, 3: Üçlü, 4: Yaylı
+        fireRate: 250  
+    };
+
+    let bullets = [];
+    let enemyBullets = []; 
+    let enemies = [];
+    let stars = [];
+    let boss = null; 
+
+    let lastFireTime = 0;
+    let lastSpawnTime = 0;
+    let spawnRate = 1200;
+    let bossLastFireTime = 0;
+
+    // Nasıl Oynanır Butonu
+    function toggleInstructions(show) {
+        playBtnSound(); // Buton sesi çal
+        instructionsPanel.style.display = show ? 'block' : 'none';
+    }
+
+    // Oyunu Başlatma Fonksiyonu (Dil seçimi ile)
+    function startGame(lang) {
+        playBtnSound(); // Buton sesi çal
+        createNoiseBuffer(); // Gürültü tamponunu oluştur
+        currentLang = lang;
+        
+        // Statik metinleri güncelle
+        document.getElementById('boss-label').innerText = langData[lang].boss;
+        document.getElementById('game-over-title').innerText = langData[lang].gameOver;
+        document.getElementById('restart-btn').innerText = langData[lang].restart;
+        
+        // UI'ı güncelle
+        scoreEl.innerText = langData[lang].score + ": 0";
+        levelEl.innerText = langData[lang].level + ": 1";
+
+        startScreen.style.display = 'none';
+        init();
+    }
+
+    function init() {
+        resize();
+        player.x = canvas.width / 2;
+        player.y = canvas.height - 80;
+        
+        // Yıldızları oluştur
+        for(let i=0; i<60; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2,
+                speed: Math.random() * 2 + 0.5
+            });
+        }
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    function resize() {
+        const container = document.getElementById('gameContainer');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    }
+
+    // --- KONTROLLER ---
+    function handleInput(e) {
+        if(isGameOver) return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        player.x = clientX - rect.left;
+        
+        if(player.x < 20) player.x = 20;
+        if(player.x > canvas.width - 20) player.x = canvas.width - 20;
+    }
+    canvas.addEventListener('mousemove', handleInput);
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleInput(e); }, { passive: false });
+
+    // --- OYUN DÖNGÜSÜ ---
+    function gameLoop(time) {
+        if (isGameOver) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+
+        // 1. Oyuncu Ateş Etme
+        if (time - lastFireTime > player.fireRate) {
+            shootBullet();
+            lastFireTime = time;
+        }
+
+        // 2. Düşman ve Boss Spawn
+        handleSpawning(time);
+
+        // 3. Güncellemeler
+        updateBullets();
+        updateEnemies();
+        updateBoss(time); 
+        drawPlayer();
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    function drawBackground() {
+        ctx.fillStyle = "white";
+        stars.forEach(s => {
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+            ctx.fill();
+            s.y += s.speed;
+            if(s.y > canvas.height) s.y = 0;
+        });
+    }
+
+    // --- OYUNCU ATIŞ SİSTEMİ ---
+    function shootBullet() {
+        if (player.powerLevel === 1) {
+            bullets.push({ x: player.x, y: player.y - 20, vx: 0, vy: -8 });
+        }
+        else if (player.powerLevel === 2) {
+            bullets.push({ x: player.x - 10, y: player.y - 20, vx: 0, vy: -8 });
+            bullets.push({ x: player.x + 10, y: player.y - 20, vx: 0, vy: -8 });
+        }
+        else if (player.powerLevel === 3) {
+            // Üçlü Paralel
+            bullets.push({ x: player.x, y: player.y - 20, vx: 0, vy: -8 });
+            bullets.push({ x: player.x - 15, y: player.y - 15, vx: 0, vy: -8 });
+            bullets.push({ x: player.x + 15, y: player.y - 15, vx: 0, vy: -8 });
+        }
+        else {
+            // Yaylı Atış
+            bullets.push({ x: player.x, y: player.y - 20, vx: 0, vy: -8 });
+            bullets.push({ x: player.x, y: player.y - 20, vx: -2, vy: -7 });
+            bullets.push({ x: player.x, y: player.y - 20, vx: 2, vy: -7 });
+            bullets.push({ x: player.x, y: player.y - 20, vx: -4, vy: -6 });
+            bullets.push({ x: player.x, y: player.y - 20, vx: 4, vy: -6 });
+        }
+    }
+
+    function updateBullets() {
+        ctx.fillStyle = "#ff0";
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.x += b.vx;
+            b.y += b.vy;
+            
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+            if (b.y < -10 || b.x < 0 || b.x > canvas.width) bullets.splice(i, 1);
+        }
+    }
+
+    // --- SPAWN SİSTEMİ ---
+    function handleSpawning(time) {
+        if (bossActive) return; 
+
+        // Boss Gelme Kontrolü
+        if (score >= (level * 1000) - 500) {
+            spawnBoss(time); 
+            return;
+        }
+
+        // Level 5 için daha hızlı spawn (Normal: 1200ms, Level 5: 600ms)
+        let currentSpawnRate = level === 5 ? 600 : spawnRate;
+
+        if (time - lastSpawnTime > currentSpawnRate) {
+            enemies.push({
+                x: Math.random() * (canvas.width - 40) + 20,
+                y: -50,
+                // Level 5 düşmanları çok daha hızlı (Normal: ~2-4, Level 5: 6)
+                speed: level === 5 ? 6 : 2 + (level * 0.5), 
+                hp: 1
+            });
+            lastSpawnTime = time;
+        }
+    }
+
+    function updateEnemies() {
+        ctx.fillStyle = "#f36";
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            let e = enemies[i];
+            e.y += e.speed;
+            
+            ctx.beginPath();
+            ctx.moveTo(e.x, e.y + 20);
+            ctx.lineTo(e.x - 20, e.y - 20);
+            ctx.lineTo(e.x + 20, e.y - 20);
+            ctx.fill();
+
+            // Mermi Çarpışması
+            for(let j = bullets.length - 1; j >= 0; j--) {
+                let b = bullets[j];
+                if(Math.hypot(b.x - e.x, b.y - e.y) < 25) {
+                    enemies.splice(i, 1);
+                    bullets.splice(j, 1);
+                    addScore(20);
+                    playEnemyDeathSound(); // YENİ SES
+                    break;
+                }
+            }
+            // Oyuncu Çarpışması
+            if(e && Math.hypot(player.x - e.x, player.y - e.y) < 35) endGame();
+            
+            if (e && e.y > canvas.height + 50) enemies.splice(i, 1);
+        }
+    }
+
+    // --- BOSS SİSTEMİ ---
+    function spawnBoss(time) {
+        bossActive = true;
+        bossLastFireTime = time; // Ateş zamanlayıcısını resetle
+        
+        // Level 5 Boss'u çok daha güçlü (Normal Max: ~80, Level 5: 250)
+        let maxHp = 20 + (level * 15);
+        if (level === 5) maxHp = 250;
+
+        boss = {
+            x: canvas.width / 2,
+            y: -100,
+            targetY: 80,
+            width: 80,
+            height: 60,
+            hp: maxHp,
+            maxHp: maxHp,
+            dir: 1,
+            speed: 2 + (level * 0.5)
+        };
+        bossUi.style.display = 'block';
+        updateBossUi();
+    }
+
+    function updateBoss(time) {
+        if (!bossActive || !boss) return;
+
+        // 1. Hareket
+        if (boss.y < boss.targetY) boss.y += 2; 
+        else {
+            boss.x += boss.speed * boss.dir;
+            if (boss.x > canvas.width - 60 || boss.x < 60) boss.dir *= -1;
+        }
+
+        // 2. Çizim
+        ctx.fillStyle = "#ff0000";
+        ctx.fillRect(boss.x - boss.width/2, boss.y - boss.height/2, boss.width, boss.height);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(boss.x - 20, boss.y, 10, 20);
+        ctx.fillRect(boss.x + 10, boss.y, 10, 20);
+
+        // 3. Boss Saldırısı
+        // Level 5 Boss'u makineli tüfek gibi (400ms), diğerleri normal
+        let fireRate = 1200 - level * 100;
+        if (level === 5) fireRate = 400;
+
+        if (time - bossLastFireTime > fireRate) { 
+            enemyBullets.push({ x: boss.x, y: boss.y + 30 });
+            bossLastFireTime = time;
+        }
+
+        // Boss Mermilerini Güncelle
+        ctx.fillStyle = "#f00";
+        for(let i = enemyBullets.length - 1; i >= 0; i--) {
+            let eb = enemyBullets[i];
+            eb.y += 6;
+            ctx.beginPath();
+            ctx.arc(eb.x, eb.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (Math.hypot(eb.x - player.x, eb.y - player.y) < 25) endGame();
+            if (eb.y > canvas.height) enemyBullets.splice(i, 1);
+        }
+
+        // 4. Boss Hasar Alma
+        for (let j = bullets.length - 1; j >= 0; j--) {
+            if (!boss) break; // Boss öldüyse döngüyü kır!
+
+            let b = bullets[j];
+            if (b.x > boss.x - boss.width/2 && b.x < boss.x + boss.width/2 &&
+                b.y > boss.y - boss.height/2 && b.y < boss.y + boss.height/2) {
+                
+                boss.hp--;
+                bullets.splice(j, 1);
+                updateBossUi();
+
+                if (boss.hp <= 0) {
+                    killBoss();
+                    break; // Boss öldü, diğer mermilere bakma
+                }
+            }
+        }
+        
+        if (boss && Math.hypot(player.x - boss.x, player.y - boss.y) < 60) endGame();
+    }
+
+    function updateBossUi() {
+        if (!boss) return;
+        const pct = Math.max(0, (boss.hp / boss.maxHp) * 100);
+        bossHpFill.style.width = pct + "%";
+    }
+
+    function killBoss() {
+        playBossDeathSound(); // YENİ SES
+
+        // Eğer 5. Seviye Boss'u öldüyse oyunu kazan
+        if (level === 5) {
+            bossActive = false;
+            boss = null;
+            enemyBullets = [];
+            bossUi.style.display = 'none';
+            victoryGame();
+            return;
+        }
+
+        bossActive = false;
+        boss = null;
+        enemyBullets = []; 
+        bossUi.style.display = 'none';
+        
+        // Ödül ve Seviye
+        level++;
+        player.powerLevel++; 
+        if(player.powerLevel > 4) player.powerLevel = 4; 
+
+        addScore(500);
+        // DİL DESTEĞİ: Seviye güncellemesi
+        levelEl.innerText = langData[currentLang].level + ": " + level;
+        
+        let msg = "";
+        let powerupIndex = 0;
+        if(player.powerLevel === 2) powerupIndex = 0;
+        else if(player.powerLevel === 3) powerupIndex = 1;
+        else powerupIndex = 2;
+        
+        // DİL DESTEĞİ: Güçlendirme mesajı
+        msg = langData[currentLang].powerups[powerupIndex];
+        
+        showPowerupMessage(msg);
+    }
+
+    function showPowerupMessage(text) {
+        // DİL DESTEĞİ: Seviye mesajı
+        powerupMsg.innerText = langData[currentLang].level + " " + level + " - " + text;
+        powerupMsg.style.opacity = 1;
+        setTimeout(() => { powerupMsg.style.opacity = 0; }, 3000);
+    }
+
+    function drawPlayer() {
+        ctx.fillStyle = "#0ff";
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y - 20);
+        ctx.lineTo(player.x - 20, player.y + 20);
+        ctx.lineTo(player.x + 20, player.y + 20);
+        ctx.fill();
+    }
+
+    function addScore(amount) {
+        score += amount;
+        // DİL DESTEĞİ: Skor güncellemesi
+        scoreEl.innerText = langData[currentLang].score + ": " + score;
+    }
+
+    function endGame() {
+        isGameOver = true;
+        gameOverPanel.style.display = "block";
+        
+        // Oyun Bitti başlığını ve rengini resetle (Victory'den dönmüş olabilir)
+        const title = document.getElementById('game-over-title');
+        title.innerText = langData[currentLang].gameOver;
+        title.style.color = "#ff3333";
+
+        // DİL DESTEĞİ: Final skor güncellemesi
+        finalScoreText.innerText = langData[currentLang].score + ": " + score;
+    }
+
+    function victoryGame() {
+        isGameOver = true;
+        gameOverPanel.style.display = "block";
+        
+        // Başlığı KAZANDIN yap ve Yeşil yap
+        const title = document.getElementById('game-over-title');
+        title.innerText = langData[currentLang].victory;
+        title.style.color = "#00ff00";
+
+        finalScoreText.innerText = langData[currentLang].score + ": " + score;
+    }
+
+    function restartGame() {
+        playBtnSound(); // Buton sesi çal
+        score = 0;
+        level = 1;
+        player.powerLevel = 1;
+        player.fireRate = 250;
+        
+        isGameOver = false;
+        bossActive = false;
+        boss = null;
+        
+        enemies = [];
+        bullets = [];
+        enemyBullets = [];
+        
+        // DİL DESTEĞİ: Resetleme
+        scoreEl.innerText = langData[currentLang].score + ": 0";
+        levelEl.innerText = langData[currentLang].level + ": 1";
+        gameOverPanel.style.display = "none";
+        bossUi.style.display = 'none';
+        
+        lastSpawnTime = performance.now();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Başlangıçta sadece resize yapıyoruz, oyunu 'startGame' başlatacak
+    window.onload = resize;
+    window.onresize = resize;
+</script>
+</body>
+</html>

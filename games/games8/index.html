@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Meta Tags -->
+    <title>Memory Swap - Brain Training & Focus Puzzle</title>
+    <meta name="description" content="Improve your short-term memory and focus with Memory Swap. Memorize symbols, track movements, and find the swapped pairs in this professional brain training game.">
+    <meta name="keywords" content="memory game, brain training, cognitive skills, focus game, concentration puzzle, memory swap, hafıza oyunu, dikkat geliştirme">
+    <meta name="author" content="Gemini Arcade">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Memory Swap - Professional Brain Training">
+    <meta property="og:description" content="A challenging puzzle game designed to sharpen your memory and attention to detail.">
+    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #020617;
+            color: #f8fafc;
+            overflow: hidden; 
+            height: 100vh;
+            width: 100vw;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .view-section {
+            display: none;
+            height: 100%;
+            width: 100%;
+        }
+        .view-section.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #game-board {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 8px;
+            padding: 8px;
+            align-content: center;
+        }
+
+        .card {
+            perspective: 1000px;
+            width: 100%;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .card-front {
+            background: #1e293b;
+            border: 2px solid #334155;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            transform: rotateY(180deg);
+            border: 2px solid #1e40af;
+        }
+
+        .card-back::before {
+            content: '?';
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.3);
+            font-weight: 800;
+        }
+
+        .card.selected .card-front {
+            border-color: #f59e0b;
+            background: #2d3748;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+        }
+
+        .shuffling .card {
+            animation: shuffle-shake 0.3s ease-in-out infinite;
+        }
+
+        @keyframes shuffle-shake {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95) rotate(1deg); }
+        }
+
+        .level-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .btn-glow {
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        
+        .header-compact { padding: 12px 16px; }
+        .footer-compact { padding: 12px 16px; }
+
+        .lang-btn {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        #how-to-modal {
+            display: none;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(8px);
+        }
+        #how-to-modal.active {
+            display: flex;
+        }
+
+        .nav-icon-btn {
+            transition: all 0.2s ease;
+        }
+        .nav-icon-btn:hover {
+            transform: scale(1.1);
+            background-color: #1e293b;
+        }
+        
+        .top-nav-btn {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 10px 14px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+        }
+        .top-nav-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+        }
+        .top-nav-btn.primary-home {
+            color: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center">
+
+    <!-- Menu View -->
+    <div id="menu-view" class="view-section active items-center justify-center text-center p-6 bg-slate-950">
+        <!-- Top Left Navigation -->
+        <div class="absolute top-6 left-6">
+            <a href="../../index.html" class="top-nav-btn primary-home group">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span id="ui-main-menu-text">Main Menu</span>
+            </a>
+        </div>
+
+        <!-- Top Right: Language Buttons -->
+        <div class="absolute top-6 right-6 flex gap-2">
+            <button onclick="setLanguage('en')" id="lang-en" class="lang-btn bg-slate-800 text-slate-400">EN</button>
+            <button onclick="setLanguage('tr')" id="lang-tr" class="lang-btn bg-slate-800 text-slate-400">TR</button>
+        </div>
+
+        <div class="mb-8">
+            <div class="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-xl">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            </div>
+            <h1 id="ui-title" class="text-3xl font-extrabold text-white mb-2 tracking-tight">Memory Swap</h1>
+            <p id="ui-subtitle" class="text-slate-400 text-sm max-w-[250px] mx-auto">Memorize the symbols, find the swapped pairs!</p>
+        </div>
+
+        <div class="flex flex-col gap-3 w-full max-w-xs">
+            <button onclick="switchView('levels')" id="ui-start-btn" class="btn-glow w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all text-lg">
+                Start Game
+            </button>
+            
+            <button onclick="toggleHowTo(true)" id="ui-howto-btn" class="w-full bg-slate-900 text-white font-bold py-3 rounded-2xl border border-slate-800 transition-all">
+                How to Play?
+            </button>
+
+            <button onclick="confirmReset()" id="ui-menu-reset-btn" class="text-slate-500 hover:text-red-400 text-xs font-semibold underline decoration-dotted transition-colors mt-2">
+                Reset Progress
+            </button>
+        </div>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="how-to-modal" class="fixed inset-0 z-50 items-center justify-center p-6">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-8 shadow-2xl">
+            <h2 id="ui-howto-title" class="text-2xl font-bold text-white mb-4">How to Play?</h2>
+            <div id="ui-howto-content" class="text-slate-300 text-sm space-y-4 mb-8">
+                <!-- Dynamic content -->
+            </div>
+            <button onclick="toggleHowTo(false)" id="ui-howto-close" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Level Selection View -->
+    <div id="levels-view" class="view-section items-center justify-center p-6 bg-slate-950">
+        <div class="w-full max-w-xs relative">
+            <button onclick="switchView('menu')" class="absolute -top-12 left-0 nav-icon-btn p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            </button>
+            <h2 id="ui-select-level" class="text-2xl font-bold text-white mb-6 text-center">Select Level</h2>
+            <div id="level-grid" class="grid grid-cols-3 gap-3 mb-8">
+                <!-- JS populated -->
+            </div>
+            <button onclick="switchView('menu')" id="ui-back-btn" class="w-full bg-slate-900 text-slate-400 font-bold py-3 rounded-xl border border-slate-800">Go Back</button>
+        </div>
+    </div>
+
+    <!-- Game View -->
+    <div id="game-view" class="view-section bg-slate-950">
+        <div class="header-compact flex justify-between items-center border-b border-slate-900 bg-slate-950/80 backdrop-blur-sm z-10">
+            <div class="flex items-center gap-3">
+                <button onclick="switchView('menu')" class="nav-icon-btn p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                </button>
+                <div>
+                    <p id="level-text" class="text-blue-500 font-bold text-[10px] uppercase tracking-widest">LEVEL 1 / 6</p>
+                    <h2 id="phase-text" class="text-white text-base font-bold truncate">Get Ready...</h2>
+                </div>
+            </div>
+            <div id="timer-ui" class="hidden flex flex-col items-end">
+                <span id="timer-text" class="text-lg font-mono font-bold text-blue-400">30s</span>
+                <div class="w-20 h-1 bg-slate-800 rounded-full mt-1 overflow-hidden">
+                    <div id="timer-bar" class="h-full bg-blue-500 w-full transition-all duration-1000"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-board" class="shuffling-container"></div>
+
+        <div class="footer-compact flex flex-col gap-2 bg-slate-950/80 border-t border-slate-900">
+            <button id="ready-btn" onclick="triggerShuffle()" class="hidden w-full bg-slate-800 text-white font-bold py-3 rounded-xl border border-slate-700 active:scale-95 transition-transform">I'm Ready!</button>
+            <button id="next-level-btn" onclick="nextLevel()" class="hidden w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform">Next Level</button>
+            <button id="restart-btn" onclick="switchView('levels')" class="hidden w-full bg-slate-900 text-slate-400 font-bold py-3 rounded-xl border border-slate-800 active:scale-95 transition-transform">Back to Levels</button>
+            <button id="game-reset-btn" onclick="confirmReset()" class="hidden w-full bg-red-900/20 text-red-400 font-bold py-3 rounded-xl border border-red-900/30 active:scale-95 transition-transform">Reset & Go Back</button>
+        </div>
+    </div>
+
+    <script>
+        const i18n = {
+            en: {
+                title: "Memory Swap",
+                subtitle: "Memorize card positions, find the swaps!",
+                start: "Start Game",
+                selectLevel: "Select Level",
+                back: "Go Back",
+                level: "LEVEL",
+                preparing: "Preparing cards...",
+                memorize: "Memorize Now!",
+                shuffling: "Swapping...",
+                guessing: "Which two swapped?",
+                ready: "I'm Ready!",
+                next: "Next Level",
+                backToLevels: "Back to Levels",
+                correct: "Congrats! Correct.",
+                wrong: "Wrong! Correct ones in Red.",
+                gameEnd: "GAME CLEAR! EXCELLENT!",
+                retry: "Retry Level",
+                locked: "Locked",
+                resetProgress: "Reset Progress",
+                resetConfirm: "All progress will be reset. Are you sure?",
+                resetComplete: "Progress Reset",
+                howToBtn: "How to Play?",
+                howToTitle: "How to Play?",
+                howToClose: "Got it!",
+                mainMenu: "Main Menu",
+                howToRules: [
+                    "1. Memorize the symbols while cards are open.",
+                    "2. Cards will flip when time is up or you click ready.",
+                    "3. Two cards will randomly swap positions while closed.",
+                    "4. When cards flip back, find and select the swapped pair!"
+                ]
+            },
+            tr: {
+                title: "Hafıza & Dikkat",
+                subtitle: "Kartların yerini ezberle, değişenleri bul!",
+                start: "Oyuna Başla",
+                selectLevel: "Seviye Seç",
+                back: "Geri Dön",
+                level: "SEVİYE",
+                preparing: "Kartlar hazırlanıyor...",
+                memorize: "Konumları Ezberle!",
+                shuffling: "Değiştiriliyor...",
+                guessing: "Hangi ikisi değişti?",
+                ready: "Hazırım!",
+                next: "Sonraki Seviye",
+                backToLevels: "Seviyelere Dön",
+                correct: "Tebrikler! Doğru.",
+                wrong: "Yanlış! Doğrular Kırmızı.",
+                gameEnd: "OYUN BİTTİ! HARİKA!",
+                retry: "Seviyeyi Tekrarla",
+                locked: "Kilitli",
+                resetProgress: "İlerlemeyi Sıfırla",
+                resetConfirm: "Tüm ilerlemeniz sıfırlanacak. Emin misiniz?",
+                resetComplete: "İlerleme Sıfırlandı",
+                howToBtn: "Nasıl Oynanır?",
+                howToTitle: "Nasıl Oynanır?",
+                howToClose: "Anladım!",
+                mainMenu: "Ana Menü",
+                howToRules: [
+                    "1. Oyun başında kartlar açıkken şekilleri ezberle.",
+                    "2. Süre dolunca veya hazırım dediğinde kartlar kapanır.",
+                    "3. Kapalıyken rastgele iki kart yer değiştirir.",
+                    "4. Kartlar tekrar açıldığında, yer değiştiren iki kartı seç!"
+                ]
+            }
+        };
+
+        let game = {
+            level: 1,
+            maxUnlocked: 1,
+            language: 'en', // Default English
+            cards: [],
+            swapped: [],
+            selections: [],
+            phase: 'menu',
+            timer: 30,
+            interval: null
+        };
+
+        const levelConfig = { 1: 6, 2: 8, 3: 10, 4: 12, 5: 14, 6: 16 };
+        const icons = [
+            'M12 2L2 7l10 5 10-5-10-5z', 'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0',
+            'M3 3h18v18H3z', 'M12 2l10 18H2L12 2z', 'M12 17L18 21L16 14L22 9L14 8L12 2L9 8L2 9L7 14L5 21L12 17z',
+            'M12 21l-1-1C5 15 2 12 2 8c0-3 2-5 5-5 2 0 3 1 4 2 1-1 2-2 4-2 3 0 5 2 5 5 0 4-3 7-9 12l-1 1z',
+            'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9', 'M21 12A9 9 0 1 1 12 3v9h9z',
+            'M12 3v1m0 16v1', 'M4 4h16v12H4z', 'M2 3h6a4 4 0 0 1 4 4v14', 'M12 1v22',
+            'M12 2a10 10 0 1 0 10 10', 'M9 19V5l12 7z', 'M20 7h-9l-3-3H4v16h16V7z', 'M3 12h18'
+        ];
+
+        function setLanguage(lang) {
+            game.language = lang;
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+            updateStaticUI();
+            if (game.phase === 'levels') renderLevelGrid();
+        }
+
+        function t(key) { return i18n[game.language][key]; }
+
+        function updateStaticUI() {
+            document.getElementById('ui-title').innerText = t('title');
+            document.getElementById('ui-subtitle').innerText = t('subtitle');
+            document.getElementById('ui-start-btn').innerText = t('start');
+            document.getElementById('ui-howto-btn').innerText = t('howToBtn');
+            document.getElementById('ui-select-level').innerText = t('selectLevel');
+            document.getElementById('ui-back-btn').innerText = t('back');
+            document.getElementById('ready-btn').innerText = t('ready');
+            document.getElementById('next-level-btn').innerText = t('next');
+            document.getElementById('restart-btn').innerText = t('backToLevels');
+            document.getElementById('ui-menu-reset-btn').innerText = t('resetProgress');
+            document.getElementById('game-reset-btn').innerText = t('resetProgress');
+            document.getElementById('ui-main-menu-text').innerText = t('mainMenu');
+            
+            // Modal Update
+            document.getElementById('ui-howto-title').innerText = t('howToTitle');
+            document.getElementById('ui-howto-close').innerText = t('howToClose');
+            const rulesHtml = t('howToRules').map(rule => `<p>• ${rule}</p>`).join('');
+            document.getElementById('ui-howto-content').innerHTML = rulesHtml;
+        }
+
+        function toggleHowTo(show) {
+            document.getElementById('how-to-modal').classList.toggle('active', show);
+        }
+
+        function confirmReset() {
+            const confirmed = window.confirm(t('resetConfirm'));
+            if (confirmed) {
+                game.maxUnlocked = 1;
+                game.level = 1;
+                clearInterval(game.interval);
+                switchView('menu');
+                showMessageBox(t('resetComplete'));
+            }
+        }
+
+        function showMessageBox(text) {
+            const box = document.createElement('div');
+            box.className = 'fixed top-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-2 rounded-full font-bold shadow-2xl z-[100] animate-bounce';
+            box.innerText = text;
+            document.body.appendChild(box);
+            setTimeout(() => box.remove(), 2000);
+        }
+
+        function switchView(viewName) {
+            clearInterval(game.interval); 
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewName + '-view').classList.add('active');
+            game.phase = viewName;
+            if (viewName === 'levels') renderLevelGrid();
+        }
+
+        function renderLevelGrid() {
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const isLocked = i > game.maxUnlocked;
+                const btn = document.createElement('button');
+                btn.className = `level-btn h-16 rounded-xl font-bold flex flex-col items-center justify-center transition-all ${isLocked ? 'locked bg-slate-900 text-slate-700' : 'bg-blue-600 text-white shadow-lg'}`;
+                btn.innerHTML = `<span>${i}</span><span class="text-[8px] opacity-70">${isLocked ? t('locked') : ''}</span>`;
+                if (!isLocked) btn.onclick = () => { game.level = i; startActualGame(); };
+                grid.appendChild(btn);
+            }
+        }
+
+        function startActualGame() {
+            switchView('game');
+            loadLevel();
+        }
+
+        const board = document.getElementById('game-board');
+        const phaseText = document.getElementById('phase-text');
+        const levelText = document.getElementById('level-text');
+        const timerUI = document.getElementById('timer-ui');
+        const timerText = document.getElementById('timer-text');
+        const timerBar = document.getElementById('timer-bar');
+        const readyBtn = document.getElementById('ready-btn');
+        const nextBtn = document.getElementById('next-level-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const gameResetBtn = document.getElementById('game-reset-btn');
+
+        function loadLevel() {
+            game.phase = 'preparing';
+            game.selections = [];
+            game.swapped = [];
+            [nextBtn, restartBtn, readyBtn, timerUI, gameResetBtn].forEach(el => el.classList.add('hidden'));
+            
+            levelText.innerText = `${t('level')} ${game.level} / 6`;
+            phaseText.innerText = t('preparing');
+            phaseText.className = "text-white text-base font-bold truncate";
+
+            const count = levelConfig[game.level];
+            const pool = [...icons].sort(() => 0.5 - Math.random());
+            game.cards = pool.slice(0, count).map((icon, i) => ({ id: i, icon }));
+
+            board.innerHTML = '';
+            const rows = Math.ceil(count / 2);
+            const cardHeight = Math.floor((window.innerHeight - 180 - (rows * 8)) / rows);
+
+            game.cards.forEach((card, i) => {
+                const el = document.createElement('div');
+                el.className = 'card flipped';
+                el.style.height = `${cardHeight}px`;
+                el.dataset.index = i;
+                el.innerHTML = `
+                    <div class="card-inner w-full h-full">
+                        <div class="card-front">
+                            <svg class="w-1/2 h-1/2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="${card.icon}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </div>
+                        <div class="card-back"></div>
+                    </div>
+                `;
+                board.appendChild(el);
+            });
+            setTimeout(startMemorize, 800);
+        }
+
+        function startMemorize() {
+            game.phase = 'memorize';
+            game.timer = 30;
+            phaseText.innerText = t('memorize');
+            phaseText.className = "text-amber-400 text-base font-bold truncate";
+            timerUI.classList.remove('hidden');
+            readyBtn.classList.remove('hidden');
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('flipped'));
+            updateTimerUI();
+            game.interval = setInterval(() => {
+                game.timer--;
+                updateTimerUI();
+                if (game.timer <= 0) triggerShuffle();
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            timerText.innerText = `${game.timer}s`;
+            timerBar.style.width = `${(game.timer / 30) * 100}%`;
+            timerText.className = `text-lg font-mono font-bold ${game.timer <= 5 ? 'text-red-500' : 'text-blue-400'}`;
+        }
+
+        async function triggerShuffle() {
+            clearInterval(game.interval);
+            game.phase = 'shuffling';
+            readyBtn.classList.add('hidden');
+            timerUI.classList.add('hidden');
+            phaseText.innerText = t('shuffling');
+            phaseText.className = "text-slate-400 text-base font-bold truncate";
+
+            document.querySelectorAll('.card').forEach(c => c.classList.add('flipped'));
+            await new Promise(r => setTimeout(r, 600));
+
+            board.classList.add('shuffling');
+            const count = levelConfig[game.level];
+            let i1 = Math.floor(Math.random() * count), i2;
+            do { i2 = Math.floor(Math.random() * count); } while(i1 === i2);
+            game.swapped = [i1, i2];
+
+            await new Promise(r => setTimeout(r, 1200));
+            board.classList.remove('shuffling');
+
+            const temp = game.cards[i1].icon;
+            game.cards[i1].icon = game.cards[i2].icon;
+            game.cards[i2].icon = temp;
+
+            const cards = document.querySelectorAll('.card');
+            [i1, i2].forEach(idx => {
+                cards[idx].querySelector('.card-front svg path').setAttribute('d', game.cards[idx].icon);
+            });
+
+            phaseText.innerText = t('guessing');
+            phaseText.className = "text-blue-400 text-base font-bold truncate";
+            document.querySelectorAll('.card').forEach(c => {
+                c.classList.remove('flipped');
+                c.onclick = () => handleSelect(c);
+            });
+            game.phase = 'guessing';
+        }
+
+        function handleSelect(el) {
+            if (game.phase !== 'guessing') return;
+            const idx = parseInt(el.dataset.index);
+            if (game.selections.includes(idx)) {
+                game.selections = game.selections.filter(i => i !== idx);
+                el.classList.remove('selected');
+            } else if (game.selections.length < 2) {
+                game.selections.push(idx);
+                el.classList.add('selected');
+            }
+            if (game.selections.length === 2) checkResult();
+        }
+
+        function checkResult() {
+            game.phase = 'result';
+            const [s1, s2] = game.selections, [w1, w2] = game.swapped;
+            const correct = (s1 === w1 && s2 === w2) || (s1 === w2 && s2 === w1);
+
+            if (correct) {
+                phaseText.innerText = t('correct');
+                phaseText.className = "text-green-400 text-base font-bold animate-bounce";
+                if (game.level === game.maxUnlocked) game.maxUnlocked++;
+                if (game.level < 6) nextBtn.classList.remove('hidden');
+                else {
+                    phaseText.innerText = t('gameEnd');
+                    restartBtn.innerText = t('backToLevels');
+                    restartBtn.classList.remove('hidden');
+                    gameResetBtn.classList.remove('hidden');
+                }
+            } else {
+                phaseText.innerText = t('wrong');
+                phaseText.className = "text-red-500 text-base font-bold";
+                game.swapped.forEach(idx => {
+                    const el = document.querySelector(`.card[data-index="${idx}"]`);
+                    el.querySelector('.card-front').style.borderColor = "#ef4444";
+                });
+                setTimeout(() => {
+                    restartBtn.innerText = t('retry');
+                    restartBtn.classList.remove('hidden');
+                }, 800);
+            }
+        }
+
+        function nextLevel() { game.level++; loadLevel(); }
+
+        window.onload = () => setLanguage('en'); 
+        window.onresize = () => {
+            if (game.phase === 'game') {
+                const count = levelConfig[game.level], rows = Math.ceil(count / 2);
+                const cardHeight = Math.floor((window.innerHeight - 180 - (rows * 8)) / rows);
+                document.querySelectorAll('.card').forEach(c => c.style.height = `${cardHeight}px`);
+            }
+        };
+    </script>
+</body>
+</html>

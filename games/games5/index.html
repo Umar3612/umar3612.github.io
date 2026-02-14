@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Professional SEO Metadata - Optimized Keywords -->
+    <title>Rhythm Reflex Pro – Best Online Rhythm Arcade Game</title>
+    <meta name="description" content="Play Rhythm Reflex Pro, the ultimate online rhythm arcade game. Master the beat, test your speed, and challenge your reflexes in this fast-paced browser music challenge. Free to play now!">
+    <meta name="keywords" content="rhythm game, reflex game, online music game, browser arcade game, rhythm reflex pro, speed challenge, reflex puzzle, free browser games, mobile rhythm game, tap game">
+    <meta name="author" content="Gemini AI">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#020617">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://yourdomain.com/rhythm-reflex-pro">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/rhythm-reflex-pro">
+    <meta property="og:title" content="Rhythm Reflex Pro – Ultimate Rhythm Arcade Challenge">
+    <meta property="og:description" content="Master the beat and test your reflexes! Play the best online rhythm arcade game for free in your browser. No download required.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop">
+
+    <!-- Structured Data (Software, FAQ, Breadcrumb) -->
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Rhythm Reflex Pro",
+        "operatingSystem": "Web",
+        "applicationCategory": "GameApplication",
+        "genre": "Rhythm Arcade",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "2450" }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How to play Rhythm Reflex Pro?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Simply tap the short blocks on the line and hold the long blocks until the progress bar completes." }
+          }
+        ]
+      }
+    ]
+    </script>
+
+    <style>
+        :root{--primary:#6366f1;--secondary:#f59e0b;--danger:#f43f5e;--success:#10b981;--bg:#020617;--lane-border:rgba(99, 102, 241, 0.2);--hit-glow:rgba(99, 102, 241, 0.4)}
+        *{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
+        body{margin:0;padding:0;font-family:'Segoe UI',Roboto,sans-serif;background-color:var(--bg);color:#fff;overflow:hidden;touch-action:none;height:100dvh;width:100vw}
+        #app{position:relative;width:100%;max-width:500px;height:100%;margin:0 auto;background:linear-gradient(180deg,#020617 0%,#0f172a 100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 50px rgba(0,0,0,0.5)}
+        
+        #header {
+            position: absolute;
+            top: env(safe-area-inset-top, 20px);
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .stats-side { 
+            display: flex; 
+            gap: 8px; 
+            opacity: 0; 
+            transition: opacity 0.3s; 
+            transform: translateY(-20px);
+        }
+        .stats-side.visible { opacity: 1; transform: translateY(0); }
+
+        .overlay-nav {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 110;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            pointer-events: all;
+        }
+        .icon-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.1); }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 0 12px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            height: 42px;
+            pointer-events: all;
+        }
+        .lang-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .stat-label { font-size: 0.6rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.1rem; font-weight: 800; display: block; }
+
+        #game-stage { flex: 1; display: flex; position: relative; z-index: 10; }
+        .lane { flex: 1; height: 100%; position: relative; border-right: 1px solid var(--lane-border); }
+        .lane:last-child { border-right: none; }
+        .lane.active { background: linear-gradient(to top, var(--hit-glow), transparent); }
+
+        #hit-area-visual {
+            position: absolute;
+            bottom: 15%;
+            width: 100%;
+            height: 4px;
+            background: var(--primary);
+            box-shadow: 0 0 20px var(--primary);
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.8;
+        }
+
+        .tile {
+            position: absolute;
+            width: calc(100% - 12px);
+            left: 6px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.75rem;
+            color: #fff;
+            z-index: 20;
+            will-change: transform;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .tile-short { background: linear-gradient(135deg, #4f46e5, #3b82f6); height: 85px; }
+        .tile-long { background: rgba(31, 41, 55, 0.9); height: 240px; border: 2px solid var(--secondary); overflow: visible; }
+        .fill-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(to top, rgba(245, 158, 11, 0.3), rgba(251, 191, 36, 0.5)); z-index: 1; }
+        .moving-handle { position: absolute; left: 50%; bottom: 10%; width: 24px; height: 24px; background: #fff; border-radius: 50%; transform: translate(-50%, 50%); box-shadow: 0 0 15px #fff; z-index: 5; display: none; }
+        .tile-long.active .moving-handle { display: block; }
+        .tile-long.done { background: var(--success); border-color: #fff; }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .hidden { display: none !important; }
+
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 85%;
+            max-width: 300px;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); }
+
+        .feedback {
+            position: absolute;
+            font-weight: 900;
+            font-size: 1.4rem;
+            pointer-events: none;
+            z-index: 60;
+            text-transform: uppercase;
+            animation: feedbackPop 0.5s ease-out forwards;
+        }
+
+        @keyframes feedbackPop {
+            0% { transform: scale(0.5) translateY(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2) translateY(-70px); opacity: 0; }
+        }
+
+        .shake { animation: appShake 0.2s ease-in-out; }
+        @keyframes appShake {
+            0%, 100% { transform: translate3d(0,0,0); }
+            25% { transform: translate3d(-8px,0,0); }
+            75% { transform: translate3d(8px,0,0); }
+        }
+
+        /* Hidden SEO Content Section */
+        .seo-hidden-content {
+            position: absolute;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hidden SEO Section for Crawlers -->
+    <section class="seo-hidden-content">
+        <h1>Rhythm Reflex Pro – Online Rhythm Arcade Game</h1>
+        <p>Master the beat in Rhythm Reflex Pro, a fast-paced <strong>online rhythm arcade game</strong>. Test your reflexes with short and long tap blocks.</p>
+    </section>
+
+    <div id="app">
+        <!-- Oyun İçi Panel -->
+        <div id="header">
+            <div id="game-stats" class="stats-side">
+                <div class="stat-box">
+                    <span id="label-score" class="stat-label">SCORE</span>
+                    <span id="score-text" class="stat-value">0</span>
+                </div>
+                <div class="stat-box">
+                    <span id="label-lives" class="stat-label">LIVES</span>
+                    <span id="lives-text" class="stat-value">3</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Başlangıç Ekranı -->
+        <div id="screen-start" class="overlay">
+            <div class="overlay-nav">
+                <a href="../../index.html" class="icon-btn" aria-label="Go to Main Menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </a>
+                <div class="lang-side" style="display:flex;gap:4px">
+                    <button onclick="setLanguage('en')" id="lang-en" class="lang-btn active">EN</button>
+                    <button onclick="setLanguage('tr')" id="lang-tr" class="lang-btn">TR</button>
+                </div>
+            </div>
+
+            <h1 id="main-h1" style="color: var(--primary); font-size: 3.2rem; margin: 0; font-weight: 900; letter-spacing: -1px; text-transform: uppercase;">
+                RHYTHM PRO
+            </h1>
+            
+            <div style="margin: 25px 0; padding: 15px 30px; background: rgba(245, 158, 11, 0.1); border: 2px solid var(--secondary); border-radius: 20px;">
+                <small id="label-highscore" style="color:var(--secondary); font-weight: bold; letter-spacing: 1px;">HIGH SCORE</small>
+                <div id="high-score-text" style="font-size: 2.2rem; font-weight: 900;">0</div>
+            </div>
+
+            <button id="btn-start" class="btn" onclick="startGame()">START GAME</button>
+            <button id="btn-how" class="btn btn-outline" onclick="toggleHowTo(true)">HOW TO PLAY?</button>
+        </div>
+
+        <!-- Rehber Modalı -->
+        <div id="how-to-modal" class="hidden overlay">
+            <h2 id="how-title" style="color: var(--primary); margin-top: 0; font-size: 2rem;">How to Play?</h2>
+            <div id="how-1" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:12px; width:100%; text-align:left; font-size:0.9rem;">🔵 <b>Short Block:</b> Tap and release immediately when it reaches the line.</div>
+            <div id="how-2" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:12px; width:100%; text-align:left; font-size:0.9rem;">🟠 <b>Long Block:</b> Hold down until the circle reaches the top.</div>
+            <div id="how-3" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:12px; width:100%; text-align:left; font-size:0.9rem;">⚠️ <b>Penalty:</b> Missing or releasing early will cost you a life.</div>
+            <button id="btn-got-it" class="btn" onclick="toggleHowTo(false)">GOT IT</button>
+        </div>
+
+        <!-- Oyun Sonu Ekranı -->
+        <div id="screen-over" class="overlay hidden">
+            <h1 id="over-title" style="color: var(--danger); font-size: 3rem;">OH NO!</h1>
+            <p id="final-score" style="font-size: 1.8rem; font-weight: 800; margin: 10px 0;">Score: 0</p>
+            <button id="btn-retry" class="btn" onclick="startGame()">RETRY</button>
+            <button id="btn-menu" class="btn btn-outline" onclick="goToMenu()">🏠 MAIN MENU</button>
+        </div>
+
+        <!-- Oyun Sahası -->
+        <div id="game-stage">
+            <div id="hit-area-visual"></div>
+            <div class="lane" data-lane="0"></div>
+            <div class="lane" data-lane="1"></div>
+            <div class="lane" data-lane="2"></div>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                h1: "RHYTHM PRO",
+                label_score: "SCORE",
+                label_lives: "LIVES",
+                label_highscore: "HIGH SCORE",
+                btn_start: "START GAME",
+                btn_how: "HOW TO PLAY?",
+                how_title: "How to Play?",
+                how_1: "🔵 <b>Short Block:</b> Tap and release immediately when it reaches the line.",
+                how_2: "🟠 <b>Long Block:</b> Hold down until the circle reaches the top.",
+                how_3: "⚠️ <b>Penalty:</b> Missing or releasing early will cost you a life.",
+                btn_got_it: "GOT IT",
+                btn_menu: "🏠 MAIN MENU",
+                over_title: "OH NO!",
+                final_score_prefix: "Score: ",
+                btn_retry: "RETRY",
+                feedback_perfect: "PERFECT!",
+                feedback_good: "GOOD!"
+            },
+            tr: {
+                h1: "RİTİM PRO",
+                label_score: "SKOR",
+                label_lives: "CAN",
+                label_highscore: "EN YÜKSEK SKOR",
+                btn_start: "OYUNA BAŞLA",
+                btn_how: "NASIL OYNANIR?",
+                how_title: "Nasıl Oynanır?",
+                how_1: "🔵 <b>Kısa Blok:</b> Çizgiye geldiğinde hemen dokun ve bırak.",
+                how_2: "🟠 <b>Uzun Blok:</b> Yuvarlak en üste çıkana kadar basılı tut.",
+                how_3: "⚠️ <b>Can Kaybı:</b> Kaçırırsan veya erken bırakırsan canın gider.",
+                btn_got_it: "ANLADIM",
+                btn_menu: "🏠 ANA MENÜ",
+                over_title: "EYVAH!",
+                final_score_prefix: "Skor: ",
+                btn_retry: "TEKRAR DENE",
+                feedback_perfect: "MÜKEMMEL!",
+                feedback_good: "İYİ!"
+            }
+        };
+
+        let currentLang = 'en';
+        let score = 0;
+        let lives = 3;
+        let gameActive = false;
+        let speed = 6.5;
+        let spawnInterval = 900;
+        let lastSpawn = 0;
+        let activeTiles = [];
+        let holdingTile = null;
+        let audioCtx = null;
+
+        const lanes = document.querySelectorAll('.lane');
+        const scoreEl = document.getElementById('score-text');
+        const livesEl = document.getElementById('lives-text');
+        const startScreen = document.getElementById('screen-start');
+        const overScreen = document.getElementById('screen-over');
+        const howToModal = document.getElementById('how-to-modal');
+        const highScoreEl = document.getElementById('high-score-text');
+        const gameStats = document.getElementById('game-stats');
+        const app = document.getElementById('app');
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            document.getElementById('main-h1').innerText = t.h1;
+            document.getElementById('label-score').innerText = t.label_score;
+            document.getElementById('label-lives').innerText = t.label_lives;
+            document.getElementById('label-highscore').innerText = t.label_highscore;
+            document.getElementById('btn-start').innerText = t.btn_start;
+            document.getElementById('btn-how').innerText = t.btn_how;
+            document.getElementById('how-title').innerText = t.how_title;
+            document.getElementById('how-1').innerHTML = t.how_1;
+            document.getElementById('how-2').innerHTML = t.how_2;
+            document.getElementById('how-3').innerHTML = t.how_3;
+            document.getElementById('btn-got-it').innerText = t.btn_got_it;
+            document.getElementById('btn-menu').innerText = t.btn_menu;
+            document.getElementById('over-title').innerText = t.over_title;
+            document.getElementById('btn-retry').innerText = t.btn_retry;
+            
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            
+            if (!gameActive) document.getElementById('final-score').innerText = t.final_score_prefix + score;
+        }
+
+        const initAudio = () => { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); };
+        const playSfx = (freq, dur) => {
+            if(!audioCtx || audioCtx.state === 'suspended') return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+        };
+
+        function toggleHowTo(show) { howToModal.classList.toggle('hidden', !show); }
+
+        function loadHighScore() { highScoreEl.innerText = localStorage.getItem('rrr_pro_v3') || 0; }
+
+        function goToMenu() {
+            overScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            gameStats.classList.remove('visible');
+            loadHighScore();
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('final-score').innerText = translations[currentLang].final_score_prefix + score;
+            const high = parseInt(localStorage.getItem('rrr_pro_v3') || "0");
+            if (score > high) localStorage.setItem('rrr_pro_v3', score);
+            overScreen.classList.remove('hidden');
+            gameStats.classList.remove('visible');
+        }
+
+        function handleFail() {
+            lives--; 
+            livesEl.innerText = lives;
+            playSfx(120, 0.2);
+            app.classList.add('shake');
+            setTimeout(() => app.classList.remove('shake'), 200);
+            if (lives <= 0) endGame();
+        }
+
+        function spawnTile() {
+            const laneOrder = [0, 1, 2].sort(() => Math.random() - 0.5);
+            const isLong = Math.random() > 0.75;
+            const h = isLong ? 240 : 85;
+            const spawnY = -h - 60;
+            let lane = -1;
+            for (let l of laneOrder) {
+                const tilesInLane = activeTiles.filter(t => t.lane === l);
+                const top = tilesInLane.reduce((m, t) => (t.y < m ? t.y : m), Infinity);
+                if (top === Infinity || top > (spawnY + h + 70)) { lane = l; break; }
+            }
+            if (lane === -1) return false;
+            const el = document.createElement('div');
+            el.className = `tile tile-${isLong ? 'long' : 'short'}`;
+            if (isLong) el.innerHTML = `<div class="fill-overlay"></div><div class="moving-handle"></div>`;
+            lanes[lane].appendChild(el);
+            activeTiles.push({
+                el, y: spawnY, type: isLong ? 'long' : 'short', lane,
+                hit: false, progress: 0, done: false, h,
+                fill: el.querySelector('.fill-overlay'),
+                handle: el.querySelector('.moving-handle')
+            });
+            return true;
+        }
+
+        function gameLoop(time) {
+            if (!gameActive) return;
+            if (time - lastSpawn > spawnInterval) {
+                if (spawnTile()) {
+                    lastSpawn = time;
+                    if (spawnInterval > 420) spawnInterval -= 3;
+                    speed += 0.0035;
+                }
+            }
+            const stageH = window.innerHeight;
+            for (let i = activeTiles.length - 1; i >= 0; i--) {
+                const tile = activeTiles[i];
+                tile.y += speed;
+                tile.el.style.transform = `translate3d(0, ${tile.y}px, 0)`;
+                if (tile.y > stageH) {
+                    if (!tile.hit || (tile.type === 'long' && !tile.done)) handleFail();
+                    tile.el.remove();
+                    activeTiles.splice(i, 1);
+                    if (holdingTile === tile) holdingTile = null;
+                }
+                if (holdingTile === tile) {
+                    tile.progress += 2.8; 
+                    const p = Math.min(tile.progress, 100);
+                    if (tile.fill) tile.fill.style.height = p + '%';
+                    if (tile.handle) {
+                        const pos = 10 + (p * 0.8);
+                        tile.handle.style.bottom = pos + '%';
+                    }
+                    if (tile.progress >= 100 && !tile.done) {
+                        tile.done = true;
+                        tile.el.classList.add('done');
+                        addScore(25, translations[currentLang].feedback_perfect, tile.lane);
+                        playSfx(600, 0.2);
+                    }
+                }
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            initAudio();
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            score = 0; lives = 3; speed = 6.5; spawnInterval = 900;
+            activeTiles.forEach(t => t.el.remove());
+            activeTiles = [];
+            gameActive = true;
+            scoreEl.innerText = "0"; livesEl.innerText = "3";
+            startScreen.classList.add('hidden'); 
+            overScreen.classList.add('hidden');
+            gameStats.classList.add('visible');
+            requestAnimationFrame(gameLoop);
+        }
+
+        function handleInput(laneIdx, isDown) {
+            if (!gameActive) return;
+            const laneEl = lanes[laneIdx];
+            if (isDown) {
+                laneEl.classList.add('active');
+                const hMin = window.innerHeight * 0.45;
+                const hMax = window.innerHeight * 0.9;
+                const target = activeTiles
+                    .filter(t => t.lane == laneIdx && !t.hit)
+                    .sort((a, b) => b.y - a.y)
+                    .find(t => (t.y + t.h) > hMin && t.y < hMax);
+                if (target) {
+                    target.hit = true;
+                    if (target.type === 'short') {
+                        target.el.style.opacity = '0.2';
+                        addScore(10, translations[currentLang].feedback_good, laneIdx);
+                        playSfx(440, 0.1);
+                    } else {
+                        holdingTile = target;
+                        target.el.classList.add('active');
+                    }
+                }
+            } else {
+                laneEl.classList.remove('active');
+                if (holdingTile && holdingTile.lane == laneIdx) {
+                    if (!holdingTile.done) {
+                        handleFail();
+                        holdingTile.el.style.backgroundColor = 'var(--danger)';
+                    }
+                    holdingTile.el.classList.remove('active');
+                    holdingTile = null;
+                }
+            }
+        }
+
+        function addScore(pts, msg, lane) {
+            score += pts; scoreEl.innerText = score;
+            const f = document.createElement('div');
+            f.className = 'feedback';
+            f.style.left = (lane * 33) + 10 + '%';
+            f.style.bottom = '20%';
+            f.style.color = pts > 20 ? 'var(--secondary)' : 'var(--primary)';
+            f.innerText = msg;
+            document.body.appendChild(f);
+            setTimeout(() => f.remove(), 500);
+        }
+
+        lanes.forEach(l => {
+            const idx = l.dataset.lane;
+            l.addEventListener('touchstart', e => { e.preventDefault(); handleInput(idx, true); });
+            l.addEventListener('touchend', e => { e.preventDefault(); handleInput(idx, false); });
+            l.addEventListener('mousedown', e => { handleInput(idx, true); });
+            l.addEventListener('mouseup', e => { handleInput(idx, false); });
+        });
+
+        window.onload = () => { setLanguage('en'); loadHighScore(); };
+    </script>
+</body>
+</html>

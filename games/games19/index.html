@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>Neon River Crossing | Brain Teaser Logic Puzzle</title>
+    <meta name="description" content="Play Neon River Crossing, a challenging logic puzzle game. Transport the wolf, sheep, and cabbage across the river safely. 5 levels of brain-teasing fun! / Neon Nehir Geçme zeka oyununu oyna.">
+    <meta name="keywords" content="river crossing, logic puzzle, brain teaser, zeka oyunu, nehir geçme, wolf sheep cabbage, html5 game, puzzle game, bulmaca">
+    <meta name="author" content="Neon River Developer">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#0f0f13">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/neon-river">
+    <meta property="og:title" content="Neon River Crossing - Logic Puzzle">
+    <meta property="og:description" content="Test your IQ with this neon-themed river crossing puzzle. Can you solve all 5 levels?">
+    <meta property="og:image" content="https://placehold.co/600x400/0f0f13/0ff?text=Neon+River+Game">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://example.com/neon-river">
+    <meta property="twitter:title" content="Neon River Crossing - Logic Puzzle">
+    <meta property="twitter:description" content="Test your IQ with this neon-themed river crossing puzzle. Can you solve all 5 levels?">
+    <meta property="twitter:image" content="https://placehold.co/600x400/0f0f13/0ff?text=Neon+River+Game">
+
+    <!-- Google Fonts: Orbitron for Neon look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    
+    <!-- ========================================== -->
+    <!--               STYLE.CSS                    -->
+    <!-- ========================================== -->
+    <style>
+        :root {
+            --bg-color: #0f0f13;
+            --primary-neon: #0ff; /* Cyan */
+            --danger-neon: #f0f;  /* Magenta */
+            --success-neon: #0f0; /* Lime */
+            --warn-neon: #ff0;    /* Yellow */
+            --text-color: #e0e0e0;
+            --water-color: #1a1a2e;
+            --bank-color: #16213e;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- HEADER & INFO --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid var(--primary-neon);
+            box-shadow: 0 0 15px var(--primary-neon);
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin: 0;
+            text-shadow: 0 0 5px var(--primary-neon);
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .stat-box {
+            background: #222;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+
+        /* --- GAME AREA --- */
+        #game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column; /* Mobile first: stacked */
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            #game-container {
+                flex-direction: row; /* Desktop: side by side */
+            }
+        }
+
+        /* BANKS (Left & Right) */
+        .bank {
+            flex: 1;
+            background-color: var(--bank-color);
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            border-right: 2px solid #333;
+            border-left: 2px solid #333;
+            min-height: 150px;
+            transition: background-color 0.3s;
+        }
+
+        .bank.active-side {
+            box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        /* RIVER */
+        .river {
+            flex: 1.5;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border-left: 2px solid var(--primary-neon);
+            border-right: 2px solid var(--primary-neon);
+            box-shadow: inset 0 0 30px rgba(0, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        /* Water Animation Effect */
+        .river::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 10px,
+                rgba(0, 255, 255, 0.05) 10px,
+                rgba(0, 255, 255, 0.05) 20px
+            );
+            transform: rotate(45deg);
+            animation: flow 10s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes flow {
+            0% { transform: rotate(45deg) translateY(0); }
+            100% { transform: rotate(45deg) translateY(50px); }
+        }
+
+        /* BOAT */
+        .boat-container {
+            width: 80%;
+            height: 100px;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.6s cubic-bezier(0.45, 0, 0.55, 1);
+        }
+
+        /* Responsive Boat Movement */
+        /* Mobile: Moves Up/Down */
+        .boat-container.left { transform: translateY(-30%); }
+        .boat-container.right { transform: translateY(30%); }
+
+        @media (min-width: 768px) {
+            /* Desktop: Moves Left/Right */
+            .boat-container { height: 120px; width: 100%; }
+            .boat-container.left { transform: translateX(-30%); }
+            .boat-container.right { transform: translateX(30%); }
+        }
+
+        .boat {
+            width: 140px;
+            height: 60px;
+            background: #222;
+            border: 2px solid var(--warn-neon);
+            border-radius: 10px 10px 30px 30px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 0 15px var(--warn-neon);
+            position: relative;
+        }
+
+        .boat-label {
+            position: absolute;
+            bottom: -25px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--warn-neon);
+        }
+
+        /* CHARACTERS / ITEMS */
+        .item {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--primary-neon);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.8rem;
+            position: relative;
+            box-shadow: 0 0 5px var(--primary-neon);
+        }
+
+        .item:hover {
+            transform: scale(1.1);
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        .item .weight-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--warn-neon);
+            color: #000;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .item.in-boat {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            border-color: var(--warn-neon);
+        }
+
+        /* CONTROLS */
+        .controls {
+            padding: 15px;
+            padding-bottom: 60px; /* Butonları yukarı taşımak için alt boşluk artırıldı */
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            background: #111;
+            border-top: 1px solid #333;
+            z-index: 5;
+        }
+
+        button {
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--primary-neon);
+            padding: 10px 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        button:hover {
+            background: var(--primary-neon);
+            color: #000;
+            box-shadow: 0 0 20px var(--primary-neon);
+        }
+
+        button.move-btn {
+            border-color: var(--warn-neon);
+            color: var(--warn-neon);
+            font-weight: bold;
+        }
+        
+        button.move-btn:hover {
+            background: var(--warn-neon);
+            color: #000;
+        }
+
+        button:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--primary-neon);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .modal h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 0;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .level-btn {
+            padding: 10px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+        }
+
+        .level-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #333;
+        }
+
+        .level-btn.completed {
+            border-color: var(--success-neon);
+            box-shadow: 0 0 5px var(--success-neon);
+        }
+        
+        .level-btn.current {
+            border-color: var(--primary-neon);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .message-success { color: var(--success-neon); }
+        .message-fail { color: var(--danger-neon); }
+
+        #timer-display {
+            color: var(--danger-neon);
+            font-weight: bold;
+            display: none;
+        }
+        
+        .rules-text {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        /* Language Selection Specific */
+        .lang-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid var(--primary-neon);
+        }
+        .lang-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <h1 id="ui-title">NEON RIVER</h1>
+        </div>
+        <div class="stats">
+            <div class="stat-box" id="level-display">Level 1</div>
+            <div class="stat-box" id="moves-display">Moves: 0</div>
+            <div class="stat-box" id="timer-display">60s</div>
+        </div>
+        <button id="ui-menu-btn" onclick="playSound('click'); toggleLevelModal()" style="padding: 5px 15px; font-size: 0.8rem;">Menu</button>
+    </header>
+
+    <!-- Game Container -->
+    <div id="game-container">
+        <!-- Sol Kıyı -->
+        <div class="bank" id="left-bank" onclick="handleBankClick('left')">
+            <!-- Items injected by JS -->
+        </div>
+
+        <!-- Nehir ve Kayık -->
+        <div class="river">
+            <div class="boat-container left" id="boat-wrapper">
+                <div class="boat" id="boat" onclick="handleBoatClick()">
+                    <!-- Boat Items -->
+                </div>
+                <div class="boat-label" id="boat-capacity-label">Cap: 1</div>
+            </div>
+        </div>
+
+        <!-- Sağ Kıyı -->
+        <div class="bank" id="right-bank" onclick="handleBankClick('right')">
+            <!-- Items injected by JS -->
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button id="ui-restart-btn" onclick="playSound('click'); restartLevel()">Restart</button>
+        <button class="move-btn" id="go-btn" onclick="moveBoat()">Cross River 🚀</button>
+        <button onclick="playSound('click'); showInfo()">?</button>
+    </div>
+
+    <!-- Language Selection Modal (Starts Active) -->
+    <div class="modal-overlay active" id="lang-modal" style="background: rgba(0,0,0,0.95); z-index: 200;">
+        <a href="../../index.html" style="position: absolute; top: 20px; left: 20px; color: #0ff; text-decoration: none; font-size: 1rem; border: 1px solid #0ff; padding: 8px 15px; border-radius: 5px; font-family: 'Orbitron', sans-serif; background: rgba(0,0,0,0.5);">⬅ Ana Menü</a>
+        <div class="modal">
+            <h1>NEON RIVER</h1>
+            <p style="margin-bottom: 30px; color: #aaa;">Select Language / Dil Seçiniz</p>
+            <button class="lang-btn" onclick="selectLanguage('en')">🇺🇸 English</button>
+            <button class="lang-btn" onclick="selectLanguage('tr')">🇹🇷 Türkçe</button>
+        </div>
+    </div>
+
+    <!-- Level Select Modal -->
+    <div class="modal-overlay" id="level-modal">
+        <div class="modal">
+            <h2 id="ui-level-select">Select Level</h2>
+            <div class="level-grid" id="level-grid">
+                <!-- Generated by JS -->
+            </div>
+            <button id="ui-close-level-btn" onclick="playSound('click'); toggleLevelModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- End Game Modal (Win/Loss) -->
+    <div class="modal-overlay" id="end-modal">
+        <div class="modal">
+            <h2 id="end-title">Title</h2>
+            <p id="end-message" style="font-size: 1.1rem; margin: 15px 0;">Message</p>
+            <div id="star-rating" style="font-size: 2rem; margin-bottom: 15px;"></div>
+            <button id="end-action-btn" onclick="playSound('click'); nextOrRestart()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal-overlay" id="info-modal">
+        <div class="modal">
+            <h2 id="ui-mission-title">Mission</h2>
+            <p id="level-rules" class="rules-text">Rules go here.</p>
+            <button id="ui-understood-btn" onclick="playSound('click'); closeInfo()">Got it</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!--               SCRIPT.JS                    -->
+    <!-- ========================================== -->
+    <script>
+        // --- TRANSLATIONS ---
+        const TEXTS = {
+            en: {
+                title: "NEON RIVER",
+                level: "Level",
+                moves: "Moves",
+                menu: "Menu",
+                restart: "Restart",
+                go: "Cross River 🚀",
+                mission: "Mission",
+                understood: "Got it",
+                levelSelect: "Select Level",
+                close: "Close",
+                capacity: "Passenger",
+                maxWeight: "Max Weight",
+                weightAlert: "Too Heavy! Capacity exceeded.",
+                win: "LEVEL COMPLETE! 🎉",
+                fail: "GAME OVER 💀",
+                winMsg: "Congrats! Finished in {moves} moves.",
+                next: "Next Level",
+                retry: "Try Again",
+                allDone: "All levels completed! Congrats Champion! 🏆",
+                timeUp: "Time's Up! ⏰"
+            },
+            tr: {
+                title: "NEON NEHİR",
+                level: "Seviye",
+                moves: "Hamle",
+                menu: "Menü",
+                restart: "Yeniden",
+                go: "Karşıya Geç 🚀",
+                mission: "Görev",
+                understood: "Anlaşıldı",
+                levelSelect: "Seviye Seç",
+                close: "Kapat",
+                capacity: "Yolcu",
+                maxWeight: "Max Ağırlık",
+                weightAlert: "Çok Ağır! Kapasite aşıldı.",
+                win: "SEVİYE TAMAMLANDI! 🎉",
+                fail: "KAYBETTİN 💀",
+                winMsg: "Tebrikler! {moves} hamlede bitirdin.",
+                next: "Sonraki Seviye",
+                retry: "Tekrar Dene",
+                allDone: "Tüm seviyeler bitti! Tebrikler Şampiyon! 🏆",
+                timeUp: "Süre Doldu! ⏰"
+            }
+        };
+
+        // --- SES SİSTEMİ (AUDIO SYSTEM) ---
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            
+            // Eğer context askıdaysa uyandır
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            const now = audioCtx.currentTime;
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                // Kısa, yüksek perdeli "blip"
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } 
+            else if (type === 'move') {
+                // Daha yumuşak hareket sesi
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.15);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+            else if (type === 'win') {
+                // Zafer melodisi (Arpej)
+                osc.type = 'square';
+                // C Major Arpeggio
+                osc.frequency.setValueAtTime(523.25, now);       // Do
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // Mi
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // Sol
+                osc.frequency.setValueAtTime(1046.50, now + 0.3);// Do (ince)
+                
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.linearRampToValueAtTime(0.05, now + 0.3);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                
+                osc.start(now);
+                osc.stop(now + 0.8);
+            } 
+            else if (type === 'lose') {
+                // Kaybetme sesi (Düşük tonlu testere dişi)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // --- OYUN VERİLERİ VE YAPILANDIRMA ---
+        
+        const ITEMS = {
+            wolf: { id: 'wolf', emoji: '🐺', weight: 2 },
+            sheep: { id: 'sheep', emoji: '🐑', weight: 1 },
+            cabbage: { id: 'cabbage', emoji: '🌿', weight: 1 },
+            dog: { id: 'dog', emoji: '🐶', weight: 2 },
+            hunter: { id: 'hunter', emoji: '👮', weight: 2 }
+        };
+
+        const LEVELS = [
+            {
+                id: 1,
+                name: { tr: "Klasik Başlangıç", en: "Classic Start" },
+                items: ['wolf', 'sheep', 'cabbage'],
+                boatCapacity: 1,
+                maxWeight: null,
+                timeLimit: null,
+                rulesText: { 
+                    tr: "Kurt kuzuyu yer, Kuzu otu yer. Yalnız bırakma!",
+                    en: "Wolf eats Sheep, Sheep eats Cabbage. Don't leave them alone!"
+                },
+                checkFail: (bank) => {
+                    const has = (id) => bank.includes(id);
+                    if (has('wolf') && has('sheep') && !has('dog') && !has('hunter')) 
+                        return { fail: true, msg: { tr: "Kurt kuzuyu yedi! 🐺🍖", en: "Wolf ate the Sheep! 🐺🍖" } };
+                    if (has('sheep') && has('cabbage') && !has('dog') && !has('hunter')) 
+                        return { fail: true, msg: { tr: "Kuzu otu yedi! 🐑🌿", en: "Sheep ate the Cabbage! 🐑🌿" } };
+                    return { fail: false };
+                }
+            },
+            {
+                id: 2,
+                name: { tr: "Sadık Dost", en: "Loyal Friend" },
+                items: ['wolf', 'sheep', 'cabbage', 'dog'],
+                boatCapacity: 1,
+                maxWeight: null,
+                timeLimit: null,
+                rulesText: {
+                    tr: "Köpek varsa kurt saldırmaz. Ama kayık hala tek kişilik.",
+                    en: "If Dog is present, Wolf won't attack. Boat is still 1 passenger."
+                },
+                checkFail: (bank) => {
+                    const has = (id) => bank.includes(id);
+                    if (has('wolf') && has('sheep') && !has('dog')) 
+                        return { fail: true, msg: { tr: "Kurt kuzuyu yedi! 🐺🍖", en: "Wolf ate the Sheep! 🐺🍖" } };
+                    if (has('sheep') && has('cabbage') && !has('dog')) 
+                        return { fail: true, msg: { tr: "Kuzu otu yedi! 🐑🌿", en: "Sheep ate the Cabbage! 🐑🌿" } };
+                    return { fail: false };
+                }
+            },
+            {
+                id: 3,
+                name: { tr: "Ağır Yük", en: "Heavy Load" },
+                items: ['wolf', 'sheep', 'cabbage'],
+                boatCapacity: 2,
+                maxWeight: 2,
+                timeLimit: null,
+                rulesText: {
+                    tr: "Kayık en fazla 2 birim ağırlık taşır. Kurt=2, Kuzu=1, Ot=1.",
+                    en: "Boat holds max 2 weight. Wolf=2, Sheep=1, Cabbage=1."
+                },
+                checkFail: (bank) => {
+                    const has = (id) => bank.includes(id);
+                    if (has('wolf') && has('sheep')) return { fail: true, msg: { tr: "Kurt kuzuyu yedi! 🐺", en: "Wolf ate the Sheep! 🐺" } };
+                    if (has('sheep') && has('cabbage')) return { fail: true, msg: { tr: "Kuzu otu yedi! 🐑", en: "Sheep ate the Cabbage! 🐑" } };
+                    return { fail: false };
+                }
+            },
+            {
+                id: 4,
+                name: { tr: "Zamanla Yarış", en: "Race Against Time" },
+                items: ['wolf', 'sheep', 'cabbage'],
+                boatCapacity: 1,
+                maxWeight: null,
+                timeLimit: 60,
+                rulesText: {
+                    tr: "60 Saniyen var! Acele et.",
+                    en: "You have 60 seconds! Hurry up."
+                },
+                checkFail: (bank) => {
+                    const has = (id) => bank.includes(id);
+                    if (has('wolf') && has('sheep')) return { fail: true, msg: { tr: "Kurt kuzuyu yedi!", en: "Wolf ate the Sheep!" } };
+                    if (has('sheep') && has('cabbage')) return { fail: true, msg: { tr: "Kuzu otu yedi!", en: "Sheep ate the Cabbage!" } };
+                    return { fail: false };
+                }
+            },
+            {
+                id: 5,
+                name: { tr: "Avcı Paradoksu", en: "Hunter Paradox" },
+                items: ['wolf', 'sheep', 'cabbage', 'hunter'],
+                boatCapacity: 1,
+                maxWeight: null,
+                timeLimit: null,
+                rulesText: {
+                    tr: "Avcı varken kurt saldırmaz. AMA Avcı kuzuyla yalnız kalırsa onu pişirir!",
+                    en: "Hunter prevents wolf attack. BUT if Hunter is alone with Sheep, he cooks it!"
+                },
+                checkFail: (bank) => {
+                    const has = (id) => bank.includes(id);
+                    if (has('wolf') && has('sheep') && !has('hunter')) return { fail: true, msg: { tr: "Kurt kuzuyu yedi!", en: "Wolf ate the Sheep!" } };
+                    if (has('sheep') && has('cabbage') && !has('hunter')) return { fail: true, msg: { tr: "Kuzu otu yedi!", en: "Sheep ate the Cabbage!" } };
+                    if (has('hunter') && has('sheep') && bank.length === 2) 
+                        return { fail: true, msg: { tr: "Avcı kuzuyu kebap yaptı! 👮🍗", en: "Hunter made Sheep Kebab! 👮🍗" } };
+                    return { fail: false };
+                }
+            }
+        ];
+
+        // --- STATE YÖNETİMİ ---
+        let state = {
+            lang: 'en', // Default to English initially, changed by modal
+            currentLevelIndex: 0,
+            boatSide: 'left',
+            leftBank: [],
+            rightBank: [],
+            boat: [],
+            moves: 0,
+            timer: null,
+            timerInterval: null,
+            isGameOver: false,
+            unlockedLevels: 1
+        };
+
+        // --- DOM ELEMENTLERİ ---
+        const els = {
+            leftBank: document.getElementById('left-bank'),
+            rightBank: document.getElementById('right-bank'),
+            boat: document.getElementById('boat'),
+            boatWrapper: document.getElementById('boat-wrapper'),
+            levelDisplay: document.getElementById('level-display'),
+            movesDisplay: document.getElementById('moves-display'),
+            timerDisplay: document.getElementById('timer-display'),
+            levelModal: document.getElementById('level-modal'),
+            endModal: document.getElementById('end-modal'),
+            endTitle: document.getElementById('end-title'),
+            endMessage: document.getElementById('end-message'),
+            endActionBtn: document.getElementById('end-action-btn'),
+            levelGrid: document.getElementById('level-grid'),
+            starRating: document.getElementById('star-rating'),
+            rulesText: document.getElementById('level-rules'),
+            infoModal: document.getElementById('info-modal'),
+            capacityLabel: document.getElementById('boat-capacity-label'),
+            langModal: document.getElementById('lang-modal')
+        };
+
+        // --- BAŞLANGIÇ ---
+        function selectLanguage(lang) {
+            initAudio(); // Initialize audio context on user interaction
+            playSound('click'); // Play initial sound
+            state.lang = lang;
+            els.langModal.classList.remove('active');
+            updateStaticText();
+            loadProgress();
+            initLevel(0);
+            renderLevelGrid();
+        }
+
+        function updateStaticText() {
+            const t = TEXTS[state.lang];
+            document.getElementById('ui-title').innerText = t.title;
+            document.getElementById('ui-menu-btn').innerText = t.menu;
+            document.getElementById('ui-restart-btn').innerText = t.restart;
+            document.getElementById('go-btn').innerText = t.go;
+            document.getElementById('ui-mission-title').innerText = t.mission;
+            document.getElementById('ui-understood-btn').innerText = t.understood;
+            document.getElementById('ui-level-select').innerText = t.levelSelect;
+            document.getElementById('ui-close-level-btn').innerText = t.close;
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('neonRiverProgress');
+            if (saved) {
+                state.unlockedLevels = parseInt(saved);
+            }
+        }
+
+        function saveProgress() {
+            if (state.currentLevelIndex + 2 > state.unlockedLevels) {
+                state.unlockedLevels = state.currentLevelIndex + 2;
+                localStorage.setItem('neonRiverProgress', state.unlockedLevels);
+            }
+        }
+
+        // --- OYUN MANTIĞI ---
+
+        function initLevel(index) {
+            state.currentLevelIndex = index;
+            state.boatSide = 'left';
+            state.boat = [];
+            state.rightBank = [];
+            state.moves = 0;
+            state.isGameOver = false;
+            
+            const levelData = LEVELS[index];
+            state.leftBank = [...levelData.items];
+            
+            clearInterval(state.timerInterval);
+            els.timerDisplay.style.display = 'none';
+            if (levelData.timeLimit) {
+                state.timer = levelData.timeLimit;
+                els.timerDisplay.style.display = 'block';
+                startTimer();
+            }
+
+            // UI Update
+            els.rulesText.innerText = levelData.rulesText[state.lang];
+            updateUI();
+            
+            if (index === 0) showInfo();
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            state.timerInterval = setInterval(() => {
+                state.timer--;
+                updateTimerDisplay();
+                if (state.timer <= 0) {
+                    clearInterval(state.timerInterval);
+                    gameOver(false, TEXTS[state.lang].timeUp);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            els.timerDisplay.innerText = state.timer + 's';
+            if (state.timer < 10) els.timerDisplay.style.color = 'red';
+            else els.timerDisplay.style.color = '#ff0';
+        }
+
+        function moveItem(itemId, fromLocation) {
+            if (state.isGameOver) return;
+            const level = LEVELS[state.currentLevelIndex];
+
+            if (fromLocation === 'bank') {
+                if (state.boat.length >= (level.boatCapacity || 1) && level.maxWeight === null) {
+                    shakeBoat(); return;
+                }
+
+                const itemData = ITEMS[itemId];
+                
+                if (level.maxWeight) {
+                    const currentWeight = state.boat.reduce((acc, id) => acc + ITEMS[id].weight, 0);
+                    if (currentWeight + itemData.weight > level.maxWeight) {
+                        shakeBoat(); 
+                        alert(TEXTS[state.lang].weightAlert);
+                        return;
+                    }
+                } else {
+                     if (state.boat.length >= level.boatCapacity) { shakeBoat(); return; }
+                }
+
+                if (state.boatSide === 'left') {
+                    state.leftBank = state.leftBank.filter(id => id !== itemId);
+                } else {
+                    state.rightBank = state.rightBank.filter(id => id !== itemId);
+                }
+                state.boat.push(itemId);
+            
+            } 
+            else if (fromLocation === 'boat') {
+                state.boat = state.boat.filter(id => id !== itemId);
+                if (state.boatSide === 'left') {
+                    state.leftBank.push(itemId);
+                } else {
+                    state.rightBank.push(itemId);
+                }
+            }
+
+            playSound('move'); // Eşya hareket sesi
+            updateUI();
+        }
+
+        function moveBoat() {
+            if (state.isGameOver) return;
+            
+            playSound('move'); // Kayık hareket sesi
+            state.moves++;
+            state.boatSide = state.boatSide === 'left' ? 'right' : 'left';
+            
+            updateUI();
+            
+            setTimeout(() => {
+                checkRules();
+            }, 650);
+        }
+
+        function checkRules() {
+            const level = LEVELS[state.currentLevelIndex];
+            const unsafeBank = state.boatSide === 'right' ? state.leftBank : state.rightBank;
+            const result = level.checkFail(unsafeBank);
+            
+            if (result.fail) {
+                gameOver(false, result.msg[state.lang]);
+                return;
+            }
+
+            const totalItems = level.items.length;
+            const itemsOnRight = state.rightBank.length + (state.boatSide === 'right' ? state.boat.length : 0);
+            
+            if (itemsOnRight === totalItems) {
+                state.rightBank.push(...state.boat);
+                state.boat = [];
+                updateUI();
+                setTimeout(() => gameOver(true), 500);
+            }
+        }
+
+        function gameOver(isWin, msg) {
+            state.isGameOver = true;
+            clearInterval(state.timerInterval);
+            
+            if (isWin) {
+                playSound('win');
+            } else {
+                playSound('lose');
+            }
+
+            els.endModal.classList.add('active');
+            const t = TEXTS[state.lang];
+            
+            if (isWin) {
+                els.endTitle.innerText = t.win;
+                els.endTitle.className = "message-success";
+                els.endMessage.innerText = t.winMsg.replace('{moves}', state.moves);
+                
+                let stars = "⭐⭐⭐";
+                if (state.moves > 15) stars = "⭐⭐";
+                if (state.moves > 20) stars = "⭐";
+                els.starRating.innerText = stars;
+                
+                els.endActionBtn.innerText = t.next;
+                els.endActionBtn.onclick = () => { playSound('click'); nextLevel(); };
+                
+                saveProgress();
+                renderLevelGrid();
+            } else {
+                els.endTitle.innerText = t.fail;
+                els.endTitle.className = "message-fail";
+                els.endMessage.innerText = msg;
+                els.starRating.innerText = "";
+                els.endActionBtn.innerText = t.retry;
+                els.endActionBtn.onclick = () => { playSound('click'); restartLevel(); };
+            }
+        }
+
+        // --- UI RENDER ---
+
+        function updateUI() {
+            const t = TEXTS[state.lang];
+            
+            els.levelDisplay.innerText = `${t.level} ${state.currentLevelIndex + 1}: ${LEVELS[state.currentLevelIndex].name[state.lang]}`;
+            els.movesDisplay.innerText = `${t.moves}: ${state.moves}`;
+            
+            const lvl = LEVELS[state.currentLevelIndex];
+            let capText = `${t.capacity}: ${lvl.boatCapacity}`;
+            if (lvl.maxWeight) capText = `${t.maxWeight}: ${lvl.maxWeight}`;
+            els.capacityLabel.innerText = capText;
+
+            if (state.boatSide === 'left') {
+                els.boatWrapper.classList.remove('right');
+                els.boatWrapper.classList.add('left');
+                els.leftBank.classList.add('active-side');
+                els.rightBank.classList.remove('active-side');
+            } else {
+                els.boatWrapper.classList.remove('left');
+                els.boatWrapper.classList.add('right');
+                els.rightBank.classList.add('active-side');
+                els.leftBank.classList.remove('active-side');
+            }
+
+            els.leftBank.innerHTML = '';
+            els.rightBank.innerHTML = '';
+            els.boat.innerHTML = '';
+
+            const createEl = (id, location) => {
+                const item = ITEMS[id];
+                const el = document.createElement('div');
+                el.className = 'item';
+                if (location === 'boat') el.classList.add('in-boat');
+                el.innerText = item.emoji;
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    if (location === 'bank' && 
+                        ((state.boatSide === 'left' && state.rightBank.includes(id)) || 
+                         (state.boatSide === 'right' && state.leftBank.includes(id)))) {
+                        return;
+                    }
+                    moveItem(id, location);
+                };
+                
+                if (LEVELS[state.currentLevelIndex].maxWeight) {
+                    const badge = document.createElement('span');
+                    badge.className = 'weight-badge';
+                    badge.innerText = item.weight;
+                    el.appendChild(badge);
+                }
+                
+                return el;
+            };
+
+            state.leftBank.forEach(id => els.leftBank.appendChild(createEl(id, 'bank')));
+            state.rightBank.forEach(id => els.rightBank.appendChild(createEl(id, 'bank')));
+            state.boat.forEach(id => els.boat.appendChild(createEl(id, 'boat')));
+            
+            const btn = document.getElementById('go-btn');
+            btn.disabled = false;
+        }
+
+        function renderLevelGrid() {
+            els.levelGrid.innerHTML = '';
+            LEVELS.forEach((l, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                btn.innerText = i + 1;
+                btn.onclick = () => {
+                    playSound('click');
+                    initLevel(i);
+                    toggleLevelModal();
+                };
+                
+                if (i === state.currentLevelIndex) btn.classList.add('current');
+                
+                if (i < state.unlockedLevels) {
+                    if (i < state.unlockedLevels - 1) btn.classList.add('completed');
+                } else {
+                    btn.classList.add('locked');
+                    btn.innerHTML += ' 🔒';
+                    btn.onclick = null; // Kilitli olana basınca ses çıkmasın veya farklı ses eklenebilir
+                }
+                els.levelGrid.appendChild(btn);
+            });
+        }
+
+        // --- YARDIMCI FONKSİYONLAR ---
+
+        function shakeBoat() {
+            els.boat.style.transform = "translateX(5px)";
+            setTimeout(() => els.boat.style.transform = "translateX(-5px)", 50);
+            setTimeout(() => els.boat.style.transform = "translateX(5px)", 100);
+            setTimeout(() => els.boat.style.transform = "none", 150);
+        }
+
+        function handleBankClick(side) { }
+
+        function handleBoatClick() { }
+
+        function restartLevel() {
+            els.endModal.classList.remove('active');
+            initLevel(state.currentLevelIndex);
+        }
+
+        function nextLevel() {
+            els.endModal.classList.remove('active');
+            if (state.currentLevelIndex + 1 < LEVELS.length) {
+                initLevel(state.currentLevelIndex + 1);
+            } else {
+                alert(TEXTS[state.lang].allDone);
+                initLevel(0);
+            }
+        }
+        
+        function nextOrRestart() {
+            if (state.isGameOver && els.endTitle.classList.contains('message-success')) {
+                nextLevel();
+            } else {
+                restartLevel();
+            }
+        }
+
+        function toggleLevelModal() {
+            els.levelModal.classList.toggle('active');
+        }
+
+        function showInfo() {
+            els.infoModal.classList.add('active');
+        }
+
+        function closeInfo() {
+            els.infoModal.classList.remove('active');
+        }
+
+    </script>
+</body>
+</html>

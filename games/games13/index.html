@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Meta Etiketleri -->
+    <title>GeoStorm: Neon Pulse - Stratejik Puzzle & Arcade Oyunu</title>
+    <meta name="description" content="GeoStorm: Neon Pulse - Reflekslerinizi ve stratejinizi test eden modern, neon temalı bir puzzle ve arcade oyunu. Blokları yerleştirin, kombolar yapın ve en yüksek skora ulaşın!">
+    <meta name="keywords" content="geostorm, neon pulse, puzzle oyunu, arcade oyunu, tetris benzeri, mobil oyun, web oyunu, strateji oyunu, ücretsiz oyun, neon oyunları">
+    <meta name="author" content="GeoStorm Team">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://geostorm-neon-pulse.example.com/">
+    <meta property="og:title" content="GeoStorm: Neon Pulse - Modern Puzzle Deneyimi">
+    <meta property="og:description" content="Hız ve stratejinin buluştuğu neon atmosferli arcade puzzle oyunu. Hemen oyna!">
+    <meta property="og:image" content="https://geostorm-neon-pulse.example.com/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://geostorm-neon-pulse.example.com/">
+    <meta property="twitter:title" content="GeoStorm: Neon Pulse - Modern Puzzle Deneyimi">
+    <meta property="twitter:description" content="Hız ve stratejinin buluştuğu neon atmosferli arcade puzzle oyunu. Hemen oyna!">
+    <meta property="twitter:image" content="https://geostorm-neon-pulse.example.com/og-image.jpg">
+
+    <style>
+        :root {
+            --bg-color: #0a0a12;
+            --panel-bg: rgba(255, 255, 255, 0.07);
+            --accent-neon: #00f2ff;
+            --danger-neon: #ff007b;
+            --success-neon: #39ff14;
+            --warning-neon: #f2ff00;
+            --text-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Ana Menü Butonu Stili */
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--accent-neon);
+            background: var(--panel-bg);
+            border: 1px solid var(--accent-neon);
+            padding: 10px 18px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        .home-btn:hover {
+            background: var(--accent-neon);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px var(--accent-neon);
+            transform: translateY(-2px);
+        }
+
+        .home-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        #game-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            max-width: 100%;
+        }
+
+        #game-container {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            padding: 20px;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a12 100%);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        canvas#game-canvas {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+            display: block;
+            height: 60vh;
+        }
+
+        #side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 150px;
+        }
+
+        .stat-box {
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+            padding: 15px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.6;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--accent-neon);
+            text-shadow: 0 0 10px var(--accent-neon);
+        }
+
+        #game-controller {
+            width: 100%;
+            max-width: 500px;
+            display: grid;
+            grid-template-areas: 
+                "left rotate right"
+                "drop hard-drop hard-drop";
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .ctrl-btn {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .ctrl-btn:active {
+            background: rgba(0, 242, 255, 0.2);
+            transform: scale(0.94);
+            border-color: var(--accent-neon);
+        }
+
+        .rotate-btn {
+            grid-area: rotate;
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid var(--accent-neon);
+            color: var(--accent-neon);
+            font-weight: bold;
+            font-size: 1rem;
+            text-shadow: 0 0 5px var(--accent-neon);
+        }
+
+        .hard-drop-btn {
+            grid-area: hard-drop;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            color: var(--warning-neon);
+            border-color: rgba(242, 255, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .home-btn {
+                top: 10px;
+                left: 10px;
+                padding: 8px 14px;
+                font-size: 0.75rem;
+            }
+            .home-btn svg { width: 16px; height: 16px; }
+
+            #game-container {
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+            #side-panel {
+                flex-direction: row;
+                width: 100%;
+                justify-content: space-around;
+            }
+            .stat-box {
+                padding: 8px;
+                flex: 1;
+            }
+            canvas#game-canvas {
+                height: 45vh;
+            }
+            .ctrl-btn {
+                padding: 15px;
+            }
+            h1 { font-size: 2rem !important; }
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 10, 18, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            border-radius: 24px;
+            backdrop-filter: blur(8px);
+            text-align: center;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 {
+            font-size: 2.8rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--accent-neon), var(--danger-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.3));
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button.main-btn {
+            background: transparent;
+            border: 2px solid var(--accent-neon);
+            color: var(--accent-neon);
+            padding: 14px 40px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 900;
+            transition: all 0.3s;
+            min-width: 220px;
+            flex-shrink: 0;
+        }
+
+        button.main-btn:hover {
+            background: var(--accent-neon);
+            color: var(--bg-color);
+            box-shadow: 0 0 30px var(--accent-neon);
+        }
+
+        button.sec-btn {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--panel-bg);
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .lang-btn.active {
+            opacity: 1;
+            border-color: var(--accent-neon);
+            color: var(--accent-neon);
+        }
+
+        #how-to-modal {
+            padding: 20px;
+            width: 95%;
+            max-width: 600px;
+            height: auto;
+            max-height: 95%;
+            justify-content: center;
+        }
+
+        #instructions-content {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 500px) {
+            #instructions-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .instruction-item {
+            text-align: left;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 10px;
+            border-left: 2px solid var(--accent-neon);
+            line-height: 1.3;
+        }
+
+        #message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 30px;
+            border-radius: 40px;
+            background: var(--accent-neon);
+            color: var(--bg-color);
+            font-weight: 900;
+            z-index: 1000;
+            opacity: 0;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .combo-text {
+            position: absolute;
+            color: var(--warning-neon);
+            font-weight: 900;
+            font-size: 2rem;
+            pointer-events: none;
+            text-shadow: 0 0 15px var(--warning-neon);
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 50;
+        }
+
+        @keyframes floatUp {
+            from { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+            to { transform: translate(-50%, -80px) scale(1.2); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ana Menü Butonu -->
+    <a href="../../index.html" class="home-btn" id="home-link">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span id="home-text">HOME</span>
+    </a>
+
+    <div id="message-box"></div>
+
+    <div id="game-wrapper">
+        <div id="game-container">
+            <!-- Başlangıç Ekranı -->
+            <div id="start-screen" class="overlay">
+                <div id="lang-switch">
+                    <div class="lang-btn active" onclick="setLanguage('en')">EN</div>
+                    <div class="lang-btn" onclick="setLanguage('tr')">TR</div>
+                </div>
+                <h1>GEOSTORM</h1>
+                <p id="subtitle" style="opacity: 0.5; font-size: 0.9rem; letter-spacing: 3px; margin-top: 5px;">NEON PULSE EDITION</p>
+                
+                <div class="btn-group">
+                    <button id="btn-start-game" class="main-btn" onclick="startGame()">START GAME</button>
+                    <button id="btn-how-to" class="main-btn sec-btn" onclick="toggleHowTo(true)">HOW TO PLAY</button>
+                </div>
+            </div>
+
+            <!-- Nasıl Oynanır Ekranı -->
+            <div id="how-to-modal" class="overlay hidden">
+                <h2 id="how-to-title" style="color: var(--accent-neon); margin-bottom: 5px;">HOW TO PLAY</h2>
+                <div id="instructions-content">
+                    <!-- JS ile doldurulacak -->
+                </div>
+                <button id="btn-close-how-to" class="main-btn" onclick="toggleHowTo(false)">CLOSE</button>
+            </div>
+
+            <!-- Oyun Bitti Ekranı -->
+            <div id="game-over-screen" class="overlay hidden">
+                <h1 id="game-over-title" style="color: var(--danger-neon)">GAME OVER</h1>
+                <div id="final-score-label" class="stat-label" style="margin-top: 20px;">YOUR SCORE</div>
+                <div id="final-score" class="stat-value" style="font-size: 4rem; margin: 10px 0;">0</div>
+                <button id="btn-retry" class="main-btn" onclick="startGame()">TRY AGAIN</button>
+            </div>
+
+            <canvas id="game-canvas"></canvas>
+
+            <div id="side-panel">
+                <div class="stat-box">
+                    <div id="score-label" class="stat-label">SCORE</div>
+                    <div id="score-val" class="stat-value">0</div>
+                </div>
+                <div class="stat-box">
+                    <div id="level-label" class="stat-label">LEVEL</div>
+                    <div id="level-val" class="stat-value">1</div>
+                </div>
+                <div class="stat-box">
+                    <div id="next-label" class="stat-label">NEXT</div>
+                    <canvas id="next-piece-canvas" width="80" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-controller">
+            <div class="ctrl-btn" id="btn-left">←</div>
+            <div class="ctrl-btn rotate-btn" id="btn-rotate">ROTATE</div>
+            <div class="ctrl-btn" id="btn-right">→</div>
+            <div class="ctrl-btn" id="btn-drop">↓</div>
+            <div class="ctrl-btn hard-drop-btn" id="btn-hard-drop">HARD DROP</div>
+        </div>
+    </div>
+
+    <script>
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 30;
+        
+        const COLORS = {
+            I: '#00f2ff', J: '#0066ff', L: '#ff9500', 
+            O: '#f2ff00', S: '#39ff14', T: '#bc00ff', 
+            Z: '#ff007b', SPECIAL_EXPLOSIVE: '#ffffff', SPECIAL_ENERGY: '#ffcc00'
+        };
+
+        const SHAPES = {
+            I: [[1, 1, 1, 1]],
+            J: [[1, 0, 0], [1, 1, 1]],
+            L: [[0, 0, 1], [1, 1, 1]],
+            O: [[1, 1], [1, 1]],
+            S: [[0, 1, 1], [1, 1, 0]],
+            T: [[0, 1, 0], [1, 1, 1]],
+            Z: [[1, 1, 0], [0, 1, 1]]
+        };
+
+        const i18n = {
+            en: {
+                subtitle: "NEON PULSE EDITION",
+                start: "START GAME",
+                howTo: "HOW TO PLAY",
+                close: "CLOSE",
+                score: "SCORE",
+                level: "LEVEL",
+                next: "NEXT",
+                gameOver: "GAME OVER",
+                yourScore: "YOUR SCORE",
+                retry: "TRY AGAIN",
+                rotate: "ROTATE",
+                hardDrop: "HARD DROP",
+                home: "HOME",
+                msgStart: "START!",
+                msgLevel: "LEVEL UP!",
+                msgBoom: "BOOM!",
+                instructions: [
+                    "🕹️ <b>Controls:</b> Keys/Buttons to move.",
+                    "⚡ <b>Drop:</b> Speed up the fall.",
+                    "💎 <b>Hard Drop:</b> Instant placement.",
+                    "💣 <b>Bombs:</b> Clear 3x3 area.",
+                    "🔋 <b>Energy:</b> Double score pieces.",
+                    "📈 <b>Progress:</b> Level speed increases.",
+                    "🏆 <b>Goal:</b> Clear lines to win!"
+                ]
+            },
+            tr: {
+                subtitle: "NEON PULSE SÜRÜMÜ",
+                start: "OYUNU BAŞLAT",
+                howTo: "NASIL OYNANIR",
+                close: "KAPAT",
+                score: "SKOR",
+                level: "SEVİYE",
+                next: "SIRADAKİ",
+                gameOver: "OYUN BİTTİ",
+                yourScore: "SKORUNUZ",
+                retry: "TEKRAR DENE",
+                rotate: "DÖNDÜR",
+                hardDrop: "ANINDA DÜŞÜR",
+                home: "ANA MENÜ",
+                msgStart: "BAŞLA!",
+                msgLevel: "SEVİYE ATLANDI!",
+                msgBoom: "PATLAMA!",
+                instructions: [
+                    "🕹️ <b>Kontroller:</b> Tuşlarla hareket.",
+                    "⚡ <b>Düşür:</b> Düşüşü hızlandırır.",
+                    "💎 <b>Anında:</b> Beklemeden yerleştirir.",
+                    "💣 <b>Bombalar:</b> 3x3 alanı temizler.",
+                    "🔋 <b>Enerji:</b> İki kat puan verir.",
+                    "📈 <b>Hız:</b> Seviye ile hız artar.",
+                    "🏆 <b>Amaç:</b> Satırları temizle!"
+                ]
+            }
+        };
+
+        let currentLang = 'en';
+        let canvas, ctx, nextCanvas, nextCtx;
+        let grid, currentPiece, nextPiece;
+        let score = 0, level = 1, linesCleared = 0;
+        let gameActive = false;
+        let dropCounter = 0;
+        let dropInterval = 1000;
+        let lastTime = 0;
+        let particles = [];
+        let audioCtx;
+
+        window.onload = () => {
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            nextCanvas = document.getElementById('next-piece-canvas');
+            nextCtx = nextCanvas.getContext('2d');
+
+            canvas.width = COLS * BLOCK_SIZE;
+            canvas.height = ROWS * BLOCK_SIZE;
+
+            setupControls();
+            setLanguage('en');
+            resetGame();
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = i18n[lang];
+            
+            document.getElementById('subtitle').innerText = t.subtitle;
+            document.getElementById('btn-start-game').innerText = t.start;
+            document.getElementById('btn-how-to').innerText = t.howTo;
+            document.getElementById('game-over-title').innerText = t.gameOver;
+            document.getElementById('final-score-label').innerText = t.yourScore;
+            document.getElementById('btn-retry').innerText = t.retry;
+            document.getElementById('score-label').innerText = t.score;
+            document.getElementById('level-label').innerText = t.level;
+            document.getElementById('next-label').innerText = t.next;
+            document.getElementById('btn-rotate').innerText = t.rotate;
+            document.getElementById('btn-hard-drop').innerText = t.hardDrop;
+            document.getElementById('how-to-title').innerText = t.howTo;
+            document.getElementById('btn-close-how-to').innerText = t.close;
+            document.getElementById('home-text').innerText = t.home;
+            
+            const list = document.getElementById('instructions-content');
+            list.innerHTML = t.instructions.map(i => `<div class="instruction-item">${i}</div>`).join('');
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase() === lang);
+            });
+        }
+
+        function toggleHowTo(show) {
+            const modal = document.getElementById('how-to-modal');
+            modal.classList.toggle('hidden', !show);
+            if (show) {
+                initAudio();
+                SFX.move();
+            }
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSynthSound(freq, type, duration, vol = 0.1) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const SFX = {
+            move: () => playSynthSound(440, 'sine', 0.1, 0.05),
+            rotate: () => playSynthSound(660, 'square', 0.1, 0.03),
+            drop: () => playSynthSound(150, 'sine', 0.2, 0.2),
+            hardDrop: () => {
+                playSynthSound(100, 'triangle', 0.3, 0.3);
+                playSynthSound(50, 'sine', 0.4, 0.4);
+            },
+            clear: () => {
+                [440, 554, 659, 880].forEach((f, i) => {
+                    setTimeout(() => playSynthSound(f, 'sine', 0.4, 0.1), i * 100);
+                });
+            },
+            boom: () => playSynthSound(60, 'sawtooth', 0.5, 0.3),
+            levelUp: () => {
+                playSynthSound(523, 'sine', 0.5, 0.1);
+                setTimeout(() => playSynthSound(659, 'sine', 0.5, 0.1), 150);
+                setTimeout(() => playSynthSound(783, 'sine', 0.5, 0.1), 300);
+            },
+            gameOver: () => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 1.0);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.0);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.0);
+            }
+        };
+
+        function setupControls() {
+            const bind = (id, fn, sfxName) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const handleAction = (e) => {
+                    e.preventDefault();
+                    if(gameActive) {
+                        fn();
+                        if(SFX[sfxName]) SFX[sfxName]();
+                    }
+                };
+                el.addEventListener('touchstart', handleAction);
+                el.addEventListener('mousedown', (e) => {
+                    if (e.button === 0) {
+                        if(gameActive) {
+                            fn();
+                            if(SFX[sfxName]) SFX[sfxName]();
+                        }
+                    }
+                });
+            };
+
+            bind('btn-left', moveLeft, 'move');
+            bind('btn-right', moveRight, 'move');
+            bind('btn-rotate', rotatePiece, 'rotate');
+            bind('btn-drop', drop, 'drop');
+            bind('btn-hard-drop', hardDrop, 'hardDrop');
+        }
+
+        function resetGame() {
+            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+            score = 0;
+            level = 1;
+            linesCleared = 0;
+            dropInterval = 1000;
+            updateStats();
+            nextPiece = createPiece();
+            spawnPiece();
+            particles = [];
+        }
+
+        function startGame() {
+            initAudio();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('how-to-modal').classList.add('hidden');
+            resetGame();
+            gameActive = true;
+            requestAnimationFrame(update);
+            showMessage(i18n[currentLang].msgStart);
+            SFX.levelUp();
+        }
+
+        function showMessage(msg) {
+            const box = document.getElementById('message-box');
+            box.innerText = msg;
+            box.style.opacity = 1;
+            box.style.transform = "translateX(-50%) scale(1.1)";
+            setTimeout(() => {
+                box.style.opacity = 0;
+                box.style.transform = "translateX(-50%) scale(1.0)";
+            }, 1500);
+        }
+
+        function spawnPiece() {
+            currentPiece = nextPiece;
+            nextPiece = createPiece();
+            drawNextPiece();
+            currentPiece.pos = { x: Math.floor(COLS / 2) - Math.floor(currentPiece.matrix[0].length / 2), y: 0 };
+            if (collide()) gameOver();
+        }
+
+        function createPiece() {
+            const keys = Object.keys(SHAPES);
+            const type = keys[Math.floor(Math.random() * keys.length)];
+            const isSpecial = Math.random() < 0.12; 
+            return {
+                matrix: SHAPES[type],
+                color: COLORS[type],
+                type: type,
+                special: isSpecial ? (Math.random() > 0.5 ? 'explosive' : 'energy') : null
+            };
+        }
+
+        function drawNextPiece() {
+            nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+            const m = nextPiece.matrix;
+            const size = 18;
+            const offsetX = (nextCanvas.width - m[0].length * size) / 2;
+            const offsetY = (nextCanvas.height - m.length * size) / 2;
+            m.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) drawBlock(nextCtx, x * size + offsetX, y * size + offsetY, nextPiece.color, size, nextPiece.special);
+                });
+            });
+        }
+
+        function drawBlock(context, x, y, color, size, special = null) {
+            context.shadowBlur = size / 2.5;
+            context.shadowColor = color;
+            context.fillStyle = color;
+            context.fillRect(x + 1, y + 1, size - 2, size - 2);
+            context.fillStyle = 'rgba(255,255,255,0.3)';
+            context.fillRect(x + 2, y + 2, size - 4, size / 3);
+            if (special === 'explosive') {
+                context.fillStyle = 'white';
+                context.font = `bold ${size/1.8}px Arial`;
+                context.textAlign = "center";
+                context.fillText('💣', x + size/2, y + size/1.3);
+            } else if (special === 'energy') {
+                context.fillStyle = 'black';
+                context.font = `bold ${size/1.8}px Arial`;
+                context.textAlign = "center";
+                context.fillText('⚡', x + size/2, y + size/1.3);
+            }
+            context.shadowBlur = 0;
+        }
+
+        function collide() {
+            const m = currentPiece.matrix;
+            const o = currentPiece.pos;
+            for (let y = 0; y < m.length; ++y) {
+                for (let x = 0; x < m[y].length; ++x) {
+                    if (m[y][x] !== 0 && (grid[y + o.y] && grid[y + o.y][x + o.x]) !== 0) return true;
+                }
+            }
+            return false;
+        }
+
+        function merge() {
+            currentPiece.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) {
+                        grid[y + currentPiece.pos.y][x + currentPiece.pos.x] = {
+                            color: currentPiece.color,
+                            special: currentPiece.special
+                        };
+                    }
+                });
+            });
+            if (currentPiece.special === 'explosive') {
+                handleExplosion(currentPiece.pos.x, currentPiece.pos.y);
+                SFX.boom();
+            } else {
+                SFX.drop();
+            }
+        }
+
+        function handleExplosion(px, py) {
+            createParticles(px * BLOCK_SIZE, py * BLOCK_SIZE, '#ffffff');
+            for (let y = -1; y <= 1; y++) {
+                for (let x = -1; x <= 1; x++) {
+                    const targetY = py + y;
+                    const targetX = px + x;
+                    if (grid[targetY] && grid[targetY][targetX]) grid[targetY][targetX] = 0;
+                }
+            }
+            showMessage(i18n[currentLang].msgBoom);
+        }
+
+        function rotate(matrix) {
+            return matrix[0].map((_, i) => matrix.map(row => row[i]).reverse());
+        }
+
+        function drop() {
+            currentPiece.pos.y++;
+            if (collide()) {
+                currentPiece.pos.y--;
+                merge();
+                clearLines();
+                spawnPiece();
+            }
+            dropCounter = 0;
+        }
+
+        function hardDrop() {
+            while (!collide()) {
+                currentPiece.pos.y++;
+            }
+            currentPiece.pos.y--;
+            merge();
+            clearLines();
+            spawnPiece();
+        }
+
+        function clearLines() {
+            let rowCount = 0;
+            outer: for (let y = ROWS - 1; y >= 0; --y) {
+                for (let x = 0; x < COLS; ++x) {
+                    if (grid[y][x] === 0) continue outer;
+                }
+                grid.splice(y, 1);
+                grid.unshift(Array(COLS).fill(0));
+                ++y;
+                rowCount++;
+            }
+            if (rowCount > 0) {
+                SFX.clear();
+                let multiplier = currentPiece.special === 'energy' ? 2 : 1;
+                score += (rowCount * 100 * level) * multiplier;
+                linesCleared += rowCount;
+                if (linesCleared >= level * 6) {
+                    level++;
+                    dropInterval = Math.max(100, 1000 - (level * 90));
+                    showMessage(i18n[currentLang].msgLevel);
+                    SFX.levelUp();
+                }
+                updateStats();
+                if (rowCount > 1) createComboText(rowCount);
+                createParticles(COLS * BLOCK_SIZE / 2, (ROWS - rowCount) * BLOCK_SIZE, varColor(rowCount));
+            }
+        }
+
+        function varColor(rc) {
+            return rc > 3 ? COLORS.Z : rc > 1 ? COLORS.I : COLORS.S;
+        }
+
+        function createComboText(count) {
+            const div = document.createElement('div');
+            div.className = 'combo-text';
+            div.innerText = `${count}x KOMBO!`;
+            div.style.left = '50%';
+            div.style.top = '40%';
+            document.getElementById('game-container').appendChild(div);
+            setTimeout(() => div.remove(), 800);
+        }
+
+        function updateStats() {
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('level-val').innerText = level;
+        }
+
+        function gameOver() {
+            gameActive = false;
+            SFX.gameOver();
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 25; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: (Math.random() - 0.5) * 15,
+                    life: 1.0,
+                    color: color
+                });
+            }
+        }
+
+        function drawParticles() {
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.025;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    return;
+                }
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = p.color;
+                ctx.fillRect(p.x, p.y, 4, 4);
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            for(let i=0; i<COLS; i++) {
+                ctx.beginPath(); ctx.moveTo(i*BLOCK_SIZE, 0); ctx.lineTo(i*BLOCK_SIZE, canvas.height); ctx.stroke();
+            }
+            grid.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) drawBlock(ctx, x * BLOCK_SIZE, y * BLOCK_SIZE, value.color, BLOCK_SIZE, value.special);
+                });
+            });
+            if (currentPiece) {
+                currentPiece.matrix.forEach((row, y) => {
+                    row.forEach((value, x) => {
+                        if (value) drawBlock(ctx, (currentPiece.pos.x + x) * BLOCK_SIZE, (currentPiece.pos.y + y) * BLOCK_SIZE, currentPiece.color, BLOCK_SIZE, currentPiece.special);
+                    });
+                });
+            }
+            drawParticles();
+        }
+
+        function update(time = 0) {
+            if (!gameActive) return;
+            const deltaTime = time - lastTime;
+            lastTime = time;
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) drop();
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function moveLeft() {
+            currentPiece.pos.x--;
+            if (collide()) {
+                currentPiece.pos.x++;
+            } else {
+                SFX.move();
+            }
+        }
+
+        function moveRight() {
+            currentPiece.pos.x++;
+            if (collide()) {
+                currentPiece.pos.x--;
+            } else {
+                SFX.move();
+            }
+        }
+
+        function rotatePiece() {
+            const oldMatrix = currentPiece.matrix;
+            currentPiece.matrix = rotate(currentPiece.matrix);
+            if (collide()) {
+                currentPiece.matrix = oldMatrix;
+            } else {
+                SFX.rotate();
+            }
+        }
+
+        document.addEventListener('keydown', event => {
+            if (!gameActive) return;
+            if (event.keyCode === 37) moveLeft();
+            else if (event.keyCode === 39) moveRight();
+            else if (event.keyCode === 40) drop();
+            else if (event.keyCode === 38) rotatePiece();
+            else if (event.keyCode === 32) hardDrop();
+        });
+    </script>
+</body>
+</html>

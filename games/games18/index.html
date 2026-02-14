@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Başlangıcı -->
+    <title>Neon Yılan ve Merdiven - Ücretsiz HTML5 Masa Oyunu</title>
+    <meta name="description" content="Neon Yılan ve Merdiven (Snake & Ladder) oyunu. HTML5 tabanlı, mobil uyumlu, neon temalı klasik masa oyunu. Bilgisayara karşı hemen ücretsiz oyna!">
+    <meta name="keywords" content="yılan merdiven, snake and ladder, html5 oyun, masa oyunu, neon oyun, ücretsiz oyun, tarayıcı oyunu, board game, mobil oyun">
+    <meta name="author" content="Neon Games">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#050510">
+
+    <!-- Open Graph / Facebook / WhatsApp Paylaşım Etiketleri -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Neon Yılan ve Merdiven - Hemen Oyna">
+    <meta property="og:description" content="Klasik Yılan Merdiven oyununun neon versiyonu. Mobil uyumlu, ücretsiz ve kurulum gerektirmez. Zar at ve zirveye ulaş!">
+    <meta property="og:site_name" content="Neon Snake & Ladder">
+    
+    <!-- Twitter Kart Etiketleri -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Neon Yılan ve Merdiven">
+    <meta property="twitter:description" content="Klasik Yılan Merdiven oyununun neon versiyonu. Şimdi ücretsiz oyna!">
+    <!-- SEO Bitişi -->
+
+    <style>
+        :root {
+            --bg-color: #050510;
+            --board-bg: #111122;
+            --tile-1: #1a1a2e;
+            --tile-2: #16213e;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff9d;
+            --neon-yellow: #ffee00;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --player-1-color: #ff0055;
+            --player-2-color: #00a8ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a40 0%, #050510 100%);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- OYUN ALANI --- */
+        #game-container {
+            position: relative;
+            width: 95vw;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Dil seçilmeden önce oyun alanı flu olsun */
+            filter: blur(5px);
+            transition: filter 0.5s;
+        }
+
+        #game-container.active {
+            filter: blur(0);
+        }
+
+        /* --- SKOR TABLOSU --- */
+        #ui-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            opacity: 0.5;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+
+        .player-info.active {
+            opacity: 1;
+            transform: scale(1.05);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .p-badge {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* --- TAHTA --- */
+        #board-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: var(--board-bg);
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.8);
+            border: 2px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            width: 100%;
+            height: 100%;
+        }
+
+        .tile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.2);
+            border: 0.5px solid rgba(255,255,255,0.03);
+            position: relative;
+            font-family: monospace;
+        }
+
+        .tile:nth-child(odd) { background-color: var(--tile-1); }
+        .tile:nth-child(even) { background-color: var(--tile-2); }
+
+        /* Parlayan özel kareler */
+        .tile.special {
+            color: rgba(255,255,255,0.8);
+            font-weight: bold;
+        }
+
+        /* --- ÇİZİMLER (Yılanlar/Merdivenler) --- */
+        #connections-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+        }
+
+        /* --- OYUNCULAR --- */
+        .player-token {
+            position: absolute;
+            width: 6%;
+            height: 6%;
+            border-radius: 50%;
+            border: 2px solid white;
+            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Token İçindeki Glow Efekti */
+        .player-token::after {
+            content: '';
+            width: 60%;
+            height: 60%;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            filter: blur(2px);
+        }
+
+        #p1-token { 
+            background-color: var(--player-1-color); 
+            box-shadow: 0 0 15px var(--player-1-color);
+            z-index: 6;
+        }
+        #p2-token { 
+            background-color: var(--player-2-color); 
+            box-shadow: 0 0 15px var(--player-2-color);
+        }
+
+        /* --- KONTROLLER --- */
+        #controls {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        #dice-btn {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            padding: 10px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #dice-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        #dice-btn:hover::before { left: 100%; }
+        #dice-btn:hover { background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 25px rgba(0, 243, 255, 0.4); }
+        #dice-btn:active { transform: scale(0.95); }
+        #dice-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; box-shadow: none; background: transparent; }
+
+        #dice-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px var(--neon-pink);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #message-area {
+            height: 25px;
+            font-size: 1rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 5px rgba(0, 255, 157, 0.5);
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        /* --- MODAL ORTAK STİL --- */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal.show { opacity: 1; pointer-events: auto; }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
+            border: 2px solid var(--neon-pink);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-content h2 { 
+            color: var(--neon-yellow); 
+            margin-top: 0; 
+            text-shadow: 0 0 10px var(--neon-yellow);
+            font-size: 1.8rem;
+        }
+
+        .modal-btn {
+            background: var(--neon-pink);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--neon-pink);
+            transition: transform 0.2s;
+            text-transform: uppercase;
+        }
+        
+        .modal-btn.blue {
+            background: var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue);
+            color: #050510;
+        }
+
+        .modal-btn.gray {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .modal-btn:hover { transform: scale(1.05); }
+
+        /* Tutorial Listesi */
+        .tutorial-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .tutorial-list li {
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+        
+        .tutorial-list li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .tutorial-sub {
+            display: block;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 3px;
+        }
+
+        /* Animasyonlar */
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .shaking { animation: shake 0.2s infinite; }
+
+        @keyframes neonPulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Skor Tablosu -->
+        <div id="ui-header">
+            <div class="player-info active" id="p1-info">
+                <div class="p-badge" style="background: var(--player-1-color); box-shadow: 0 0 10px var(--player-1-color);"></div>
+                <span id="p1-name-display">SİZ</span>
+            </div>
+            <div class="player-info" id="p2-info">
+                <span id="p2-name-display">BİLGİSAYAR</span>
+                <div class="p-badge" style="background: var(--player-2-color); box-shadow: 0 0 10px var(--player-2-color);"></div>
+            </div>
+        </div>
+
+        <!-- Tahta -->
+        <div id="board-wrapper">
+            <div id="board">
+                <!-- Kareler JS ile oluşturulacak -->
+            </div>
+            <!-- Yılan ve Merdiven Çizimleri -->
+            <svg id="connections-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <!-- Yılan Derisi Deseni -->
+                    <pattern id="snakeSkin" width="2" height="2" patternUnits="userSpaceOnUse">
+                        <circle cx="1" cy="1" r="0.5" fill="rgba(0,0,0,0.5)" />
+                    </pattern>
+                    <!-- Parlama Efekti -->
+                    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+            </svg>
+            
+            <!-- Oyuncu Tokenları -->
+            <div id="p1-token" class="player-token"></div>
+            <div id="p2-token" class="player-token"></div>
+        </div>
+
+        <!-- Kontroller -->
+        <div id="controls">
+            <div id="message-area">...</div>
+            <button id="dice-btn">
+                <span id="roll-text">ZAR AT</span>
+                <div id="dice-display">🎲</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Dil Seçim Ekranı -->
+    <div id="language-modal" class="modal show">
+        <div class="modal-content">
+            <h2 style="font-size: 1.5rem; margin-bottom: 5px;">NEON SNAKES & LADDERS</h2>
+            <p style="font-size:0.85rem; color:#aaa; margin-top:0;">SELECT LANGUAGE / DİL SEÇİNİZ</p>
+            <button class="modal-btn blue" onclick="game.setLanguage('en')">ENGLISH</button>
+            <button class="modal-btn" onclick="game.setLanguage('tr')">TÜRKÇE</button>
+            <button class="modal-btn gray" onclick="game.showTutorial()">❓ HOW TO PLAY / NASIL OYNANIR</button>
+            
+            <!-- Ana Menü Butonu -->
+            <a href="../../index.html" class="modal-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); margin-top: 15px; color: var(--neon-blue); font-size: 1rem;">
+                <span style="margin-right: 8px;">🏠</span> ⬅ Ana Menü
+            </a>
+        </div>
+    </div>
+
+    <!-- Nasıl Oynanır Ekranı -->
+    <div id="tutorial-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="color: var(--neon-blue);">GAME RULES</h2>
+            <ul class="tutorial-list">
+                <li>🎲 <strong>Roll Dice:</strong> Move your token forward.<span class="tutorial-sub">(Zar At: Piyonunu ilerlet.)</span></li>
+                <li>⚡ <strong>Ladders:</strong> Land on a ladder base to jump up!<span class="tutorial-sub">(Merdiven: Alt ucuna gelirsen yukarı çıkarsın!)</span></li>
+                <li>☠ <strong>Snakes:</strong> Land on a snake head to slide down.<span class="tutorial-sub">(Yılan: Başına gelirsen aşağı kayarsın.)</span></li>
+                <li>🏆 <strong>Win:</strong> Reach exactly square 100.<span class="tutorial-sub">(Kazanma: Tam 100. kareye ulaş.)</span></li>
+            </ul>
+            <button class="modal-btn" onclick="game.clickSound(); game.closeTutorial()">OK / TAMAM</button>
+        </div>
+    </div>
+
+    <!-- Kazanma Ekranı -->
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="winner-text">OYUNCU KAZANDI!</h2>
+            <p id="win-subtext">Sistemi alt ettin!</p>
+            <button id="restart-btn" class="modal-btn" onclick="game.restart()">Yeniden Başlat</button>
+        </div>
+    </div>
+
+<script>
+    // --- OYUN VERİLERİ ---
+    const BOARD_SIZE = 100;
+    
+    // Yılanlar (Kırmızı) ve Merdivenler (Yeşil)
+    const CONNECTIONS = {
+        // Merdivenler (Yukarı)
+        2: 23,
+        8: 12, 
+        20: 38,
+        28: 76, 
+        40: 61,
+        65: 86,
+        // Yılanlar (Aşağı)
+        30: 7, 
+        47: 15,
+        56: 42,
+        78: 52,
+        92: 70,
+        98: 13 
+    };
+
+    // Dil Veritabanı
+    const LOCALIZATION = {
+        tr: {
+            p1Name: "SİZ",
+            p2Name: "BİLGİSAYAR",
+            rollBtn: "ZAR AT",
+            turnYou: "Sıra Sende!",
+            turnAi: "Bilgisayar hamle yapıyor...",
+            rollYou: "Attığın zar:",
+            rollAi: "Bilgisayar attı:",
+            tooHigh: "Fazla geldi! Bekle.",
+            ladder: "⚡ Merdiven! Yükseliş!",
+            snake: "☠ Yılan! Çöküş!",
+            winTitleYou: "KAZANDIN!",
+            winTitleAi: "KAYBETTİN!",
+            winSubYou: "Sistemi alt ettin!",
+            winSubAi: "Daha şanslı olmalısın...",
+            restartBtn: "YENİDEN BAŞLAT",
+            systemReady: "SİSTEM BAŞLATILDI"
+        },
+        en: {
+            p1Name: "YOU",
+            p2Name: "CPU",
+            rollBtn: "ROLL DICE",
+            turnYou: "Your Turn!",
+            turnAi: "CPU is thinking...",
+            rollYou: "You rolled:",
+            rollAi: "CPU rolled:",
+            tooHigh: "Too high! Wait.",
+            ladder: "⚡ Ladder! Rise Up!",
+            snake: "☠ Snake! Fall Down!",
+            winTitleYou: "YOU WON!",
+            winTitleAi: "YOU LOST!",
+            winSubYou: "System Overridden!",
+            winSubAi: "Try again later...",
+            restartBtn: "PLAY AGAIN",
+            systemReady: "SYSTEM INITIALIZED"
+        }
+    };
+
+    // --- SES KONTROLCÜSÜ (Web Audio API) ---
+    class SoundController {
+        constructor() {
+            this.ctx = null;
+        }
+
+        init() {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        playTone(freq, type, duration, vol = 0.1, startTime = 0) {
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const time = this.ctx.currentTime + startTime;
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, time);
+            
+            gain.gain.setValueAtTime(vol, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+            
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+
+        playClick() {
+            this.playTone(800, 'sine', 0.1, 0.05);
+        }
+
+        playRoll() {
+            // Hızlı tıkırtı
+            this.playTone(600, 'square', 0.05, 0.03);
+        }
+
+        playStep() {
+            // Yumuşak adım
+            this.playTone(300, 'triangle', 0.1, 0.05);
+        }
+
+        playLadder() {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            // Yükselen Arpej
+            this.playTone(300, 'sine', 0.2, 0.1, 0);
+            this.playTone(400, 'sine', 0.2, 0.1, 0.1);
+            this.playTone(500, 'sine', 0.2, 0.1, 0.2);
+            this.playTone(600, 'sine', 0.4, 0.1, 0.3);
+        }
+
+        playSnake() {
+            if (!this.ctx) return;
+            // Azalan kayma efekti (Basit simülasyon)
+            this.playTone(400, 'sawtooth', 0.2, 0.05, 0);
+            this.playTone(350, 'sawtooth', 0.2, 0.05, 0.1);
+            this.playTone(300, 'sawtooth', 0.2, 0.05, 0.2);
+            this.playTone(200, 'sawtooth', 0.4, 0.05, 0.3);
+        }
+
+        playWin() {
+            // Major Zafer Akoru
+            this.playTone(523.25, 'triangle', 0.3, 0.1, 0);   // C
+            this.playTone(659.25, 'triangle', 0.3, 0.1, 0.15); // E
+            this.playTone(783.99, 'triangle', 0.3, 0.1, 0.30); // G
+            this.playTone(1046.50, 'triangle', 0.6, 0.1, 0.45); // High C
+        }
+
+        playLose() {
+            // Hüzünlü Minor Akor
+            this.playTone(440, 'sine', 0.3, 0.1, 0);
+            this.playTone(415, 'sine', 0.3, 0.1, 0.2);
+            this.playTone(392, 'sine', 0.6, 0.1, 0.4);
+        }
+    }
+
+    class SnakeLadderGame {
+        constructor() {
+            this.sounds = new SoundController();
+            this.boardEl = document.getElementById('board');
+            this.svgLayer = document.getElementById('connections-layer');
+            this.p1Token = document.getElementById('p1-token');
+            this.p2Token = document.getElementById('p2-token');
+            this.diceBtn = document.getElementById('dice-btn');
+            this.diceDisplay = document.getElementById('dice-display');
+            this.messageArea = document.getElementById('message-area');
+            this.winModal = document.getElementById('win-modal');
+            this.langModal = document.getElementById('language-modal');
+            this.tutorialModal = document.getElementById('tutorial-modal');
+            this.gameContainer = document.getElementById('game-container');
+            this.p1Info = document.getElementById('p1-info');
+            this.p2Info = document.getElementById('p2-info');
+            
+            // Text Elements
+            this.p1NameDisplay = document.getElementById('p1-name-display');
+            this.p2NameDisplay = document.getElementById('p2-name-display');
+            this.rollTextDisplay = document.getElementById('roll-text');
+            this.winnerText = document.getElementById('winner-text');
+            this.winSubText = document.getElementById('win-subtext');
+            this.restartBtn = document.getElementById('restart-btn');
+
+            this.state = {
+                p1Pos: 1,
+                p2Pos: 1,
+                turn: 1, 
+                isRolling: false,
+                gameOver: false,
+                lang: 'tr' // Default
+            };
+
+            this.init();
+        }
+
+        init() {
+            this.createBoard();
+            this.drawRealisticConnections();
+            this.updatePlayerPosition(1, 1);
+            this.updatePlayerPosition(2, 1);
+            
+            this.diceBtn.addEventListener('click', () => {
+                this.clickSound();
+                this.playerRoll();
+            });
+            this.diceBtn.disabled = true; // Dil seçilene kadar kilitli
+        }
+
+        clickSound() {
+            this.sounds.playClick();
+        }
+
+        setLanguage(langCode) {
+            // Ses motorunu ilk tıklamada başlat (Tarayıcı politikası)
+            this.sounds.init();
+            this.clickSound();
+
+            this.state.lang = langCode;
+            const texts = LOCALIZATION[langCode];
+            
+            // Arayüz metinlerini güncelle
+            this.p1NameDisplay.innerText = texts.p1Name;
+            this.p2NameDisplay.innerText = texts.p2Name;
+            this.rollTextDisplay.innerText = texts.rollBtn;
+            this.restartBtn.innerText = texts.restartBtn;
+            this.messageArea.innerText = texts.turnYou;
+            
+            // Modal kapat ve oyunu aç
+            this.langModal.classList.remove('show');
+            this.gameContainer.classList.add('active');
+            this.diceBtn.disabled = false;
+            
+            // Mesaj rengini resetle
+            this.messageArea.style.color = "white";
+        }
+
+        showTutorial() {
+            this.clickSound();
+            this.langModal.classList.remove('show');
+            this.tutorialModal.classList.add('show');
+        }
+
+        closeTutorial() {
+            this.clickSound();
+            this.tutorialModal.classList.remove('show');
+            this.langModal.classList.add('show');
+        }
+
+        getText(key) {
+            return LOCALIZATION[this.state.lang][key];
+        }
+
+        createBoard() {
+            this.boardEl.innerHTML = '';
+            for (let i = 100; i >= 1; i--) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.innerText = i;
+                
+                // Özel kareleri vurgula
+                if (CONNECTIONS[i]) {
+                    tile.classList.add('special');
+                    tile.style.color = CONNECTIONS[i] > i ? 'var(--neon-green)' : 'var(--neon-pink)';
+                }
+                
+                this.boardEl.appendChild(tile);
+            }
+        }
+
+        getCoordinates(tileId) {
+            const index = tileId - 1;
+            const row = Math.floor(index / 10);
+            let col = index % 10;
+            if (row % 2 !== 0) col = 9 - col;
+            
+            const x = (col * 10) + 5;
+            const y = 100 - ((row * 10) + 5);
+            return { x, y };
+        }
+
+        // SVG Çizim Fonksiyonları (Gerçekçi Şekiller)
+        drawRealisticConnections() {
+            // Mevcut içeriği temizle ama defs'i koru
+            const defs = this.svgLayer.querySelector('defs').outerHTML;
+            this.svgLayer.innerHTML = defs;
+
+            for (const [start, end] of Object.entries(CONNECTIONS)) {
+                const startPos = this.getCoordinates(parseInt(start));
+                const endPos = this.getCoordinates(end);
+                const isLadder = end > parseInt(start);
+
+                if (isLadder) {
+                    this.drawLadder(startPos, endPos);
+                } else {
+                    this.drawSnake(startPos, endPos);
+                }
+            }
+        }
+
+        drawLadder(start, end) {
+            const color = 'var(--neon-green)';
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            line.setAttribute("filter", "url(#neonGlow)");
+
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const length = Math.sqrt(dx*dx + dy*dy);
+            
+            const nx = -dy / length;
+            const ny = dx / length;
+            
+            const rail1Path = `M ${start.x - nx * 1.5} ${start.y - ny * 1.5} L ${end.x - nx * 1.5} ${end.y - ny * 1.5}`;
+            const rail2Path = `M ${start.x + nx * 1.5} ${start.y + ny * 1.5} L ${end.x + nx * 1.5} ${end.y + ny * 1.5}`;
+
+            const rail1 = this.createSvgPath(rail1Path, color, 1);
+            const rail2 = this.createSvgPath(rail2Path, color, 1);
+            line.appendChild(rail1);
+            line.appendChild(rail2);
+
+            const steps = Math.floor(length / 5); 
+            for (let i = 1; i < steps; i++) {
+                const t = i / steps;
+                const midX = start.x + dx * t;
+                const midY = start.y + dy * t;
+                
+                const rungPath = `M ${midX - nx * 1.5} ${midY - ny * 1.5} L ${midX + nx * 1.5} ${midY + ny * 1.5}`;
+                line.appendChild(this.createSvgPath(rungPath, color, 1));
+            }
+
+            this.svgLayer.appendChild(line);
+        }
+
+        drawSnake(start, end) {
+            const color = 'var(--neon-pink)';
+            const midX = (start.x + end.x) / 2;
+            const midY = (start.y + end.y) / 2;
+            const offset = 15; 
+            const cp1x = midX + offset;
+            const cp1y = start.y;
+            const cp2x = midX - offset;
+            const cp2y = end.y;
+
+            const pathData = `M ${start.x} ${start.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${end.x} ${end.y}`;
+            
+            const snakeGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            snakeGroup.setAttribute("filter", "url(#neonGlow)");
+
+            const body = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            body.setAttribute("d", pathData);
+            body.setAttribute("stroke", color);
+            body.setAttribute("stroke-width", "3");
+            body.setAttribute("fill", "none");
+            body.setAttribute("stroke-linecap", "round");
+            body.setAttribute("opacity", "0.8");
+            snakeGroup.appendChild(body);
+
+            const highlight = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            highlight.setAttribute("d", pathData);
+            highlight.setAttribute("stroke", "white");
+            highlight.setAttribute("stroke-width", "0.5");
+            highlight.setAttribute("fill", "none");
+            highlight.setAttribute("opacity", "0.5");
+            snakeGroup.appendChild(highlight);
+
+            const head = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            head.setAttribute("cx", start.x + "%");
+            head.setAttribute("cy", start.y + "%");
+            head.setAttribute("r", "2");
+            head.setAttribute("fill", color);
+            snakeGroup.appendChild(head);
+
+            const eye = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            eye.setAttribute("cx", start.x + "%");
+            eye.setAttribute("cy", start.y + "%");
+            eye.setAttribute("r", "0.5");
+            eye.setAttribute("fill", "white");
+            snakeGroup.appendChild(eye);
+
+            this.svgLayer.appendChild(snakeGroup);
+        }
+
+        createSvgPath(d, color, width) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", d);
+            path.setAttribute("stroke", color);
+            path.setAttribute("stroke-width", width);
+            path.setAttribute("fill", "none");
+            return path;
+        }
+
+        updatePlayerPosition(playerNum, tileId) {
+            const pos = this.getCoordinates(tileId);
+            const token = playerNum === 1 ? this.p1Token : this.p2Token;
+            token.style.left = `calc(${pos.x}% - 3%)`; 
+            token.style.top = `calc(${pos.y}% - 3%)`;
+        }
+
+        async rollDice() {
+            this.state.isRolling = true;
+            this.diceBtn.disabled = true;
+            this.diceBtn.classList.add('shaking');
+            
+            // Neon sayı efekti
+            for(let i=0; i<10; i++) {
+                this.sounds.playRoll(); // ZAR SESİ
+                const val = Math.floor(Math.random() * 6) + 1;
+                this.diceDisplay.innerText = val;
+                this.diceDisplay.style.color = i % 2 === 0 ? 'var(--neon-blue)' : 'var(--neon-pink)';
+                await new Promise(r => setTimeout(r, 60)); // Biraz yavaşlattım sesler karışmasın
+            }
+            this.diceBtn.classList.remove('shaking');
+
+            const result = Math.floor(Math.random() * 6) + 1;
+            this.diceDisplay.innerText = result;
+            this.diceDisplay.style.color = 'white';
+            return result;
+        }
+
+        async playerRoll() {
+            if (this.state.turn !== 1 || this.state.gameOver || this.state.isRolling) return;
+            const dice = await this.rollDice();
+            
+            this.messageArea.innerText = `${this.getText('rollYou')} ${dice}`;
+            this.messageArea.style.color = "var(--neon-blue)";
+            
+            await this.moveToken(1, dice);
+            if (!this.state.gameOver) this.endTurn();
+        }
+
+        async aiRoll() {
+            if (this.state.gameOver) return;
+            
+            this.messageArea.innerText = this.getText('turnAi');
+            this.messageArea.style.color = "var(--neon-pink)";
+            
+            await new Promise(r => setTimeout(r, 1000));
+            const dice = await this.rollDice();
+            
+            this.messageArea.innerText = `${this.getText('rollAi')} ${dice}`;
+            
+            await this.moveToken(2, dice);
+            if (!this.state.gameOver) this.endTurn();
+        }
+
+        async moveToken(playerNum, steps) {
+            let currentPos = playerNum === 1 ? this.state.p1Pos : this.state.p2Pos;
+            const targetPos = currentPos + steps;
+
+            if (targetPos > 100) {
+                this.messageArea.innerText = this.getText('tooHigh');
+                await new Promise(r => setTimeout(r, 1000));
+                this.state.isRolling = false;
+                return;
+            }
+
+            for (let i = currentPos + 1; i <= targetPos; i++) {
+                this.sounds.playStep(); // ADIM SESİ
+                this.updatePlayerPosition(playerNum, i);
+                await new Promise(r => setTimeout(r, 200)); 
+            }
+
+            if (playerNum === 1) this.state.p1Pos = targetPos;
+            else this.state.p2Pos = targetPos;
+
+            if (targetPos === 100) {
+                this.handleWin(playerNum);
+                return;
+            }
+
+            if (CONNECTIONS[targetPos]) {
+                const finalPos = CONNECTIONS[targetPos];
+                const isLadder = finalPos > targetPos;
+                
+                // ÖZEL SESLER
+                if (isLadder) this.sounds.playLadder();
+                else this.sounds.playSnake();
+
+                this.messageArea.innerText = isLadder ? this.getText('ladder') : this.getText('snake');
+                this.messageArea.style.color = isLadder ? "var(--neon-green)" : "var(--neon-pink)";
+                
+                await new Promise(r => setTimeout(r, 600));
+                this.updatePlayerPosition(playerNum, finalPos);
+                
+                if (playerNum === 1) this.state.p1Pos = finalPos;
+                else this.state.p2Pos = finalPos;
+
+                if (finalPos === 100) {
+                    this.handleWin(playerNum);
+                    return;
+                }
+            }
+            this.state.isRolling = false;
+        }
+
+        endTurn() {
+            this.state.turn = this.state.turn === 1 ? 2 : 1;
+            if (this.state.turn === 1) {
+                this.p1Info.classList.add('active');
+                this.p2Info.classList.remove('active');
+                this.diceBtn.disabled = false;
+                this.messageArea.innerText = this.getText('turnYou');
+                this.messageArea.style.color = "white";
+            } else {
+                this.p1Info.classList.remove('active');
+                this.p2Info.classList.add('active');
+                this.diceBtn.disabled = true;
+                this.aiRoll();
+            }
+        }
+
+        handleWin(playerNum) {
+            this.state.gameOver = true;
+            const isP1 = playerNum === 1;
+            
+            // KAZANMA / KAYBETME SESİ
+            if (isP1) this.sounds.playWin();
+            else this.sounds.playLose();
+
+            this.winnerText.innerText = isP1 ? this.getText('winTitleYou') : this.getText('winTitleAi');
+            this.winSubText.innerText = isP1 ? this.getText('winSubYou') : this.getText('winSubAi');
+            
+            this.winnerText.style.color = isP1 ? "var(--neon-green)" : "var(--neon-pink)";
+            this.winModal.classList.add('show');
+        }
+
+        restart() {
+            this.clickSound();
+            this.state.p1Pos = 1;
+            this.state.p2Pos = 1;
+            this.state.turn = 1;
+            this.state.gameOver = false;
+            this.state.isRolling = false;
+            
+            this.updatePlayerPosition(1, 1);
+            this.updatePlayerPosition(2, 1);
+            
+            this.winModal.classList.remove('show');
+            this.p1Info.classList.add('active');
+            this.p2Info.classList.remove('active');
+            this.diceBtn.disabled = false;
+            
+            this.messageArea.innerText = this.getText('systemReady');
+            this.messageArea.style.color = "var(--neon-blue)";
+        }
+    }
+
+    const game = new SnakeLadderGame();
+</script>
+</body>
+</html>

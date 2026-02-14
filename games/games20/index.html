@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UNO Pro - Ultimate Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Poppins:wght@400;600;900&display=swap');
+        
+        :root {
+            --card-aspect: 2/3;
+            --red: #cc0000;
+            --blue: #0000cc;
+            --green: #227722;
+            --yellow: #cc9900;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            height: 100dvh;
+            overflow: hidden;
+            color: white;
+            touch-action: manipulation;
+        }
+
+        /* Başlangıç Ekranı Animasyonlu Arka Plan */
+        .bg-mesh {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, #cc000033 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, #0000cc33 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        .uno-card {
+            aspect-ratio: var(--card-aspect);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            border-radius: 0.75rem;
+            user-select: none;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 3px solid white;
+            overflow: hidden; 
+            isolation: isolate; 
+        }
+
+        .hand-card {
+            height: 14vh;
+            max-height: 160px;
+            min-height: 90px;
+        }
+
+        @media (min-width: 768px) {
+            .hand-card { height: 22vh; }
+        }
+
+        .card-inner-oval {
+            position: absolute;
+            width: 140%; 
+            height: 75%;
+            background: white;
+            border-radius: 50%;
+            transform: rotate(-30deg);
+            z-index: 1; 
+            pointer-events: none;
+        }
+
+        .card-value-main {
+            position: relative;
+            z-index: 10;
+            font-weight: 900;
+            font-size: 3rem; 
+            font-style: italic;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.1); 
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .card-corner {
+            position: absolute;
+            z-index: 15;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px;
+            pointer-events: none;
+            color: white !important;
+        }
+        .corner-top { top: 2px; left: 4px; }
+        .corner-bottom { bottom: 2px; right: 4px; transform: rotate(180deg); }
+
+        .card-red { background: linear-gradient(135deg, #ff4444, var(--red)); }
+        .card-blue { background: linear-gradient(135deg, #4444ff, var(--blue)); }
+        .card-green { background: linear-gradient(135deg, #44aa44, var(--green)); }
+        .card-yellow { background: linear-gradient(135deg, #ffcc00, #ffaa00); }
+        .card-wild { background: linear-gradient(135deg, #333, #000); border-color: #777; }
+
+        .card-wild .card-inner-oval {
+            background: linear-gradient(to right, #ff4444, #4444ff, #44aa44, #ffcc00);
+            width: 110%;
+            height: 60%;
+        }
+        .card-wild .card-value-main { color: white !important; text-shadow: 2px 2px 4px black; }
+
+        .deck-shadow { box-shadow: 4px 4px 0px white, 8px 8px 25px rgba(0,0,0,0.6); }
+
+        .floating-card {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0%, 100% { transform: translateY(0) rotate(3deg); }
+            50% { transform: translateY(-20px) rotate(-3deg); }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Modern Buton Tasarımı */
+        .btn-premium {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .btn-premium::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        .btn-premium:hover::after {
+            transform: translateX(100%);
+        }
+
+        .lang-active {
+            border-color: rgba(255, 255, 255, 0.8) !important;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center">
+
+<div class="bg-mesh"></div>
+
+<!-- Başlangıç Ekranı (Modernized) -->
+<div id="start-screen" class="fixed inset-0 flex flex-col items-center justify-center z-[300] bg-[#050505]/80 backdrop-blur-sm">
+    
+    <!-- Home / Ana Menü Button -->
+    <a href="../../index.html" class="absolute top-8 left-8 glass p-3 rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3 text-white/60 hover:text-white z-50 group border border-white/10 shadow-xl active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="text-xs font-black uppercase tracking-[0.2em] hidden md:block">⬅ Ana Menü</span>
+    </a>
+
+    <!-- Dekoratif Kartlar -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div class="uno-card card-blue h-40 absolute top-[10%] left-[15%] rotate-[-15deg] floating-card"></div>
+        <div class="uno-card card-red h-40 absolute bottom-[15%] right-[10%] rotate-[20deg] floating-card" style="animation-delay: -1.5s"></div>
+        <div class="uno-card card-yellow h-32 absolute top-[60%] left-[10%] rotate-[10deg] floating-card" style="animation-delay: -0.7s"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col items-center max-w-md w-full px-6">
+        <div class="mb-6 flex items-baseline gap-1">
+            <span class="text-6xl md:text-8xl font-[900] italic tracking-tighter text-white">UNO</span>
+            <span class="text-2xl md:text-3xl font-black text-red-600 italic">PRO</span>
+        </div>
+        
+        <p class="text-white/40 font-bold mb-12 text-xs tracking-[0.4em] uppercase text-center">
+            Ultimate Card Experience<br>
+            <span class="opacity-50 text-[10px] tracking-[0.2em]" id="label-subtitle-tr">En Üst Düzey Kart Deneyimi</span>
+        </p>
+
+        <!-- Language Selector -->
+        <div class="flex gap-3 w-full mb-5">
+            <button id="lang-en" onclick="setLanguage('en')" class="flex-1 glass border-white/20 rounded-xl py-2 flex flex-col items-center justify-center hover:bg-white/5 transition-all lang-active">
+                <span class="text-sm font-black text-white">ENGLISH</span>
+                <span class="text-[8px] font-bold opacity-40">MAIN LANGUAGE</span>
+            </button>
+            <button id="lang-tr" onclick="setLanguage('tr')" class="flex-1 glass border-white/20 rounded-xl py-2 flex flex-col items-center justify-center hover:bg-white/5 transition-all">
+                <span class="text-sm font-black text-white">TÜRKÇE</span>
+                <span class="text-[8px] font-bold opacity-40">DESTEK DİLİ</span>
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-5 w-full">
+            <!-- PLAY BUTTON -->
+            <button onclick="startGame()" class="btn-premium w-full bg-white text-black font-black py-5 rounded-2xl text-xl shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95">
+                <div class="flex flex-col leading-tight">
+                    <span id="label-play-en">PLAY GAME</span>
+                    <span id="label-play-tr" class="hidden">OYUNA BAŞLA</span>
+                </div>
+            </button>
+
+            <!-- RULES BUTTON -->
+            <button onclick="toggleRules(true)" class="btn-premium w-full glass text-white font-bold py-4 rounded-2xl text-lg border border-white/10 hover:bg-white/5 transition-all">
+                <div class="flex flex-col leading-tight">
+                    <span id="label-rules-en">HOW TO PLAY?</span>
+                    <span id="label-rules-tr" class="hidden">NASIL OYNANIR?</span>
+                </div>
+            </button>
+        </div>
+
+        <footer class="mt-16 text-white/20 text-[10px] font-bold tracking-widest uppercase">
+            &copy; 2024 UNO PRO EDITION
+        </footer>
+    </div>
+</div>
+
+<!-- Rules Modal (Modernized) -->
+<div id="rules-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-[400] hidden p-6">
+    <div class="glass w-full max-w-xl rounded-[2.5rem] p-8 md:p-12 overflow-y-auto max-h-[85vh] relative no-scrollbar shadow-2xl">
+        <button onclick="toggleRules(false)" class="absolute top-8 right-8 text-white/20 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <h2 class="text-4xl font-black italic mb-10 text-white uppercase tracking-tighter">
+            <span id="rules-title">Game Guide</span>
+            <span class="block text-xs text-red-500 font-black tracking-[0.3em] mt-1 uppercase" id="rules-subtitle">Oyun Rehberi</span>
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            <div class="space-y-2">
+                <h3 class="text-white font-black uppercase text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 bg-red-600 rounded-full"></span> <span id="rule-1-title">OBJECTIVE</span>
+                </h3>
+                <p class="text-white/40 text-xs leading-relaxed" id="rule-1-desc">
+                    Be the first to discard all cards.
+                </p>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-white font-black uppercase text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-600 rounded-full"></span> <span id="rule-2-title">MATCHING</span>
+                </h3>
+                <p class="text-white/40 text-xs leading-relaxed" id="rule-2-desc">
+                    Match the top card by color or number.
+                </p>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-white font-black uppercase text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 bg-yellow-500 rounded-full"></span> <span id="rule-3-title">ACTION CARDS</span>
+                </h3>
+                <div class="text-white/40 text-[11px] space-y-1" id="rule-3-desc">
+                    <p><strong class="text-white/60">Skip:</strong> Skips next player.</p>
+                    <p><strong class="text-white/60">Draw 2/4:</strong> Force cards.</p>
+                    <p><strong class="text-white/60">Wild:</strong> Change color.</p>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-white font-black uppercase text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-600 rounded-full"></span> <span id="rule-4-title">UNO RULE</span>
+                </h3>
+                <p class="text-white/40 text-xs leading-relaxed" id="rule-4-desc">
+                    Press UNO! when you have 1 card left.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="game-app" class="relative w-full h-full max-w-4xl flex flex-col justify-between py-4 md:py-8 overflow-hidden opacity-0 transition-opacity duration-1000">
+    
+    <!-- Bot Hand -->
+    <div class="w-full flex flex-col items-center shrink-0">
+        <div class="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] bg-white/5 px-4 py-1.5 rounded-full border border-white/10 mb-2 text-white/60">
+            🤖 <span id="label-ai">AI OPPONENT</span> <span class="mx-2 opacity-20">|</span> <span id="ai-card-count" class="text-red-500">7</span> <span id="label-cards-ai">CARDS</span>
+        </div>
+        <div id="ai-hand" class="flex justify-center -space-x-12 md:-space-x-20 opacity-50 scale-75 md:scale-90"></div>
+    </div>
+
+    <!-- Play Area -->
+    <div class="flex-1 flex flex-col items-center justify-center min-h-0">
+        <div class="flex items-center justify-center gap-10 md:gap-24 scale-90 md:scale-110">
+            <!-- Draw Pile -->
+            <div id="draw-pile" class="uno-card h-[16vh] bg-red-700 deck-shadow transition-transform active:scale-95">
+                <div class="card-inner-oval"></div>
+                <div class="card-value-main !text-red-700 !text-xl" style="font-style: normal;">UNO</div>
+            </div>
+
+            <!-- Discard Pile -->
+            <div id="discard-pile" class="relative">
+                <div id="current-card"></div>
+                <div id="color-indicator" class="absolute -top-12 left-1/2 -translate-x-1/2 text-[10px] font-black bg-white text-black px-4 py-1 rounded-full border-2 border-black hidden shadow-2xl uppercase whitespace-nowrap">
+                    <span id="label-color">COLOR</span>: <span id="current-color-text">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Hand -->
+    <div class="w-full flex flex-col items-center shrink-0">
+        <div class="flex items-center gap-4 mb-4">
+            <button id="uno-btn" class="uno-button-anim hidden bg-red-600 text-white font-black py-2 px-8 rounded-full border-2 border-white uppercase text-sm md:text-base shadow-2xl">
+                UNO!
+            </button>
+            <div class="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] bg-white/10 px-4 py-1.5 rounded-full border border-white/20">
+                👤 <span id="label-you">YOU</span> <span class="mx-2 opacity-20">|</span> <span id="player-card-count" class="text-green-500">7</span> <span id="label-cards-you">CARDS</span>
+            </div>
+        </div>
+        
+        <div class="w-full overflow-x-auto no-scrollbar pb-8">
+            <div id="player-hand" class="flex justify-center min-w-max -space-x-6 md:-space-x-10 px-12"></div>
+        </div>
+    </div>
+
+    <!-- Message Display -->
+    <div id="game-message" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-300 opacity-0 scale-50 z-50 w-full text-center">
+        <div class="inline-block glass text-white px-10 py-4 rounded-3xl border-2 border-white/20 text-2xl md:text-4xl font-black italic shadow-2xl uppercase tracking-tighter">
+            YOUR TURN!
+        </div>
+    </div>
+
+    <!-- Color Selection -->
+    <div id="color-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] hidden p-6">
+        <div class="glass p-10 rounded-[3rem] text-center w-full max-w-[350px] shadow-2xl">
+            <h2 class="text-2xl font-black mb-8 italic text-white uppercase tracking-tighter">
+                <span id="label-choose-color">Choose Color</span>
+                <span class="block text-[10px] opacity-40 font-bold uppercase tracking-widest mt-1 hidden" id="label-choose-color-sub">Renk Seçimi</span>
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="selectColor('red')" class="h-20 bg-red-500 rounded-2xl border-4 border-white/10 hover:border-white transition-all shadow-lg"></button>
+                <button onclick="selectColor('blue')" class="h-20 bg-blue-500 rounded-2xl border-4 border-white/10 hover:border-white transition-all shadow-lg"></button>
+                <button onclick="selectColor('green')" class="h-20 bg-green-500 rounded-2xl border-4 border-white/10 hover:border-white transition-all shadow-lg"></button>
+                <button onclick="selectColor('yellow')" class="h-20 bg-yellow-400 rounded-2xl border-4 border-white/10 hover:border-white transition-all shadow-lg"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win/Loss Screen -->
+    <div id="end-modal" class="fixed inset-0 bg-black/95 flex items-center justify-center z-[200] hidden p-6 text-center backdrop-blur-md">
+        <div class="max-sm w-full">
+            <h1 id="end-title" class="text-6xl font-black mb-2 italic text-yellow-400 tracking-tighter uppercase">VICTORY!</h1>
+            <p id="end-subtitle" class="text-xs mb-10 text-white/40 font-bold uppercase tracking-[0.3em]"></p>
+            
+            <div class="glass p-8 rounded-[2.5rem] mb-12 border border-white/10 shadow-2xl">
+                <div class="text-white/20 text-[10px] font-black uppercase mb-2 tracking-widest" id="label-total-points">Total Score</div>
+                <div id="end-score" class="text-7xl font-black text-white tracking-tighter">0</div>
+            </div>
+
+            <button onclick="location.reload()" class="w-full bg-white text-black font-black py-5 rounded-2xl text-xl hover:bg-yellow-400 transition-all shadow-2xl uppercase">
+                <span id="label-restart">Restart Game</span>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /**
+     * @constant Audio Engine
+     */
+    const AudioEngine = (() => {
+        let audioCtx = null;
+        const init = () => { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); };
+        const playTone = (freq, type, duration, volume = 0.1) => {
+            init();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        };
+        return {
+            playClick: () => playTone(800, 'sine', 0.1, 0.05),
+            playCard: () => playTone(400, 'triangle', 0.15, 0.1),
+            playDraw: () => { playTone(300, 'sine', 0.1, 0.1); setTimeout(() => playTone(450, 'sine', 0.1, 0.1), 50); },
+            playUno: () => { playTone(523, 'square', 0.2, 0.05); setTimeout(() => playTone(659, 'square', 0.2, 0.05), 150); setTimeout(() => playTone(783, 'square', 0.4, 0.05), 300); },
+            playSpecial: () => playTone(600, 'sawtooth', 0.3, 0.03),
+            playWin: () => { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.5, 0.1), i * 150)); },
+            playLose: () => { [440, 349, 329, 261].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.6, 0.1), i * 200)); }
+        };
+    })();
+
+    // Language Management
+    let currentLang = 'en';
+    const translations = {
+        en: {
+            gameStart: "GAME START!",
+            invalidCard: "INVALID CARD!",
+            reshuffled: "DECK RESHUFFLED!",
+            playable: "PLAYABLE!",
+            noCard: "NO VALID CARD...",
+            botPassed: "BOT PASSED",
+            missedUno: "MISSED UNO! +2",
+            victory: "VICTORY!",
+            defeat: "DEFEAT",
+            winMsg: "Well played, Champion!",
+            loseMsg: "The Bot was faster.",
+            yourTurn: "YOUR TURN!",
+            aiLabel: "AI OPPONENT",
+            youLabel: "YOU",
+            cardsLabel: "CARDS",
+            colorLabel: "COLOR",
+            pointsLabel: "Total Score",
+            chooseColor: "Choose Color",
+            restart: "Restart Game",
+            rulesTitle: "Game Guide",
+            rulesSubtitle: "Uno Pro Rules",
+            rule1Title: "OBJECTIVE",
+            rule1Desc: "Be the first to discard all cards.",
+            rule2Title: "MATCHING",
+            rule2Desc: "Match the top card by color or number.",
+            rule3Title: "ACTION CARDS",
+            rule3Desc: "Skip, Draw 2/4 and Wild cards.",
+            rule4Title: "UNO RULE",
+            rule4Desc: "Press UNO! when you have 1 card left.",
+            colors: { red: 'RED', blue: 'BLUE', green: 'GREEN', yellow: 'YELLOW' }
+        },
+        tr: {
+            gameStart: "OYUN BAŞLADI!",
+            invalidCard: "GEÇERSİZ KART!",
+            reshuffled: "DESTE YENİLENDİ!",
+            playable: "OYNANABİLİR!",
+            noCard: "UYGUN KART YOK...",
+            botPassed: "BOT PAS GEÇTİ",
+            missedUno: "UNO DEMEDİN! +2",
+            victory: "KAZANDIN!",
+            defeat: "KAYBETTİN",
+            winMsg: "Harika oynadın, Şampiyon!",
+            loseMsg: "Bot senden hızlı çıktı.",
+            yourTurn: "SIRA SENDE!",
+            aiLabel: "YAPAY ZEKA",
+            youLabel: "SEN",
+            cardsLabel: "KART",
+            colorLabel: "RENK",
+            pointsLabel: "Toplam Puan",
+            chooseColor: "Renk Seç",
+            restart: "Tekrar Oyna",
+            rulesTitle: "Oyun Rehberi",
+            rulesSubtitle: "Nasıl Oynanır?",
+            rule1Title: "AMAÇ",
+            rule1Desc: "Elindeki tüm kartlardan kurtulan ilk kişi ol.",
+            rule2Title: "EŞLEŞTİRME",
+            rule2Desc: "Ortadaki kartla aynı renk veya numarayı at.",
+            rule3Title: "AKSİYON KARTLARI",
+            rule3Desc: "Pas, Kart Çek ve Renk Değiştir kartları.",
+            rule4Title: "UNO KURALI",
+            rule4Desc: "Son 1 kartın kaldığında UNO! butonuna bas.",
+            colors: { red: 'KIRMIZI', blue: 'MAVİ', green: 'YEŞİL', yellow: 'SARI' }
+        }
+    };
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        AudioEngine.playClick();
+        
+        // Update selection UI
+        document.getElementById('lang-en').classList.toggle('lang-active', lang === 'en');
+        document.getElementById('lang-tr').classList.toggle('lang-active', lang === 'tr');
+
+        // Hide/Show Start Screen Labels
+        document.getElementById('label-play-en').style.display = lang === 'en' ? 'block' : 'none';
+        document.getElementById('label-play-tr').style.display = lang === 'tr' ? 'block' : 'none';
+        document.getElementById('label-rules-en').style.display = lang === 'en' ? 'block' : 'none';
+        document.getElementById('label-rules-tr').style.display = lang === 'tr' ? 'block' : 'none';
+        document.getElementById('label-subtitle-tr').style.display = lang === 'tr' ? 'block' : 'none';
+
+        // Update Rules Modal Labels
+        document.getElementById('rules-title').innerText = translations[lang].rulesTitle;
+        document.getElementById('rules-subtitle').innerText = translations[lang].rulesSubtitle;
+        document.getElementById('rule-1-title').innerText = translations[lang].rule1Title;
+        document.getElementById('rule-1-desc').innerText = translations[lang].rule1Desc;
+        document.getElementById('rule-2-title').innerText = translations[lang].rule2Title;
+        document.getElementById('rule-2-desc').innerText = translations[lang].rule2Desc;
+        document.getElementById('rule-3-title').innerText = translations[lang].rule3Title;
+        document.getElementById('rule-3-desc').innerHTML = lang === 'en' ? 
+            `<p><strong>Skip:</strong> Skips next player.</p><p><strong>Draw 2/4:</strong> Force cards.</p><p><strong>Wild:</strong> Change color.</p>` :
+            `<p><strong>Atla:</strong> Sıradakini geçer.</p><p><strong>+2/+4:</strong> Kart çektirir.</p><p><strong>Renk:</strong> Renk değiştirir.</p>`;
+        document.getElementById('rule-4-title').innerText = translations[lang].rule4Title;
+        document.getElementById('rule-4-desc').innerText = translations[lang].rule4Desc;
+
+        // Update In-Game Labels
+        document.getElementById('label-ai').innerText = translations[lang].aiLabel;
+        document.getElementById('label-cards-ai').innerText = translations[lang].cardsLabel;
+        document.getElementById('label-you').innerText = translations[lang].youLabel;
+        document.getElementById('label-cards-you').innerText = translations[lang].cardsLabel;
+        document.getElementById('label-color').innerText = translations[lang].colorLabel;
+        document.getElementById('label-choose-color').innerText = translations[lang].chooseColor;
+        document.getElementById('label-total-points').innerText = translations[lang].pointsLabel;
+        document.getElementById('label-restart').innerText = translations[lang].restart;
+    }
+
+    const COLORS = ['red', 'blue', 'green', 'yellow'];
+    const VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'SKIP', 'REVERSE', 'DRAW2'];
+    const SPECIAL_SYMBOLS = { 'SKIP': '🚫', 'REVERSE': '🔄', 'DRAW2': '+2', 'WILD': '🎨', 'DRAW4': '+4' };
+
+    let deck = [], playerHand = [], aiHand = [], discardPile = [];
+    let turn = 'player', gameActive = false, currentColor = '', currentVal = '';
+    let hasDrawn = false, unoDeclared = false, isProcessing = false; 
+
+    function startGame() {
+        AudioEngine.playUno();
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-app').classList.remove('opacity-0');
+        gameActive = true;
+        initGame(); 
+        
+        document.getElementById('draw-pile').addEventListener('click', () => {
+            if(!isProcessing) { AudioEngine.playClick(); handleDraw(); }
+        }); 
+        document.getElementById('uno-btn').addEventListener('click', () => {
+            AudioEngine.playUno();
+            declareUno();
+        });
+    }
+
+    function toggleRules(show) {
+        AudioEngine.playClick();
+        document.getElementById('rules-modal').classList.toggle('hidden', !show);
+    }
+
+    function initGame() {
+        createDeck();
+        shuffle(deck);
+        for(let i=0; i<7; i++) { playerHand.push(deck.pop()); aiHand.push(deck.pop()); }
+        let firstCardIndex = deck.findIndex(c => c.color !== 'wild');
+        let firstCard = deck.splice(firstCardIndex, 1)[0];
+        discardPile.push(firstCard);
+        currentColor = firstCard.color; 
+        currentVal = firstCard.value;
+        updateUI(); 
+        showMessage(translations[currentLang].gameStart);
+    }
+
+    function createDeck() {
+        deck = [];
+        COLORS.forEach(color => {
+            VALUES.forEach(val => {
+                let count = (val === '0') ? 1 : 2;
+                for(let i=0; i<count; i++) deck.push({ color, value: val, id: Math.random() });
+            });
+        });
+        for(let i=0; i<4; i++) {
+            deck.push({ color: 'wild', value: 'WILD', id: Math.random() });
+            deck.push({ color: 'wild', value: 'DRAW4', id: Math.random() });
+        }
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function pullCard() {
+        if(deck.length === 0) reshuffle();
+        return deck.length > 0 ? deck.pop() : null;
+    }
+
+    function reshuffle() {
+        if(discardPile.length < 2) return; 
+        const top = discardPile.pop();
+        deck = [...discardPile];
+        shuffle(deck);
+        discardPile = [top];
+        showMessage(translations[currentLang].reshuffled);
+    }
+
+    function getDisplayValue(val) { return SPECIAL_SYMBOLS[val] || val; }
+
+    function createCardUI(card) {
+        const div = document.createElement('div');
+        const displayVal = getDisplayValue(card.value);
+        div.className = `uno-card hand-card card-${card.color}`;
+        div.innerHTML = `<div class="card-corner corner-top">${displayVal}</div><div class="card-inner-oval"></div><div class="card-value-main">${displayVal}</div><div class="card-corner corner-bottom">${displayVal}</div>`;
+        if(card.color !== 'wild') div.querySelector('.card-value-main').style.color = `var(--${card.color})`;
+        return div;
+    }
+
+    function updateUI() {
+        document.getElementById('player-card-count').innerText = playerHand.length;
+        document.getElementById('ai-card-count').innerText = aiHand.length;
+        const pContainer = document.getElementById('player-hand');
+        pContainer.innerHTML = '';
+        playerHand.forEach((card, index) => {
+            const cardEl = createCardUI(card);
+            cardEl.style.zIndex = index + 1;
+            cardEl.onclick = () => { AudioEngine.playClick(); tryPlayCard(card); };
+            pContainer.appendChild(cardEl);
+        });
+        const aContainer = document.getElementById('ai-hand');
+        aContainer.innerHTML = '';
+        aiHand.forEach(() => {
+            const back = document.createElement('div');
+            back.className = 'uno-card h-[8vh] bg-red-800 border-2 border-white pointer-none';
+            back.innerHTML = '<div class="card-inner-oval"></div>';
+            aContainer.appendChild(back);
+        });
+        const discardContainer = document.getElementById('current-card');
+        discardContainer.innerHTML = '';
+        const topCard = discardPile[discardPile.length - 1];
+        const topUI = createCardUI({ ...topCard, color: currentColor });
+        topUI.classList.replace('hand-card', 'h-[16vh]');
+        topUI.classList.add('md:h-[22vh]', 'pointer-none');
+        discardContainer.appendChild(topUI);
+        const colorInd = document.getElementById('color-indicator');
+        if (topCard.color === 'wild') {
+            colorInd.classList.remove('hidden');
+            document.getElementById('current-color-text').innerText = translateColor(currentColor);
+            document.getElementById('current-color-text').style.color = currentColor === 'yellow' ? '#cc9900' : currentColor;
+        } else colorInd.classList.add('hidden');
+    }
+
+    function tryPlayCard(card) {
+        if (!gameActive || turn !== 'player' || isProcessing) return;
+        if (card.color === 'wild' || card.color === currentColor || card.value === currentVal) {
+            AudioEngine.playCard(); playCard(card, 'player');
+        } else showMessage(translations[currentLang].invalidCard);
+    }
+
+    function playCard(card, playerType) {
+        isProcessing = true;
+        const hand = playerType === 'player' ? playerHand : aiHand;
+        const cardIndex = hand.findIndex(c => c.id === card.id);
+        if(cardIndex === -1) { isProcessing = false; return; }
+        hand.splice(cardIndex, 1);
+        discardPile.push(card);
+        currentVal = card.value; 
+        hasDrawn = false;
+        if (playerType === 'player' && hand.length === 1 && !unoDeclared) {
+            setTimeout(() => { if (!unoDeclared && playerHand.length === 1) { showMessage(translations[currentLang].missedUno); AudioEngine.playLose(); drawCards('player', 2); } }, 1000);
+        }
+        if (card.color === 'wild') {
+            if (playerType === 'player') document.getElementById('color-modal').classList.remove('hidden');
+            else { currentColor = aiSelectColor(); applySpecialActions(card, playerType); }
+        } else { currentColor = card.color; applySpecialActions(card, playerType); }
+    }
+
+    function applySpecialActions(card, playerType) {
+        updateUI(); 
+        if (checkWin()) return;
+        const targetPlayer = playerType === 'player' ? 'ai' : 'player';
+        if (['SKIP', 'REVERSE', 'DRAW2', 'DRAW4'].includes(card.value)) AudioEngine.playSpecial();
+        if (card.value === 'SKIP' || card.value === 'REVERSE') {
+            showMessage(card.value === 'SKIP' ? "SKIP!" : "REVERSE!");
+            setTimeout(() => { isProcessing = false; nextMove(playerType); }, 800);
+        } else if (card.value === 'DRAW2' || card.value === 'DRAW4') {
+            const count = card.value === 'DRAW2' ? 2 : 4;
+            showMessage(`+${count} CARDS!`);
+            drawCards(targetPlayer, count);
+            setTimeout(() => { isProcessing = false; nextMove(playerType); }, 800);
+        } else { isProcessing = false; nextMove(targetPlayer); }
+    }
+
+    function nextMove(nextPlayer) {
+        if(!gameActive) return;
+        turn = nextPlayer; unoDeclared = false; hasDrawn = false; isProcessing = false; 
+        document.getElementById('uno-btn').classList.toggle('hidden', !(playerHand.length === 2 && turn === 'player'));
+        if (turn === 'ai') { isProcessing = true; setTimeout(aiPlay, 1000); }
+    }
+
+    function aiSelectColor() {
+        let counts = { red: 0, blue: 0, green: 0, yellow: 0 };
+        aiHand.forEach(c => { if(c.color !== 'wild') counts[c.color]++; });
+        return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, 'red');
+    }
+
+    function aiPlay() {
+        if(!gameActive || turn !== 'ai') { isProcessing = false; return; }
+        const playableCard = aiHand.find(c => c.color === 'wild' || c.color === currentColor || c.value === currentVal);
+        if (playableCard) { 
+            if (aiHand.length === 2) { showMessage("BOT: UNO!"); AudioEngine.playUno(); }
+            AudioEngine.playCard(); playCard(playableCard, 'ai'); 
+        } else {
+            const drawn = pullCard();
+            if(drawn) {
+                AudioEngine.playDraw(); aiHand.push(drawn); updateUI();
+                if (drawn.color === 'wild' || drawn.color === currentColor || drawn.value === currentVal) setTimeout(() => playCard(drawn, 'ai'), 800);
+                else { showMessage(translations[currentLang].botPassed); setTimeout(() => { isProcessing = false; nextMove('player'); }, 600); }
+            } else { isProcessing = false; nextMove('player'); }
+        }
+    }
+
+    function selectColor(color) {
+        AudioEngine.playClick();
+        currentColor = color; 
+        document.getElementById('color-modal').classList.add('hidden');
+        isProcessing = false;
+        applySpecialActions(discardPile[discardPile.length-1], 'player');
+    }
+
+    function handleDraw() {
+        if (turn !== 'player' || hasDrawn || isProcessing || !gameActive) return;
+        isProcessing = true;
+        const card = pullCard();
+        if(card) {
+            AudioEngine.playDraw(); playerHand.push(card); hasDrawn = true; updateUI();
+            if (card.color === 'wild' || card.color === currentColor || card.value === currentVal) { showMessage(translations[currentLang].playable); isProcessing = false; }
+            else { showMessage(translations[currentLang].noCard); setTimeout(() => { isProcessing = false; nextMove('ai'); }, 1000); }
+        } else isProcessing = false;
+    }
+
+    function drawCards(target, count) {
+        const hand = target === 'player' ? playerHand : aiHand;
+        for(let i=0; i<count; i++) { const c = pullCard(); if(c) hand.push(c); }
+        AudioEngine.playDraw(); updateUI();
+    }
+
+    function checkWin() {
+        if (playerHand.length === 0) { AudioEngine.playWin(); endGame(translations[currentLang].victory, translations[currentLang].winMsg, calcScore(aiHand)); return true; }
+        if (aiHand.length === 0) { AudioEngine.playLose(); endGame(translations[currentLang].defeat, translations[currentLang].loseMsg, calcScore(playerHand)); return true; }
+        return false;
+    }
+
+    function calcScore(hand) {
+        return hand.reduce((s, c) => {
+            if(c.color === 'wild') return s + 50;
+            if(['SKIP', 'REVERSE', 'DRAW2'].includes(c.value)) return s + 20;
+            return s + (parseInt(c.value) || 0);
+        }, 0);
+    }
+
+    function endGame(title, sub, score) {
+        gameActive = false; isProcessing = true;
+        document.getElementById('end-title').innerText = title;
+        document.getElementById('end-subtitle').innerText = sub; 
+        document.getElementById('end-score').innerText = score;
+        document.getElementById('end-modal').classList.remove('hidden'); 
+    }
+
+    function translateColor(c) { return translations[currentLang].colors[c] || c; }
+    
+    function showMessage(txt) {
+        const m = document.getElementById('game-message'); 
+        m.querySelector('div').innerText = txt;
+        m.classList.replace('opacity-0', 'opacity-100'); m.classList.replace('scale-50', 'scale-100');
+        setTimeout(() => { m.classList.replace('opacity-100', 'opacity-0'); m.classList.replace('scale-100', 'scale-50'); }, 1200);
+    }
+
+    function declareUno() { 
+        if(turn === 'player' && playerHand.length === 2 && !isProcessing) {
+            unoDeclared = true; document.getElementById('uno-btn').classList.add('hidden'); showMessage("UNO!"); 
+        }
+    }
+</script>
+
+</body>
+</html>

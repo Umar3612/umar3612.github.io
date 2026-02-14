@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Meta Etiketleri -->
+    <title>Shadow Maze: Physical Hunter - Karanlık Labirent Kaçış Oyunu</title>
+    <meta name="description" content="Shadow Maze: Physical Hunter, karanlık labirentlerde anahtarları topladığınız, gizemli bir avcıdan kaçtığınız heyecan dolu bir kaçış oyunudur. Hemen oyna ve tüm sektörleri temizle!">
+    <meta name="keywords" content="shadow maze, labirent oyunu, maze game, kaçış oyunu, web oyunu, html5 oyun, arcade game, fizik tabanlı oyun, ücretsiz oyun oyna">
+    <meta name="author" content="Shadow Maze Team">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourdomain.com/shadow-maze">
+
+    <!-- Open Graph / Facebook SEO -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/shadow-maze">
+    <meta property="og:title" content="Shadow Maze: Physical Hunter - Labirentte Hayatta Kal">
+    <meta property="og:description" content="Karanlık koridorlar, gizemli portallar ve ensendeki avcı... 5 farklı sektörde hayatta kalıp anahtarları toplayabilecek misin?">
+    <meta property="og:image" content="https://yourdomain.com/shadow-maze-preview.jpg">
+
+    <!-- Twitter SEO -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yourdomain.com/shadow-maze">
+    <meta property="twitter:title" content="Shadow Maze: Physical Hunter">
+    <meta property="twitter:description" content="Avcı uyanmadan önce anahtarları topla ve labirentten kaç!">
+    <meta property="twitter:image" content="https://yourdomain.com/shadow-maze-preview.jpg">
+
+    <style>
+        body { margin: 0; overflow: hidden; background: #010103; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; touch-action: none; }
+        canvas { display: block; }
+
+        /* UI Katmanı */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 20px; box-sizing: border-box;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: flex-start; }
+        .stats-box { 
+            background: rgba(16, 24, 48, 0.85); 
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            border: 1px solid #4466aa; 
+            box-shadow: 0 0 20px rgba(0, 80, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        .level-info { font-size: 11px; color: #66aaff; letter-spacing: 2px; font-weight: bold; text-transform: uppercase; }
+        .level-title { font-size: 20px; font-weight: 800; color: #fff; margin-top: 4px; }
+        
+        .lives { font-size: 32px; letter-spacing: 5px; filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5)); }
+
+        /* Kontroller */
+        #joystick-area {
+            position: absolute; bottom: 50px; left: 40px;
+            width: 130px; height: 130px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 50%;
+            pointer-events: auto;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #joystick-knob {
+            width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            transition: transform 0.1s ease-out;
+        }
+
+        #key-container {
+            position: absolute; bottom: 60px; right: 40px;
+            text-align: center;
+        }
+        #key-icon { font-size: 45px; transition: transform 0.3s; filter: drop-shadow(0 0 8px gold); }
+        #key-count { font-size: 22px; font-weight: bold; color: #fff; text-shadow: 0 2px 5px #000; }
+        .all-keys-collected #key-icon { color: #55ff55; filter: drop-shadow(0 0 15px #00ff00); transform: scale(1.2); }
+
+        /* Overlay Modalları */
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 20; pointer-events: auto;
+            transition: opacity 0.3s;
+        }
+        .modal {
+            position: relative;
+            text-align: center; color: white; width: 85%; max-width: 380px;
+            background: linear-gradient(145deg, #121218, #1a1a24);
+            padding: 30px; border-radius: 20px; 
+            border: 1px solid #334466;
+            box-shadow: 0 0 60px rgba(0, 100, 255, 0.2);
+        }
+
+        /* Ana Menü Butonu (Ev Şeklinde) */
+        .home-link {
+            position: absolute; top: 15px; left: 15px;
+            text-decoration: none; color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; border: 1px solid #4466aa;
+            transition: 0.3s; font-size: 20px;
+            pointer-events: auto;
+        }
+        .home-link:hover { background: #0088ff; box-shadow: 0 0 15px #0088ff; border-color: #00ccff; }
+
+        h1 { margin: 0 0 15px; color: #00ccff; font-size: 26px; letter-spacing: 3px; }
+        p { margin-bottom: 25px; color: #aab; line-height: 1.5; font-size: 15px; }
+        .tag { display: inline-block; background: #223355; color: #ccd; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin: 2px; }
+        
+        /* Dil Butonları */
+        .lang-switch { margin-bottom: 20px; display: flex; justify-content: center; gap: 10px; }
+        .lang-btn { 
+            background: rgba(255,255,255,0.1); border: 1px solid #4466aa; color: #fff; 
+            padding: 6px 15px; border-radius: 15px; font-size: 12px; cursor: pointer; transition: 0.3s;
+            pointer-events: auto;
+        }
+        .lang-btn.active { background: #0088ff; border-color: #00ccff; box-shadow: 0 0 10px #0088ff; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+
+        button {
+            background: linear-gradient(90deg, #0088ff, #0055ff);
+            color: #fff; border: none; padding: 14px 40px;
+            font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4);
+            transition: transform 0.1s;
+            width: 220px;
+            pointer-events: auto;
+        }
+        button.secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #4466aa;
+            box-shadow: none;
+        }
+        button:active { transform: scale(0.96); }
+
+        /* Efektler */
+        #damage-flash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 30%, #ff0000 100%);
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+            mix-blend-mode: hard-light;
+        }
+        #warp-flash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; transition: opacity 0.5s;
+            mix-blend-mode: overlay;
+        }
+        #spawn-warning {
+            position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+            color: #ff3333; font-weight: 900; font-size: 22px; letter-spacing: 3px;
+            text-shadow: 0 0 15px red; opacity: 0; transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        #how-to-content { display: none; text-align: left; font-size: 13px; color: #ccd; line-height: 1.4; }
+        #how-to-content ul { padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="damage-flash"></div>
+    <div id="warp-flash"></div>
+    <div id="spawn-warning">AVCI UYANDI</div>
+
+    <div id="ui-layer">
+        <div class="top-bar">
+            <div class="stats-box">
+                <div class="level-info" id="lvl-info-txt">GÖREV</div>
+                <div class="level-title" id="lvl-txt">SEKTÖR 1</div>
+            </div>
+            <div class="lives" id="lives-txt">❤️❤️❤️</div>
+        </div>
+        <div id="joystick-area"><div id="joystick-knob"></div></div>
+        <div id="key-container">
+            <div id="key-icon">🔑</div>
+            <div id="key-count">0/4</div>
+        </div>
+    </div>
+
+    <div id="overlay">
+        <div class="modal">
+            <!-- Ana Menü / Ev Butonu -->
+            <a href="../../index.html" class="home-link" title="Ana Menü">🏠</a>
+
+            <div class="lang-switch">
+                <div class="lang-btn active" onclick="setLang('en')">English</div>
+                <div class="lang-btn" onclick="setLang('tr')">Türkçe</div>
+            </div>
+            <h1 id="modal-title">SHADOW MAZE</h1>
+            
+            <div id="main-menu-content">
+                <p id="modal-desc">
+                    Collect keys and find the exit.<br><br>
+                    <span class="tag">PC: WASD or ARROWS</span>
+                    <span class="tag">MOBILE: JOYSTICK</span><br><br>
+                    <span class="tag">BLUE ZONE IS SAFE</span>
+                </p>
+                <div class="btn-group">
+                    <button id="overlay-btn" onclick="startGame()">START</button>
+                    <button id="how-to-btn" class="secondary" onclick="toggleHowTo(true)">HOW TO PLAY</button>
+                </div>
+            </div>
+
+            <div id="how-to-content">
+                <div id="how-to-text"></div>
+                <div class="btn-group" style="margin-top: 20px;">
+                    <button id="back-btn" class="secondary" onclick="toggleHowTo(false)">BACK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SES EFEKTLERİ ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSfx(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'start') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'key') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(1320, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+
+        // --- DİL SİSTEMİ ---
+        let currentLang = 'en';
+        const TRANSLATIONS = {
+            en: {
+                mission: "MISSION",
+                start: "START",
+                retry: "RETRY",
+                next: "NEXT SECTOR",
+                playAgain: "PLAY AGAIN",
+                spawnWarn: "HUNTER AWAKENED",
+                exit: "EXIT",
+                locked: "LOCKED",
+                howTo: "HOW TO PLAY",
+                back: "BACK",
+                homeTitle: "Home Menu",
+                instructions: "Collect keys and find the exit.<br><br><span class='tag'>PC: WASD or ARROWS</span> <span class='tag'>MOBILE: JOYSTICK</span><br><br><span class='tag'>BLUE ZONE IS SAFE</span>",
+                howToDetail: "<h3>Rules:</h3><ul><li>Collect all 4 <b>Gold Keys</b> to unlock the exit.</li><li>The <b>Hunter</b> wakes up once you move too far from the start.</li><li>Hunter follows the shortest path using corridors.</li><li>Stand in <b>Blue Safe Zones</b> to become invulnerable.</li><li>Use <b>Portals</b> to warp between different sections.</li></ul>",
+                levelTitle: (n) => `SECTOR ${n}`,
+                levelNames: ["Contact", "Labyrinth", "Chaos", "Nightmare", "Void (Final)"],
+                gameOverTitle: "SYSTEM CRASH",
+                gameOverDesc: "The hunter has completely taken over.",
+                winTitle: "MISSION COMPLETE!",
+                winDesc: "All sectors cleared. Systems returning to normal.",
+                levelCompleteTitle: "SECTOR CLEARED",
+                levelCompleteDesc: "Data packets collected. Extraction successful."
+            },
+            tr: {
+                mission: "GÖREV",
+                start: "BAŞLA",
+                retry: "TEKRAR DENE",
+                next: "SONRAKİ SEKTÖR",
+                playAgain: "TEKRAR OYNA",
+                spawnWarn: "AVCI UYANDI",
+                exit: "ÇIKIŞ",
+                locked: "KİLİTLİ",
+                howTo: "NASIL OYNANIR",
+                back: "GERİ",
+                homeTitle: "Ana Menü",
+                instructions: "Anahtarları topla ve çıkışı bul.<br><br><span class='tag'>PC: WASD veya OK TUŞLARI</span> <span class='tag'>MOBİL: JOYSTICK</span><br><br><span class='tag'>MAVİ ALAN GÜVENLİ</span>",
+                howToDetail: "<h3>Kurallar:</h3><ul><li>Çıkışı açmak için 4 <b>Altın Anahtarı</b> topla.</li><li>Başlangıçtan uzaklaştığında <b>Avcı</b> uyanır.</li><li>Avcı koridorları kullanarak en kısa yoldan seni izler.</li><li><b>Mavi Güvenli Alanlarda</b> bekleyerek korunabilirsin.</li><li>Bölgeler arası ışınlanmak için <b>Portalları</b> kullan.</li></ul>",
+                levelTitle: (n) => `SEKTÖR ${n}`,
+                levelNames: ["Temas", "Labirent", "Kaos", "Kabus", "Hiçlik (Final)"],
+                gameOverTitle: "SİSTEM ÇÖKTÜ",
+                gameOverDesc: "Avcı seni tamamen ele geçirdi.",
+                winTitle: "GÖREV TAMAMLANDI!",
+                winDesc: "Tüm sektörler temizlendi. Sistemler normale dönüyor.",
+                levelCompleteTitle: "SEKTÖR TEMİZLENDİ",
+                levelCompleteDesc: "Veri paketleri toplandı. Çıkış başarılı."
+            }
+        };
+
+        function setLang(lang) {
+            playSfx('click');
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase().includes(lang === 'en' ? 'english' : 'türkçe'));
+            });
+            const t = TRANSLATIONS[lang];
+            document.getElementById('modal-desc').innerHTML = t.instructions;
+            document.getElementById('overlay-btn').innerText = t.start;
+            document.getElementById('how-to-btn').innerText = t.howTo;
+            document.getElementById('back-btn').innerText = t.back;
+            document.getElementById('how-to-text').innerHTML = t.howToDetail;
+            document.getElementById('lvl-info-txt').innerText = t.mission;
+            document.getElementById('spawn-warning').innerText = t.spawnWarn;
+            document.querySelector('.home-link').title = t.homeTitle;
+            updateUI();
+        }
+
+        function toggleHowTo(show) {
+            playSfx('click');
+            document.getElementById('main-menu-content').style.display = show ? 'none' : 'block';
+            document.getElementById('how-to-content').style.display = show ? 'block' : 'none';
+        }
+
+        // --- YAPILANDIRMA ---
+        const CONFIG = {
+            levels: [
+                { size: 15, speed: 2.4, safeZones: 1, portals: 1 },
+                { size: 21, speed: 2.9, safeZones: 2, portals: 2 },
+                { size: 27, speed: 3.3, safeZones: 2, portals: 3 },
+                { size: 35, speed: 3.8, safeZones: 3, portals: 4 },
+                { size: 41, speed: 4.2, safeZones: 4, portals: 5 }
+            ],
+            tileSize: 48, 
+            spawnDistance: 4 
+        };
+
+        // --- OYUN DEĞİŞKENLERİ ---
+        let canvas, ctx;
+        let gameState = 'MENU';
+        let level = 0;
+        let lives = 3;
+        let maze = []; 
+        let portals = []; 
+        let keys = []; 
+        let collectedKeys = 0;
+        let totalKeys = 4;
+        let particles = [];
+
+        let player = { 
+            x: 0, y: 0, radius: 12, teleportCooldown: 0, 
+            startX: 0, startY: 0, angle: 0, 
+            animFrame: 0 
+        };
+
+        let monster = { 
+            x: -5000, y: -5000, 
+            path: [], active: false, 
+            trail: [], 
+            angle: 0
+        };
+        
+        let exitPos = { x: 0, y: 0 };
+        let input = { x: 0, y: 0 };
+        let lastTime = 0;
+        let monsterPathTimer = 0;
+        const keysPressed = {};
+
+        // --- BAŞLATMA ---
+        window.onload = () => {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            resize();
+            window.addEventListener('resize', resize);
+            initJoystick();
+            initKeyboard();
+            setLang('en');
+            requestAnimationFrame(gameLoop);
+        };
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // --- UI YÖNETİMİ ---
+        function showModal(title, desc, btnText, action) {
+            toggleHowTo(false);
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerHTML = desc;
+            const btn = document.getElementById('overlay-btn');
+            btn.innerText = btnText;
+            btn.onclick = action;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function startGame() {
+            playSfx('start');
+            document.getElementById('overlay').style.display = 'none';
+            generateLevel(true); 
+            gameState = 'PLAYING';
+        }
+
+        function restartGame() {
+            level = 0;
+            lives = 3;
+            startGame();
+        }
+
+        function retryLevel() {
+            document.getElementById('overlay').style.display = 'none';
+            generateLevel(false); 
+            gameState = 'PLAYING';
+        }
+
+        function nextLevel() {
+            level++;
+            const t = TRANSLATIONS[currentLang];
+            if (level >= CONFIG.levels.length) {
+                gameState = 'GAMEOVER';
+                showModal(t.winTitle, t.winDesc, t.playAgain, restartGame);
+            } else {
+                document.getElementById('overlay').style.display = 'none';
+                generateLevel(true);
+                gameState = 'PLAYING';
+            }
+        }
+
+        // --- LABİRENT MANTIĞI ---
+        function generateLevel(newMap = true) {
+            const cfg = CONFIG.levels[Math.min(level, CONFIG.levels.length - 1)];
+            const size = cfg.size;
+            
+            if (newMap) {
+                maze = Array(size).fill().map(() => Array(size).fill(1));
+                const stack = [{x: 1, y: 1}];
+                maze[1][1] = 0;
+
+                while (stack.length > 0) {
+                    const current = stack[stack.length - 1];
+                    const neighbors = [];
+                    const dirs = [{x:0, y:-2}, {x:0, y:2}, {x:-2, y:0}, {x:2, y:0}];
+
+                    for (let d of dirs) {
+                        const nx = current.x + d.x;
+                        const ny = current.y + d.y;
+                        if (nx > 0 && nx < size-1 && ny > 0 && ny < size-1 && maze[ny][nx] === 1) {
+                            neighbors.push({x:nx, y:ny, dx:d.x/2, dy:d.y/2});
+                        }
+                    }
+
+                    if (neighbors.length > 0) {
+                        const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                        maze[current.y + next.dy][current.x + next.dx] = 0;
+                        maze[next.y][next.x] = 0;
+                        stack.push({x:next.x, y:next.y});
+                    } else {
+                        stack.pop();
+                    }
+                }
+
+                let zonesPlaced = 0;
+                while(zonesPlaced < cfg.safeZones) {
+                    const rx = Math.floor(Math.random() * (size - 2)) + 1;
+                    const ry = Math.floor(Math.random() * (size - 2)) + 1;
+                    if (maze[ry][rx] === 0 && (rx > 4 || ry > 4)) {
+                        maze[ry][rx] = 2; 
+                        zonesPlaced++;
+                    }
+                }
+
+                portals = [];
+                for (let i = 0; i < cfg.portals; i++) {
+                    let p1 = findPortalSpot(size);
+                    let p2 = findPortalSpot(size);
+                    if (p1 && p2) {
+                        portals.push({ ...p1, linkId: i * 2 + 1, id: i * 2, color: `hsl(${i * 80 + 200}, 100%, 60%)` });
+                        portals.push({ ...p2, linkId: i * 2, id: i * 2 + 1, color: `hsl(${i * 80 + 200}, 100%, 60%)` });
+                    }
+                }
+
+                maze[size-2][size-2] = 0;
+                exitPos = { x: size-2, y: size-2 };
+
+                keys = [];
+                const quadSize = Math.floor(size / 2);
+                const quadrants = [
+                    { minX: 1, maxX: quadSize, minY: 1, maxY: quadSize },
+                    { minX: quadSize, maxX: size-2, minY: 1, maxY: quadSize },
+                    { minX: 1, maxX: quadSize, minY: quadSize, maxY: size-2 },
+                    { minX: quadSize, maxX: size-2, minY: quadSize, maxY: size-2 }
+                ];
+
+                quadrants.forEach(q => {
+                    let placed = false, attempts = 0;
+                    while(!placed && attempts < 100) {
+                        const rx = Math.floor(Math.random() * (q.maxX - q.minX)) + q.minX;
+                        const ry = Math.floor(Math.random() * (q.maxY - q.minY)) + q.minY;
+                        if (maze[ry][rx] === 0 && !(rx===1 && ry===1) && !(rx===size-2 && ry===size-2)) {
+                            keys.push({ x: rx, y: ry, active: true }); 
+                            placed = true;
+                        }
+                        attempts++;
+                    }
+                });
+
+                particles = [];
+                for(let i=0; i<40; i++) {
+                    particles.push({
+                        x: Math.random() * size * CONFIG.tileSize,
+                        y: Math.random() * size * CONFIG.tileSize,
+                        vx: (Math.random()-0.5) * 15,
+                        vy: (Math.random()-0.5) * 15,
+                        size: Math.random() * 2 + 1
+                    });
+                }
+            } else {
+                keys.forEach(k => k.active = true);
+            }
+
+            collectedKeys = 0;
+            totalKeys = keys.length;
+            player.x = 1 * CONFIG.tileSize + CONFIG.tileSize/2;
+            player.y = 1 * CONFIG.tileSize + CONFIG.tileSize/2;
+            player.startX = player.x;
+            player.startY = player.y;
+            player.teleportCooldown = 0;
+
+            monster.active = false; monster.x = -5000; monster.y = -5000; monster.trail = [];
+            document.getElementById('spawn-warning').style.opacity = 0;
+            updateUI();
+        }
+
+        function findPortalSpot(size) {
+            let attempts = 0;
+            while(attempts < 300) {
+                const rx = Math.floor(Math.random() * (size - 2)) + 1;
+                const ry = Math.floor(Math.random() * (size - 2)) + 1;
+                if (maze[ry][rx] === 1) { 
+                    const isHorizontal = (maze[ry][rx-1] === 0 && maze[ry][rx+1] === 0);
+                    const isVertical = (maze[ry-1][rx] === 0 && maze[ry+1][rx] === 0);
+                    if ((isHorizontal || isVertical) && !portals.some(p => p.x === rx && p.y === ry)) {
+                        return { x: rx, y: ry, spawn: isHorizontal ? {x: rx-1, y: ry} : {x: rx, y: ry-1} };
+                    }
+                }
+                attempts++;
+            }
+            return null;
+        }
+
+        // --- OYUN DÖNGÜSÜ ---
+        function gameLoop(timestamp) {
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+            lastTime = timestamp;
+            
+            if (gameState === 'PLAYING') { 
+                update(dt); 
+                draw(); 
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        function checkCollision(x, y, isMonster = false) {
+            const margin = isMonster ? 6 : player.radius - 2; 
+            const points = [{x: x-margin, y: y-margin}, {x: x+margin, y: y-margin}, {x: x-margin, y: y+margin}, {x: x+margin, y: y+margin}];
+            for (let p of points) {
+                const tx = Math.floor(p.x / CONFIG.tileSize);
+                const ty = Math.floor(p.y / CONFIG.tileSize);
+                if (!maze[ty]) return true;
+                const cell = maze[ty][tx];
+                if (cell === 1) {
+                    const hasPortal = portals.some(portal => portal.x === tx && portal.y === ty);
+                    if (!hasPortal) return true;
+                }
+            }
+            return false;
+        }
+
+        function update(dt) {
+            if (!maze.length) return;
+            updateInputFromKeys();
+            const speed = 220;
+            const dx = input.x * speed * dt;
+            const dy = input.y * speed * dt;
+            if (!checkCollision(player.x + dx, player.y)) player.x += dx;
+            if (!checkCollision(player.x, player.y + dy)) player.y += dy;
+            if (Math.hypot(input.x, input.y) > 0.1) {
+                player.angle = Math.atan2(input.y, input.x);
+                player.animFrame += dt * 12;
+            }
+            const gridX = Math.floor(player.x / CONFIG.tileSize);
+            const gridY = Math.floor(player.y / CONFIG.tileSize);
+
+            if (!monster.active) {
+                const dFromStart = Math.hypot(player.x - player.startX, player.y - player.startY);
+                if (dFromStart > CONFIG.spawnDistance * CONFIG.tileSize) {
+                    monster.active = true;
+                    monster.x = player.startX; 
+                    monster.y = player.startY;
+                    const warn = document.getElementById('spawn-warning');
+                    warn.style.opacity = 1; setTimeout(() => warn.style.opacity = 0, 2500);
+                }
+            }
+
+            if (player.teleportCooldown > 0) {
+                player.teleportCooldown -= dt;
+            } else {
+                for (let p of portals) {
+                    const px = p.x * CONFIG.tileSize + CONFIG.tileSize/2;
+                    const py = p.y * CONFIG.tileSize + CONFIG.tileSize/2;
+                    if (Math.hypot(player.x - px, player.y - py) < 32) {
+                        const target = portals.find(tp => tp.id === p.linkId);
+                        if (target) {
+                            player.x = target.spawn.x * CONFIG.tileSize + CONFIG.tileSize/2;
+                            player.y = target.spawn.y * CONFIG.tileSize + CONFIG.tileSize/2;
+                            player.teleportCooldown = 2.0;
+                            const flash = document.getElementById('warp-flash');
+                            flash.style.opacity = 0.8; setTimeout(() => flash.style.opacity = 0, 400);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (monster.active) {
+                monsterPathTimer += dt;
+                if (monsterPathTimer > 0.15) { 
+                    monsterPathTimer = 0;
+                    monster.path = findPathAStar(
+                        {x: Math.floor(monster.x/CONFIG.tileSize), y: Math.floor(monster.y/CONFIG.tileSize)},
+                        {x: gridX, y: gridY}
+                    );
+                }
+                const mCfg = CONFIG.levels[Math.min(level, CONFIG.levels.length-1)];
+                let mSpeed = mCfg.speed * CONFIG.tileSize;
+                if (Math.hypot(input.x, input.y) > 0.1) mSpeed *= 1.25; 
+                if (monster.path && monster.path.length > 0) {
+                    const next = monster.path[0];
+                    const tx = next.x * CONFIG.tileSize + CONFIG.tileSize/2, ty = next.y * CONFIG.tileSize + CONFIG.tileSize/2;
+                    const mdx = tx - monster.x, mdy = ty - monster.y;
+                    const dist = Math.sqrt(mdx*mdx + mdy*mdy);
+                    const mvx = (mdx / dist) * mSpeed * dt, mvy = (mdy / dist) * mSpeed * dt;
+                    if (!checkCollision(monster.x + mvx, monster.y, true)) monster.x += mvx;
+                    if (!checkCollision(monster.x, monster.y + mvy, true)) monster.y += mvy;
+                    if (dist > 2) monster.angle = Math.atan2(mdy, mdx);
+                    if (dist < 8) monster.path.shift();
+                }
+                monster.trail.unshift({x: monster.x, y: monster.y, angle: monster.angle});
+                if (monster.trail.length > 22) monster.trail.pop();
+                const pDist = Math.hypot(monster.x - player.x, monster.y - player.y);
+                const isInSafeZone = maze[gridY] && maze[gridY][gridX] === 2;
+                if (pDist < 25 && !isInSafeZone) hitPlayer();
+            }
+
+            keys.forEach(k => {
+                if (k.active && Math.hypot(player.x - (k.x*CONFIG.tileSize+CONFIG.tileSize/2), player.y - (k.y*CONFIG.tileSize+CONFIG.tileSize/2)) < 30) {
+                    k.active = false; 
+                    collectedKeys++; 
+                    updateKeyUI();
+                    playSfx('key');
+                }
+            });
+            
+            const ex = exitPos.x * CONFIG.tileSize + CONFIG.tileSize/2;
+            const ey = exitPos.y * CONFIG.tileSize + CONFIG.tileSize/2;
+            if (Math.hypot(player.x - ex, player.y - ey) < 30 && collectedKeys >= totalKeys) {
+                gameState = 'MENU';
+                const t = TRANSLATIONS[currentLang];
+                showModal(t.levelCompleteTitle, t.levelCompleteDesc, t.next, nextLevel);
+            }
+
+            particles.forEach(p => {
+                p.x += p.vx * dt; p.y += p.vy * dt;
+                if (p.x < 0) p.x = maze[0].length * CONFIG.tileSize;
+                if (p.x > maze[0].length * CONFIG.tileSize) p.x = 0;
+                if (p.y < 0) p.y = maze.length * CONFIG.tileSize;
+                if (p.y > maze.length * CONFIG.tileSize) p.y = 0;
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(-player.x + canvas.width / 2, -player.y + canvas.height / 2);
+
+            const renderDist = 12;
+            const gX = Math.floor(player.x / CONFIG.tileSize), gY = Math.floor(player.y / CONFIG.tileSize);
+            
+            for (let y = Math.max(0, gY-renderDist); y < Math.min(maze.length, gY+renderDist); y++) {
+                for (let x = Math.max(0, gX-renderDist); x < Math.min(maze[0].length, gX+renderDist); x++) {
+                    const px = x * CONFIG.tileSize, py = y * CONFIG.tileSize, ts = CONFIG.tileSize;
+                    if (maze[y][x] === 1) {
+                        ctx.fillStyle = '#0a101a'; ctx.fillRect(px, py, ts, ts);
+                        ctx.strokeStyle = '#1a2a40'; ctx.lineWidth = 1; ctx.strokeRect(px+2, py+2, ts-4, ts-4);
+                    } else if (maze[y][x] === 2) {
+                        ctx.fillStyle = 'rgba(0, 100, 255, 0.15)'; ctx.fillRect(px, py, ts, ts);
+                        ctx.strokeStyle = 'rgba(0, 200, 255, 0.4)'; ctx.strokeRect(px+1, py+1, ts-2, ts-2);
+                    } else {
+                        ctx.fillStyle = '#0b0b14'; ctx.fillRect(px, py, ts, ts);
+                    }
+                }
+            }
+
+            ctx.fillStyle = 'rgba(100, 150, 255, 0.2)';
+            particles.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill(); });
+
+            const time = Date.now() * 0.003;
+            for (let p of portals) {
+                const px = p.x * CONFIG.tileSize + CONFIG.tileSize/2, py = p.y * CONFIG.tileSize + CONFIG.tileSize/2;
+                ctx.save(); ctx.translate(px, py); ctx.rotate(time);
+                ctx.shadowBlur = 15; ctx.shadowColor = p.color; ctx.strokeStyle = p.color; ctx.lineWidth = 3;
+                ctx.beginPath(); for(let i=0; i<3; i++) ctx.ellipse(0, 0, 18, 7, i*Math.PI/3, 0, Math.PI*2); ctx.stroke(); ctx.restore();
+            }
+
+            keys.forEach(k => {
+                if (k.active) {
+                    const kx = k.x*CONFIG.tileSize + CONFIG.tileSize/2, ky = k.y*CONFIG.tileSize + CONFIG.tileSize/2;
+                    const hover = Math.sin(Date.now()*0.005) * 5;
+                    ctx.shadowBlur = 15; ctx.shadowColor = 'gold'; ctx.fillStyle = '#ffcc00';
+                    ctx.beginPath(); ctx.arc(kx, ky + hover, 8, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+                }
+            });
+
+            const ex = exitPos.x * CONFIG.tileSize, ey = exitPos.y * CONFIG.tileSize;
+            const isOpen = collectedKeys >= totalKeys;
+            const t = TRANSLATIONS[currentLang];
+            ctx.fillStyle = isOpen ? 'rgba(0,255,0,0.15)' : 'rgba(255,0,0,0.15)';
+            ctx.fillRect(ex, ey, CONFIG.tileSize, CONFIG.tileSize);
+            ctx.strokeStyle = isOpen ? '#0f0' : '#f00'; ctx.lineWidth = 2; ctx.strokeRect(ex+5, ey+5, CONFIG.tileSize-10, CONFIG.tileSize-10);
+            ctx.fillStyle = '#fff'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(isOpen ? t.exit : t.locked, ex+CONFIG.tileSize/2, ey+CONFIG.tileSize/2+4);
+
+            ctx.save();
+            ctx.translate(player.x, player.y); ctx.rotate(player.angle);
+            const w = Math.sin(player.animFrame) * 5;
+            ctx.fillStyle = '#111';
+            ctx.beginPath(); ctx.ellipse(-6 + w, 7, 4, 3, 0, 0, Math.PI*2); ctx.fill(); 
+            ctx.beginPath(); ctx.ellipse(-6 - w, -7, 4, 3, 0, 0, Math.PI*2); ctx.fill(); 
+            ctx.fillStyle = '#2a5496'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 9, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#1a2a3a'; ctx.beginPath(); ctx.arc(3, 0, 7, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#44ccff'; ctx.beginPath(); ctx.ellipse(5, 0, 2, 4, 0, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+
+            if (monster.active) {
+                for (let i = monster.trail.length - 1; i >= 0; i--) {
+                    const pos = monster.trail[i];
+                    const r = 8 * (1 - i/monster.trail.length), op = 0.8 - (i/monster.trail.length)*0.7;
+                    ctx.save(); ctx.translate(pos.x, pos.y); ctx.rotate(pos.angle || 0);
+                    ctx.fillStyle = `rgba(0, 200, 50, ${op})`;
+                    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.fill();
+                    if (i % 4 === 0) {
+                        ctx.fillStyle = `rgba(255, 0, 0, ${op})`;
+                        ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r, -r-4); ctx.lineTo(r, -r); ctx.fill();
+                    }
+                    ctx.restore();
+                }
+                ctx.save(); ctx.translate(monster.x, monster.y); ctx.rotate(monster.angle);
+                ctx.shadowBlur = 10; ctx.shadowColor = 'lime'; ctx.fillStyle = '#004400';
+                ctx.beginPath(); ctx.ellipse(4, 0, 10, 7, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath(); ctx.arc(7, -3, 2, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(7, 3, 2, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+            ctx.restore();
+        }
+
+        function findPathAStar(start, end) {
+            const openSet = [start];
+            const cameFrom = {};
+            const gScore = { [`${start.x},${start.y}`]: 0 };
+            const fScore = { [`${start.x},${start.y}`]: h(start, end) };
+            const visited = new Set();
+            while (openSet.length > 0) {
+                let current = openSet[0], minIdx = 0;
+                for(let i=1; i<openSet.length; i++) {
+                    const k = `${openSet[i].x},${openSet[i].y}`, ck = `${current.x},${current.y}`;
+                    if ((fScore[k] || Infinity) < (fScore[ck] || Infinity)) { current = openSet[i]; minIdx = i; }
+                }
+                openSet.splice(minIdx, 1);
+                if (current.x === end.x && current.y === end.y) {
+                    const path = []; let temp = current;
+                    while(cameFrom[`${temp.x},${temp.y}`]) { path.push(temp); temp = cameFrom[`${temp.x},${temp.y}`]; }
+                    return path.reverse();
+                }
+                visited.add(`${current.x},${current.y}`);
+                for (let d of [{x:0,y:-1}, {x:0,y:1}, {x:-1,y:0}, {x:1,y:0}]) {
+                    const n = {x: current.x + d.x, y: current.y + d.y}, nk = `${n.x},${n.y}`;
+                    if (maze[n.y] && maze[n.y][n.x] !== 1 && !visited.has(nk)) {
+                        const tg = gScore[`${current.x},${current.y}`] + 1;
+                        if (tg < (gScore[nk] || Infinity)) {
+                            cameFrom[nk] = current; gScore[nk] = tg; fScore[nk] = tg + h(n, end);
+                            if (!openSet.some(o => o.x === n.x && o.y === n.y)) openSet.push(n);
+                        }
+                    }
+                }
+            }
+            return [];
+        }
+        function h(a, b) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+
+        function hitPlayer() {
+            lives--; document.getElementById('lives-txt').innerText = "❤️".repeat(Math.max(0, lives));
+            const flash = document.getElementById('damage-flash');
+            flash.style.opacity = 0.8; setTimeout(() => flash.style.opacity = 0, 200);
+            const t = TRANSLATIONS[currentLang];
+            if (lives <= 0) {
+                gameState = 'GAMEOVER';
+                showModal(t.gameOverTitle, t.gameOverDesc, t.playAgain, restartGame);
+            } else {
+                retryLevel();
+            }
+        }
+
+        function updateKeyUI() {
+            document.getElementById('key-count').innerText = `${collectedKeys}/${totalKeys}`;
+            if (collectedKeys >= totalKeys) document.getElementById('key-container').classList.add('all-keys-collected');
+        }
+
+        function updateUI() {
+            const t = TRANSLATIONS[currentLang];
+            const currentLevelName = t.levelNames[Math.min(level, t.levelNames.length-1)];
+            document.getElementById('lvl-txt').innerText = `${t.levelTitle(level + 1)}: ${currentLevelName}`;
+            document.getElementById('key-container').classList.remove('all-keys-collected');
+            document.getElementById('key-count').innerText = `${collectedKeys}/${totalKeys}`;
+            document.getElementById('lives-txt').innerText = "❤️".repeat(lives);
+        }
+
+        function initKeyboard() {
+            window.addEventListener('keydown', (e) => keysPressed[e.key.toLowerCase()] = true);
+            window.addEventListener('keyup', (e) => keysPressed[e.key.toLowerCase()] = false);
+        }
+
+        function updateInputFromKeys() {
+            let kx = 0, ky = 0;
+            if (keysPressed['w'] || keysPressed['arrowup']) ky -= 1;
+            if (keysPressed['s'] || keysPressed['arrowdown']) ky += 1;
+            if (keysPressed['a'] || keysPressed['arrowleft']) kx -= 1;
+            if (keysPressed['d'] || keysPressed['arrowright']) kx += 1;
+            if (kx !== 0 || ky !== 0) {
+                const mag = Math.hypot(kx, ky);
+                input.x = kx / mag; input.y = ky / mag;
+                document.getElementById('joystick-knob').style.transform = `translate(${input.x * 35}px, ${input.y * 35}px)`;
+            } else if (!isJoystickDragging) {
+                input.x = 0; input.y = 0;
+                document.getElementById('joystick-knob').style.transform = `translate(0, 0)`;
+            }
+        }
+
+        let isJoystickDragging = false;
+        function initJoystick() {
+            const area = document.getElementById('joystick-area'), knob = document.getElementById('joystick-knob');
+            let centerX, centerY;
+            const handleStart = (e) => {
+                isJoystickDragging = true;
+                const rect = area.getBoundingClientRect();
+                centerX = rect.left + rect.width / 2; centerY = rect.top + rect.height / 2;
+                handleMove(e);
+            };
+            const handleMove = (e) => {
+                if (!isJoystickDragging) return;
+                const p = e.touches ? e.touches[0] : e;
+                const dx = p.clientX - centerX, dy = p.clientY - centerY;
+                const dist = Math.min(Math.hypot(dx, dy), 45), angle = Math.atan2(dy, dx);
+                knob.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+                input.x = (Math.cos(angle) * dist) / 45; input.y = (Math.sin(angle) * dist) / 45;
+            };
+            const handleEnd = () => isJoystickDragging = false;
+            area.addEventListener('mousedown', handleStart); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleEnd);
+            area.addEventListener('touchstart', handleStart); window.addEventListener('touchmove', handleMove); window.addEventListener('touchend', handleEnd);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- SEO Meta Tags -->
+    <title>Neon Shooter: Futuristic Bubble Pop Arcade Game</title>
+    <meta name="description" content="Experience Neon Shooter, a high-quality futuristic bubble shooter puzzle game. Match colors, unlock challenging levels, and enjoy smooth arcade action on mobile and desktop. Play for free now!">
+    <meta name="keywords" content="bubble shooter, arcade game, puzzle game, neon shooter, online game, HTML5 game, mobile game, color match game, futuristic arcade">
+    <meta name="author" content="Neon Shooter Dev">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourdomain.com/neon-shooter">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/neon-shooter">
+    <meta property="og:title" content="Neon Shooter: Futuristic Bubble Pop Arcade Game">
+    <meta property="og:description" content="Unlock levels and match colors in this modern, neon-themed bubble shooter. Optimized for all devices!">
+    <meta property="og:image" content="https://yourdomain.com/assets/og-preview.jpg">
+
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yourdomain.com/neon-shooter">
+    <meta property="twitter:title" content="Neon Shooter: Futuristic Bubble Pop Arcade Game">
+    <meta property="twitter:description" content="Experience the next generation of bubble shooter arcade games. Free to play on your browser!">
+    <meta property="twitter:image" content="https://yourdomain.com/assets/og-preview.jpg">
+
+    <!-- Structured Data (Google Rich Snippets) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "SoftwareApplication",
+      "name": "Neon Shooter",
+      "operatingSystem": "Web, iOS, Android, Windows, MacOS",
+      "applicationCategory": "GameApplication",
+      "genre": "Arcade Puzzle",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1250"
+      },
+      "description": "A high-quality 2D futuristic bubble shooter game with color matching mechanics and a progression-based level unlock system."
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            color: white;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #111827 0%, #000000 100%);
+        }
+        canvas {
+            background: #000;
+            display: block;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.15);
+            max-height: 100vh;
+            max-width: 100vw;
+            object-fit: contain;
+        }
+        /* SEO invisible headers */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            text-align: center;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 32px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .btn-modern {
+            position: relative;
+            padding: 14px 24px;
+            border-radius: 16px;
+            font-weight: 800;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .btn-unlocked {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: white;
+        }
+        .btn-locked {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        .btn-modern:active { transform: scale(0.96); opacity: 0.9; }
+        
+        .hud {
+            position: absolute;
+            top: env(safe-area-inset-top, 20px);
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 20;
+        }
+        /* HUD adjustments to not overlap top buttons */
+        .hud-left, .hud-right {
+            margin-top: 60px;
+        }
+        
+        .hud-box {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 10px 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Top Bar Navigation (Home & Lang) */
+        .nav-bar {
+            position: absolute;
+            top: env(safe-area-inset-top, 20px);
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 60;
+            pointer-events: none;
+        }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            pointer-events: auto;
+            text-decoration: none;
+        }
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        .nav-btn:active { transform: translateY(1px); }
+        .nav-btn-text {
+            font-size: 0.7rem;
+            font-weight: 800;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hidden { display: none !important; }
+
+        .lock-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1 class="sr-only">Neon Shooter: Futuristic Arcade Bubble Puzzle</h1>
+    <h2 class="sr-only">Play free online bubble shooter with levels, wall bouncing and color match.</h2>
+
+    <!-- Top Navigation Bar -->
+    <div class="nav-bar">
+        <!-- Home Button -->
+        <a href="../../index.html" class="nav-btn" aria-label="Go to Main Menu">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span id="ui-home-label" class="nav-btn-text">HOME</span>
+        </a>
+
+        <!-- Language Switcher -->
+        <button onclick="toggleLang()" class="nav-btn px-4" aria-label="Toggle Language">
+            <span id="lang-label" class="text-xs font-black tracking-widest">EN / TR</span>
+        </button>
+    </div>
+
+    <div id="hud" class="hud hidden">
+        <div class="hud-box hud-left">
+            <div id="ui-time-label" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Time</div>
+            <div id="timer" class="text-xl font-black text-cyan-400 tabular-nums">00:00</div>
+        </div>
+        <div class="hud-box hud-right text-right">
+            <div id="ui-bubble-label" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Left</div>
+            <div id="bubble-count" class="text-xl font-black text-white tabular-nums">0</div>
+        </div>
+    </div>
+
+    <!-- Menu Screen -->
+    <div id="menu-screen" class="overlay">
+        <div class="glass-panel">
+            <h1 class="text-4xl font-black mb-2 tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-blue-600">NEON SHOOTER</h1>
+            <p id="ui-select-diff" class="text-xs font-bold opacity-40 mb-8 uppercase tracking-[0.2em]">Select Difficulty</p>
+            
+            <button id="btn-easy" onclick="tryStart('EASY')" class="btn-modern btn-unlocked" aria-label="Start Easy Mode">
+                <span id="ui-easy">EASY (2 MIN)</span>
+            </button>
+            
+            <button id="btn-medium" onclick="tryStart('MEDIUM')" class="btn-modern btn-locked" aria-label="Start Medium Mode - Locked">
+                <svg class="lock-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg>
+                <span id="ui-medium">MEDIUM (3 MIN)</span>
+            </button>
+            
+            <button id="btn-hard" onclick="tryStart('HARD')" class="btn-modern btn-locked" aria-label="Start Hard Mode - Locked">
+                <svg class="lock-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg>
+                <span id="ui-hard">HARD (4 MIN)</span>
+            </button>
+
+            <button onclick="toggleHowTo(true)" class="mt-6 text-[10px] font-bold opacity-30 hover:opacity-100 transition-opacity uppercase tracking-widest underline decoration-2 underline-offset-4"><span id="ui-howto-btn">How to Play?</span></button>
+        </div>
+    </div>
+
+    <div id="howto-screen" class="overlay hidden">
+        <div class="glass-panel text-left">
+            <h2 id="ui-howto-title" class="text-2xl font-black mb-6 text-cyan-400 uppercase tracking-tight">How to Play?</h2>
+            <ul id="ui-howto-text" class="text-sm space-y-4 font-medium opacity-70"></ul>
+            <button onclick="toggleHowTo(false)" class="btn-modern btn-unlocked mt-8"><span id="ui-gotit">Got It</span></button>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result-screen" class="overlay hidden">
+        <div class="glass-panel">
+            <h2 id="result-title" class="text-3xl font-black mb-3">RESULT</h2>
+            <p id="result-msg" class="text-sm font-medium opacity-60 mb-8"></p>
+            <button onclick="backToMenu()" class="btn-modern btn-unlocked"><span id="ui-back">Back to Menu</span></button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<script>
+/**
+ * FUTURISTIC BUBBLE SHOOTER: GLOBAL EDITION
+ */
+
+const STORAGE_KEY = 'neon_shooter_progression';
+let progress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { unlocked: ['EASY'] };
+
+const i18n = {
+    en: {
+        easy: "EASY (2 MIN)", medium: "MEDIUM (3 MIN)", hard: "HARD (4 MIN)",
+        selectDiff: "Select Difficulty", howtoBtn: "HOW TO PLAY?",
+        howtoTitle: "How to Play?", gotit: "START", timeLabel: "Time",
+        bubbleLabel: "Left", winTitle: "SYSTEM CLEAR", winMsg: "Targets eliminated! Next level unlocked.",
+        winMsgFinal: "Targets eliminated! You are a master.",
+        loseTitle: "TIMEOUT", loseMsg: "System overload. Try again.",
+        backBtn: "BACK TO MENU",
+        homeLabel: "HOME",
+        howtoLines: [
+            "• Aim by moving mouse or dragging finger.",
+            "• Click or tap to launch.",
+            "• Match 3 colors to pop bubbles.",
+            "• Finish a level to unlock the next one.",
+            "• Smart Ammo: Only remaining colors appear."
+        ]
+    },
+    tr: {
+        easy: "KOLAY (2 DK)", medium: "ORTA (3 DK)", hard: "ZOR (4 DK)",
+        selectDiff: "Zorluk Seviyesi Seçin", howtoBtn: "NASIL OYNANIR?",
+        howtoTitle: "Nasıl Oynanır?", gotit: "BAŞLA", timeLabel: "Süre",
+        bubbleLabel: "Kalan", winTitle: "MÜKEMMEL!", winMsg: "Tüm sistemi temizledin! Yeni seviye açıldı.",
+        winMsgFinal: "Tüm sistemi temizledin! Sen bir ustasın.",
+        loseTitle: "SİSTEM ÇÖKTÜ", loseMsg: "Zaman yetmedi, tekrar dene.",
+        backBtn: "ANA MENÜ",
+        homeLabel: "ANA SAYFA",
+        howtoLines: [
+            "• Roketi çevirmek için sürükle veya fareyi hareket ettir.",
+            "• Ateş etmek için tıkla veya dokun.",
+            "• 3 aynı rengi birleştirerek zinciri kır.",
+            "• Bir seviyeyi bitirince bir sonrakinin kilidi açılır.",
+            "• Akıllı Şarjör: Sadece ekrandaki renkler gelir."
+        ]
+    }
+};
+
+let currentLang = 'en'; 
+let currentDifficulty = 'EASY';
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const timerElement = document.getElementById('timer');
+const countElement = document.getElementById('bubble-count');
+
+const COLORS = {
+    red:    { main: '#ff3b3b', light: '#ff9e9e', shadow: '#8b0000' },
+    blue:   { main: '#3b82f6', light: '#93c5fd', shadow: '#1e3a8a' },
+    yellow: { main: '#fbbf24', light: '#fde68a', shadow: '#92400e' },
+    green:  { main: '#10b981', light: '#6ee7b7', shadow: '#064e3b' },
+    purple: { main: '#8b5cf6', light: '#c4b5fd', shadow: '#4c1d95' }
+};
+
+const COLOR_KEYS = Object.keys(COLORS);
+const GAME_WIDTH = 450;
+const GAME_HEIGHT = 800;
+const BUBBLE_RADIUS = 21;
+const SPACING_X = BUBBLE_RADIUS * 2;
+const SPACING_Y = BUBBLE_RADIUS * 1.75;
+
+let gameState = 'MENU';
+let bubbles = [];
+let particles = [];
+let nextBubble = null;
+let projectile = null;
+let mouseX = 225, mouseY = 400;
+let timeLeft = 120; 
+let timerInterval = null;
+
+function resize() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const ratio = GAME_WIDTH / GAME_HEIGHT;
+    
+    let canvasWidth = windowWidth;
+    let canvasHeight = windowWidth / ratio;
+
+    if (canvasHeight > windowHeight) {
+        canvasHeight = windowHeight;
+        canvasWidth = windowHeight * ratio;
+    }
+
+    const scale = window.devicePixelRatio || 1;
+    canvas.width = GAME_WIDTH * scale;
+    canvas.height = GAME_HEIGHT * scale;
+    canvas.style.width = canvasWidth + 'px';
+    canvas.style.height = canvasHeight + 'px';
+    ctx.scale(scale, scale);
+}
+
+class Bubble {
+    constructor(x, y, colorKey) {
+        this.x = x; this.y = y;
+        this.colorKey = colorKey;
+        this.radius = BUBBLE_RADIUS;
+        this.active = true;
+        this.isFalling = false;
+        this.vy = 0;
+        this.vx = 0;
+        this.floatOffset = Math.random() * Math.PI * 2;
+    }
+
+    draw(ctx, time) {
+        const color = COLORS[this.colorKey];
+        const pulse = (!this.isFalling && this.vx === 0) ? Math.sin(time / 1000 + this.floatOffset) * 2 : 0;
+        const cy = this.y + pulse;
+
+        ctx.save();
+        if (!this.isFalling) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = color.main + '44';
+        }
+        const grad = ctx.createRadialGradient(this.x - 6, cy - 6, 2, this.x, cy, this.radius);
+        grad.addColorStop(0, color.light);
+        grad.addColorStop(0.3, color.main);
+        grad.addColorStop(1, color.shadow);
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(this.x, cy, this.radius, 0, Math.PI * 2); ctx.fill();
+        
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.beginPath(); ctx.ellipse(this.x - 7, cy - 7, 5, 2.5, Math.PI/4, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x; this.y = y;
+        const ang = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 5 + 3;
+        this.vx = Math.cos(ang) * spd;
+        this.vy = Math.sin(ang) * spd;
+        this.life = 1.0;
+        this.color = color;
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.life -= 0.025; }
+    draw(ctx) {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath(); ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+function updateMenuUI() {
+    const difficulties = ['EASY', 'MEDIUM', 'HARD'];
+    difficulties.forEach(diff => {
+        const btn = document.getElementById(`btn-${diff.toLowerCase()}`);
+        const isUnlocked = progress.unlocked.includes(diff);
+        
+        if (isUnlocked) {
+            btn.classList.remove('btn-locked');
+            btn.classList.add('btn-unlocked');
+            const lock = btn.querySelector('.lock-icon');
+            if(lock) lock.style.display = 'none';
+        } else {
+            btn.classList.add('btn-locked');
+            btn.classList.remove('btn-unlocked');
+            const lock = btn.querySelector('.lock-icon');
+            if(lock) lock.style.display = 'block';
+        }
+    });
+}
+
+function updateTranslations() {
+    const lang = i18n[currentLang];
+    const elements = {
+        'ui-easy': lang.easy, 'ui-medium': lang.medium, 'ui-hard': lang.hard,
+        'ui-select-diff': lang.selectDiff, 'ui-howto-btn': lang.howtoBtn,
+        'ui-howto-title': lang.howtoTitle, 'ui-gotit': lang.gotit,
+        'ui-time-label': lang.timeLabel, 'ui-bubble-label': lang.bubbleLabel,
+        'ui-back': lang.backBtn, 'ui-home-label': lang.homeLabel
+    };
+    for(let id in elements) {
+        const el = document.getElementById(id);
+        if(el) el.innerText = elements[id];
+    }
+    const howtoLines = document.getElementById('ui-howto-text');
+    howtoLines.innerHTML = lang.howtoLines.map(line => `<li>${line}</li>`).join('');
+    document.getElementById('lang-label').innerText = currentLang.toUpperCase();
+}
+
+function toggleLang() {
+    currentLang = currentLang === 'en' ? 'tr' : 'en';
+    updateTranslations();
+}
+
+function initGrid(difficulty) {
+    bubbles = [];
+    let rows = 4, targetBubbles = 20;
+    if (difficulty === 'MEDIUM') { rows = 6; targetBubbles = 30; }
+    if (difficulty === 'HARD') { rows = 8; targetBubbles = 40; }
+
+    let count = 0;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < 10; c++) {
+            if (count >= targetBubbles) break;
+            const offset = (r % 2 === 1) ? BUBBLE_RADIUS : 0;
+            const x = BUBBLE_RADIUS + c * SPACING_X + offset;
+            const y = BUBBLE_RADIUS + r * SPACING_Y + 60;
+            if (x < GAME_WIDTH - BUBBLE_RADIUS) {
+                bubbles.push(new Bubble(x, y, COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)]));
+                count++;
+            }
+        }
+    }
+    countElement.innerText = bubbles.length;
+    prepareNextBubble();
+}
+
+function prepareNextBubble() {
+    const activeBubbles = bubbles.filter(b => b.active && !b.isFalling);
+    const existingColors = [...new Set(activeBubbles.map(b => b.colorKey))];
+    const availablePool = existingColors.length > 0 ? existingColors : COLOR_KEYS;
+    const randomColor = availablePool[Math.floor(Math.random() * availablePool.length)];
+    nextBubble = new Bubble(225, 735, randomColor);
+}
+
+function tryStart(difficulty) {
+    if (progress.unlocked.includes(difficulty)) {
+        startGame(difficulty);
+    }
+}
+
+function startGame(difficulty) {
+    gameState = 'PLAYING';
+    currentDifficulty = difficulty;
+    
+    if (difficulty === 'EASY') timeLeft = 120;
+    else if (difficulty === 'MEDIUM') timeLeft = 180;
+    else timeLeft = 240;
+
+    document.getElementById('menu-screen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('result-screen').classList.add('hidden');
+    
+    updateTimerDisplay();
+    initGrid(difficulty);
+    
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) endGame(false);
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+    const secs = (timeLeft % 60).toString().padStart(2, '0');
+    timerElement.innerText = `${mins}:${secs}`;
+}
+
+function saveUnlock(difficulty) {
+    let next = null;
+    if (difficulty === 'EASY') next = 'MEDIUM';
+    else if (difficulty === 'MEDIUM') next = 'HARD';
+
+    if (next && !progress.unlocked.includes(next)) {
+        progress.unlocked.push(next);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        return true;
+    }
+    return false;
+}
+
+function endGame(win) {
+    gameState = 'END';
+    clearInterval(timerInterval);
+    const lang = i18n[currentLang];
+    document.getElementById('result-screen').classList.remove('hidden');
+    const title = document.getElementById('result-title');
+    const msg = document.getElementById('result-msg');
+    
+    if (win) {
+        title.innerText = lang.winTitle;
+        title.className = "text-4xl font-black mb-3 text-green-400";
+        saveUnlock(currentDifficulty);
+        msg.innerText = (currentDifficulty === 'HARD') ? lang.winMsgFinal : lang.winMsg;
+    } else {
+        title.innerText = lang.loseTitle;
+        title.className = "text-4xl font-black mb-3 text-red-500";
+        msg.innerText = lang.loseMsg;
+    }
+    updateMenuUI();
+}
+
+function toggleHowTo(show) { document.getElementById('howto-screen').classList.toggle('hidden', !show); }
+function backToMenu() {
+    gameState = 'MENU';
+    document.getElementById('result-screen').classList.add('hidden');
+    document.getElementById('menu-screen').classList.remove('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    updateMenuUI();
+}
+
+const getDist = (x1, y1, x2, y2) => Math.sqrt((x1-x2)**2 + (y1-y2)**2);
+
+function dropFloatingBubbles() {
+    const connected = new Set();
+    const queue = bubbles.filter(b => b.active && !b.isFalling && b.y < BUBBLE_RADIUS + 100);
+    let head = 0;
+    while(head < queue.length) {
+        const curr = queue[head++];
+        if (connected.has(curr)) continue;
+        connected.add(curr);
+        bubbles.forEach(b => {
+            if (b.active && !b.isFalling && !connected.has(b)) {
+                if (getDist(curr.x, curr.y, b.x, b.y) < SPACING_X * 1.25) queue.push(b);
+            }
+        });
+    }
+    bubbles.forEach(b => {
+        if (b.active && !b.isFalling && !connected.has(b)) {
+            b.isFalling = true;
+            b.vy = 3;
+        }
+    });
+}
+
+function findMatch(start) {
+    const color = start.colorKey;
+    const matches = [start];
+    const queue = [start];
+    const visited = new Set([start]);
+    let head = 0;
+    while(head < queue.length) {
+        const curr = queue[head++];
+        bubbles.forEach(b => {
+            if (b.active && !b.isFalling && b.colorKey === color && !visited.has(b)) {
+                if (getDist(curr.x, curr.y, b.x, b.y) < SPACING_X * 1.25) {
+                    visited.add(b); matches.push(b); queue.push(b);
+                }
+            }
+        });
+    }
+    return matches;
+}
+
+function update() {
+    if (gameState !== 'PLAYING') return;
+
+    if (projectile) {
+        projectile.x += projectile.vx;
+        projectile.y += projectile.vy;
+        if (projectile.x <= BUBBLE_RADIUS || projectile.x >= GAME_WIDTH - BUBBLE_RADIUS) projectile.vx *= -1;
+
+        let hit = (projectile.y <= BUBBLE_RADIUS + 50);
+        if (!hit) {
+            for (let b of bubbles) {
+                if (b.active && !b.isFalling && getDist(projectile.x, projectile.y, b.x, b.y) < BUBBLE_RADIUS * 1.7) {
+                    hit = true; break;
+                }
+            }
+        }
+
+        if (hit) {
+            const newB = new Bubble(projectile.x, projectile.y, projectile.colorKey);
+            bubbles.push(newB);
+            const matches = findMatch(newB);
+            if (matches.length >= 3) {
+                matches.forEach(m => {
+                    m.active = false;
+                    for(let i=0; i<10; i++) particles.push(new Particle(m.x, m.y, COLORS[m.colorKey].main));
+                });
+                dropFloatingBubbles();
+            }
+            projectile = null;
+            const activeCount = bubbles.filter(b => b.active && !b.isFalling).length;
+            countElement.innerText = activeCount;
+            prepareNextBubble();
+            if (activeCount === 0) endGame(true);
+        }
+    }
+
+    bubbles.forEach(b => {
+        if (b.isFalling) { b.vy += 0.25; b.y += b.vy; if (b.y > GAME_HEIGHT) b.active = false; }
+    });
+    particles.forEach(p => p.update());
+    particles = particles.filter(p => p.life > 0);
+    bubbles = bubbles.filter(b => b.active);
+}
+
+function draw(time) {
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    for(let i=0; i<GAME_WIDTH; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, GAME_HEIGHT); ctx.stroke(); }
+
+    bubbles.forEach(b => b.draw(ctx, time));
+    particles.forEach(p => p.draw(ctx));
+
+    if (gameState === 'PLAYING') {
+        const angle = Math.atan2(mouseY - 750, mouseX - 225);
+        ctx.setLineDash([6, 10]);
+        ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+        ctx.beginPath(); ctx.moveTo(225, 750); ctx.lineTo(225 + Math.cos(angle)*150, 750 + Math.sin(angle)*150); ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (nextBubble && !projectile) nextBubble.draw(ctx, time);
+        if (projectile) projectile.draw(ctx, time);
+
+        ctx.save();
+        ctx.translate(225, 750);
+        ctx.rotate(angle + Math.PI/2);
+        const rg = ctx.createLinearGradient(-18, 0, 18, 0);
+        rg.addColorStop(0, '#0f172a'); rg.addColorStop(0.5, '#334155'); rg.addColorStop(1, '#0f172a');
+        ctx.fillStyle = rg;
+        ctx.fillRect(-18, -45, 36, 60);
+        ctx.fillStyle = '#0ea5e9';
+        ctx.fillRect(-18, -50, 36, 8);
+        ctx.restore();
+    }
+    requestAnimationFrame(draw);
+}
+
+const handleInput = (x, y) => {
+    const rect = canvas.getBoundingClientRect();
+    const cssWidth = parseFloat(canvas.style.width);
+    const cssHeight = parseFloat(canvas.style.height);
+    const scaleX = GAME_WIDTH / cssWidth;
+    const scaleY = GAME_HEIGHT / cssHeight;
+    mouseX = (x - rect.left) * scaleX;
+    mouseY = (y - rect.top) * scaleY;
+};
+
+const handleAction = () => {
+    if (gameState === 'PLAYING' && !projectile && nextBubble) {
+        const angle = Math.atan2(mouseY - 750, mouseX - 225);
+        projectile = nextBubble;
+        projectile.vx = Math.cos(angle) * 18;
+        projectile.vy = Math.sin(angle) * 18;
+    }
+};
+
+canvas.addEventListener('mousemove', (e) => handleInput(e.clientX, e.clientY));
+canvas.addEventListener('mousedown', (e) => { handleInput(e.clientX, e.clientY); handleAction(); });
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    handleInput(t.clientX, t.clientY);
+    handleAction();
+}, {passive: false});
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    handleInput(t.clientX, t.clientY);
+}, {passive: false});
+
+window.addEventListener('resize', resize);
+window.onload = () => { 
+    resize(); 
+    updateTranslations(); 
+    updateMenuUI();
+    setInterval(update, 1000/60); 
+    requestAnimationFrame(draw); 
+};
+</script>
+</body>
+</html>

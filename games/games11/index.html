@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Meta Tags -->
+    <title>AquaSort Pro - Physics-Based Liquid Sorting Puzzle Game</title>
+    <meta name="description" content="Play AquaSort Pro, a satisfying physics-based puzzle game. Sort colored liquids into bottles. Challenge your brain with 24 levels of fluid dynamics.">
+    <meta name="keywords" content="AquaSort, liquid sort puzzle, physics game, sorting game, brain teaser, browser game, mobile puzzle game, renkli su sıralama, bulmaca oyunu">
+    <meta name="author" content="Gemini">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aquasort-pro.example.com/">
+    <meta property="og:title" content="AquaSort Pro - Physics Puzzle Game">
+    <meta property="og:description" content="The most realistic liquid sorting puzzle with smooth physics and satisfying animations. Try to sort all colors!">
+    <meta property="og:image" content="https://aquasort-pro.example.com/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://aquasort-pro.example.com/">
+    <meta property="twitter:title" content="AquaSort Pro - Physics Puzzle Game">
+    <meta property="twitter:description" content="Experience realistic fluid dynamics in this addictive sorting puzzle.">
+    <meta property="twitter:image" content="https://aquasort-pro.example.com/twitter-image.jpg">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://aquasort-pro.example.com/">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --accent: #38bdf8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Outfit', sans-serif;
+            color: white;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+
+        canvas { display: block; }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+
+        .btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .btn:active { transform: scale(0.92); }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            padding: 5px;
+        }
+
+        @media (min-width: 640px) {
+            .level-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 15px;
+            }
+        }
+
+        .level-card {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: clamp(8px, 2vw, 16px);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .level-card:not(.locked):hover {
+            background: var(--accent);
+            color: #0f172a;
+            transform: translateY(-2px);
+        }
+
+        .level-card.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+        }
+
+        .lock-icon {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            opacity: 0.6;
+        }
+
+        /* Liquid Effect Filter */
+        #liquid-filter { position: absolute; width: 0; height: 0; }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            width: clamp(80px, 20vw, 120px);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- Main Menu Screen -->
+    <main id="menu-screen" class="absolute inset-0 z-40 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        
+        <!-- Home Link (Ana Menü) -->
+        <a href="../../index.html" onclick="AudioEngine.playPop(400)" class="absolute top-6 left-6 btn glass-panel p-3 text-sky-400 group" title="Ana Menü">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </a>
+
+        <h1 class="text-4xl sm:text-5xl font-bold mb-1 tracking-tighter text-center">AQUA<span class="text-sky-400">SORT</span></h1>
+        <p id="menu-subtitle" class="text-slate-400 mb-6 uppercase tracking-widest text-[10px] sm:text-xs text-center">Pro Physics Edition</p>
+        
+        <section class="glass-panel p-4 sm:p-6 w-full max-w-sm sm:max-w-md animate-slide-up">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="select-level-title" class="text-lg sm:text-xl font-semibold">Select Level</h2>
+                <button onclick="toggleHowTo(true)" class="btn glass-panel p-2 flex items-center justify-center text-sky-400" aria-label="How to Play">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                </button>
+            </div>
+            
+            <div id="level-list" class="level-grid mb-4">
+                <!-- Levels injected by JS -->
+            </div>
+            
+            <div class="flex justify-between items-center border-t border-white/10 pt-4">
+                <button onclick="toggleLanguage()" class="btn text-xs opacity-70 hover:opacity-100 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span id="lang-name">English</span>
+                </button>
+                <button onclick="resetProgress()" class="text-[9px] text-red-400/50 hover:text-red-400 uppercase font-medium">Reset Save</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- How to Play Modal -->
+    <div id="howto-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" role="dialog" aria-labelledby="howto-title">
+        <div class="glass-panel p-6 sm:p-8 max-w-sm w-full mx-4 animate-slide-up relative">
+            <button onclick="toggleHowTo(false)" class="absolute top-4 right-4 opacity-50 hover:opacity-100 btn" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h2 id="howto-title" class="text-2xl font-bold mb-4 text-sky-400">How to Play</h2>
+            <div id="howto-content" class="space-y-4 text-sm sm:text-base opacity-90 leading-relaxed">
+                <!-- Content injected by JS -->
+            </div>
+            <button onclick="toggleHowTo(false)" class="w-full mt-6 bg-white/10 hover:bg-white/20 py-3 rounded-xl font-bold btn" id="btn-close-howto">
+                Got it!
+            </button>
+        </div>
+    </div>
+
+    <!-- UI Overlay for Game -->
+    <div id="game-ui" class="absolute inset-0 pointer-events-none flex flex-col p-4 sm:p-6 hidden">
+        <header class="flex justify-between items-center pointer-events-auto">
+            <button onclick="backToMenu()" class="btn glass-panel p-2 sm:p-3" aria-label="Back to Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div class="text-center">
+                <h3 id="ui-level-text" class="text-[10px] sm:text-xs uppercase opacity-50 mb-1">Level 1</h3>
+                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div id="lvl-progress" class="progress-fill"></div></div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="undoMove()" class="btn glass-panel p-2 sm:p-3" aria-label="Undo Move"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>
+                <button onclick="resetLevel()" class="btn glass-panel p-2 sm:p-3" aria-label="Reset Level"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+            </div>
+        </header>
+        
+        <div class="mt-3 pointer-events-auto">
+            <div class="glass-panel px-3 py-1 sm:px-4 sm:py-2 inline-flex items-center gap-2">
+                <span id="label-moves" class="text-[9px] sm:text-[10px] uppercase opacity-60">Moves</span>
+                <span id="moves-count" class="font-bold text-sm sm:text-base">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" role="dialog">
+        <div class="glass-panel p-8 text-center max-w-sm w-full mx-4 animate-slide-up">
+            <h2 id="win-title" class="text-2xl sm:text-3xl font-bold mb-2">Excellent!</h2>
+            <p id="win-subtitle" class="opacity-70 mb-6 text-sm">Level completed successfully.</p>
+            <div class="flex justify-center gap-1 mb-8" id="star-rating"></div>
+            <button onclick="nextLevel()" id="btn-next" class="w-full bg-sky-500 hover:bg-sky-400 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg btn">
+                Next Level
+            </button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<svg id="liquid-filter" aria-hidden="true">
+    <defs>
+        <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+        </filter>
+    </defs>
+</svg>
+
+<script>
+/**
+ * AQUASORT PRO - ENGINE 2.3 (SEO & Semantics Update)
+ */
+
+// --- Audio Controller ---
+const AudioEngine = {
+    ctx: null,
+    init() {
+        if (this.ctx) return;
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    },
+    playPop(freq = 440) {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq / 2, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    },
+    playSuccess() {
+        this.init();
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.1);
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.1);
+            gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + i * 0.1 + 0.3);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + i * 0.1);
+            osc.stop(this.ctx.currentTime + i * 0.1 + 0.3);
+        });
+    }
+};
+
+const LANGS = {
+    en: {
+        subtitle: "Pro Physics Edition",
+        selectLevel: "Select Level",
+        moves: "Moves",
+        level: "Level",
+        excellent: "Excellent!",
+        completed: "Level completed successfully.",
+        next: "Next Level",
+        langName: "English",
+        howToTitle: "How to Play",
+        howToSteps: [
+            "Tap a bottle to select it.",
+            "Tap another bottle to pour the liquid.",
+            "You can only pour if the top colors match or the bottle is empty.",
+            "The goal is to sort each color into its own bottle."
+        ],
+        gotIt: "Got it!"
+    },
+    tr: {
+        subtitle: "Profesyonel Fizik Sürümü",
+        selectLevel: "Seviye Seçin",
+        moves: "Hamle",
+        level: "Seviye",
+        excellent: "Harika!",
+        completed: "Seviye başarıyla tamamlandı.",
+        next: "Sonraki Seviye",
+        langName: "Türkçe",
+        howToTitle: "Nasıl Oynanır",
+        howToSteps: [
+            "Seçmek için bir şişeye dokunun.",
+            "Sıvıyı dökmek için başka bir şişeye dokunun.",
+            "Sadece üst renkler eşleşiyorsa veya şişe boşsa dökebilirsiniz.",
+            "Amaç, her rengi kendi şişesinde toplamaktır."
+        ],
+        gotIt: "Anladım!"
+    }
+};
+
+let currentLang = 'en';
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const uiElements = {
+    menu: document.getElementById('menu-screen'),
+    gameUi: document.getElementById('game-ui'),
+    levelList: document.getElementById('level-list'),
+    moves: document.getElementById('moves-count'),
+    lvlText: document.getElementById('ui-level-text'),
+    progress: document.getElementById('lvl-progress'),
+    winModal: document.getElementById('win-modal'),
+    howtoModal: document.getElementById('howto-modal')
+};
+
+const COLORS = ['#f87171', '#38bdf8', '#4ade80', '#fbbf24', '#a78bfa', '#fb923c', '#f472b6', '#2dd4bf'];
+
+let gameState = {
+    currentScreen: 'menu',
+    level: 1,
+    moves: 0,
+    bottles: [],
+    particles: [],
+    selectedBottle: null,
+    isPouring: false,
+    history: [],
+    isWin: false,
+    unlockedLevels: parseInt(localStorage.getItem('aquaSort_unlocked')) || 1
+};
+
+// --- Localization ---
+function updateLanguageUI() {
+    const l = LANGS[currentLang];
+    document.getElementById('menu-subtitle').innerText = l.subtitle;
+    document.getElementById('select-level-title').innerText = l.selectLevel;
+    document.getElementById('label-moves').innerText = l.moves;
+    document.getElementById('win-title').innerText = l.excellent;
+    document.getElementById('win-subtitle').innerText = l.completed;
+    document.getElementById('btn-next').innerText = l.next;
+    document.getElementById('lang-name').innerText = l.langName;
+    document.getElementById('howto-title').innerText = l.howToTitle;
+    document.getElementById('btn-close-howto').innerText = l.gotIt;
+    
+    // Update HowTo Content
+    const content = document.getElementById('howto-content');
+    content.innerHTML = l.howToSteps.map((step, i) => `
+        <div class="flex gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs">${i+1}</div>
+            <p>${step}</p>
+        </div>
+    `).join('');
+}
+
+function toggleLanguage() {
+    AudioEngine.playPop(600);
+    currentLang = currentLang === 'en' ? 'tr' : 'en';
+    updateLanguageUI();
+}
+
+function toggleHowTo(show) {
+    AudioEngine.playPop(show ? 600 : 400);
+    if (show) uiElements.howtoModal.classList.remove('hidden');
+    else uiElements.howtoModal.classList.add('hidden');
+}
+
+// --- Bottle Class ---
+class Bottle {
+    constructor(id, x, y, layers = []) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.w = window.innerWidth < 640 ? 50 : 60;
+        this.h = window.innerWidth < 640 ? 140 : 180;
+        this.layers = [...layers];
+        this.maxLayers = 4;
+        this.tilt = 0;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.w/2, this.y + this.h/2);
+        ctx.rotate(this.tilt * Math.PI / 180);
+        ctx.translate(-(this.x + this.w/2), -(this.y + this.h/2));
+
+        ctx.beginPath();
+        ctx.roundRect(this.x, this.y, this.w, this.h, [4, 4, 15, 15]);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        const layerH = (this.h - 20) / this.maxLayers;
+        this.layers.forEach((color, i) => {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.roundRect(this.x + 4, this.y + this.h - (i + 1) * layerH - 4, this.w - 8, layerH - 2, i === 0 ? [0,0,12,12] : [2,2,2,2]);
+            ctx.fill();
+        });
+
+        ctx.restore();
+    }
+
+    isFull() { return this.layers.length >= this.maxLayers; }
+    isEmpty() { return this.layers.length === 0; }
+    topColor() { return this.layers[this.layers.length - 1]; }
+    canPourInto(target) {
+        if (this.isEmpty() || target.isFull()) return false;
+        if (target.isEmpty()) return true;
+        return this.topColor() === target.topColor();
+    }
+    isComplete() {
+        if (this.isEmpty()) return true;
+        return this.layers.length === this.maxLayers && this.layers.every(l => l === this.layers[0]);
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x; this.y = y;
+        this.vx = (Math.random() - 0.5) * 4;
+        this.vy = Math.random() * 2;
+        this.color = color;
+        this.radius = 6;
+    }
+    update() {
+        this.vy += 0.3; this.x += this.vx; this.y += this.vy;
+    }
+}
+
+// --- Game Logic ---
+function initMenu() {
+    uiElements.levelList.innerHTML = '';
+    for(let i=1; i<=24; i++) {
+        const isLocked = i > gameState.unlockedLevels;
+        const btn = document.createElement('div');
+        btn.className = `level-card btn ${isLocked ? 'locked' : ''}`;
+        btn.innerHTML = `
+            ${i}
+            ${isLocked ? '<svg class="lock-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 5a3 3 0 0 1 6 0v3H9V7zm3 10a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>' : ''}
+        `;
+        btn.onclick = () => {
+            if (!isLocked) {
+                AudioEngine.playPop(500);
+                startLevel(i);
+            } else {
+                AudioEngine.playPop(200);
+            }
+        };
+        uiElements.levelList.appendChild(btn);
+    }
+    updateLanguageUI();
+}
+
+function startLevel(lvl) {
+    gameState.currentScreen = 'game';
+    gameState.level = lvl;
+    gameState.moves = 0;
+    gameState.isWin = false;
+    gameState.history = [];
+    gameState.particles = [];
+    gameState.selectedBottle = null;
+    gameState.isPouring = false;
+    
+    uiElements.menu.classList.add('hidden');
+    uiElements.gameUi.classList.remove('hidden');
+    uiElements.winModal.classList.add('hidden');
+
+    generateBottles(lvl);
+    updateUI();
+}
+
+function generateBottles(lvl) {
+    const numColors = Math.min(3 + Math.floor(lvl/3), COLORS.length);
+    const numBottles = numColors + 2;
+    let pool = [];
+    for(let i=0; i<numColors; i++) {
+        for(let j=0; j<4; j++) pool.push(COLORS[i]);
+    }
+    pool.sort(() => Math.random() - 0.5);
+
+    gameState.bottles = [];
+    const isMobile = window.innerWidth < 640;
+    const cols = isMobile ? Math.min(numBottles, 4) : Math.min(numBottles, 6);
+    const bW = isMobile ? 50 : 60;
+    const spacing = isMobile ? 12 : 25;
+    const startX = (canvas.width - (cols * bW + (cols-1) * spacing)) / 2;
+    
+    for(let i=0; i<numBottles; i++) {
+        const r = Math.floor(i / cols);
+        const c = i % cols;
+        const x = startX + c * (bW + spacing);
+        const y = (isMobile ? 120 : 160) + r * (isMobile ? 180 : 220);
+        const layers = i < numColors ? pool.splice(0, 4) : [];
+        gameState.bottles.push(new Bottle(i, x, y, layers));
+    }
+}
+
+function backToMenu() {
+    AudioEngine.playPop(400);
+    gameState.currentScreen = 'menu';
+    uiElements.menu.classList.remove('hidden');
+    uiElements.gameUi.classList.add('hidden');
+    initMenu();
+}
+
+function resetProgress() {
+    if(confirm("Tüm ilerlemeniz silinecek. Emin misiniz? / All progress will be deleted. Are you sure?")) {
+        localStorage.removeItem('aquaSort_unlocked');
+        gameState.unlockedLevels = 1;
+        initMenu();
+    }
+}
+
+function handleInput(e) {
+    if (gameState.currentScreen !== 'game' || gameState.isPouring || gameState.isWin) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+
+    const clicked = gameState.bottles.find(b => x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
+
+    if (clicked) {
+        AudioEngine.playPop(700);
+        if (!gameState.selectedBottle) {
+            if (!clicked.isEmpty()) {
+                gameState.selectedBottle = clicked;
+                clicked.y -= 20;
+            }
+        } else {
+            if (gameState.selectedBottle === clicked) {
+                clicked.y += 20;
+                gameState.selectedBottle = null;
+            } else if (gameState.selectedBottle.canPourInto(clicked)) {
+                pourAction(gameState.selectedBottle, clicked);
+            } else {
+                gameState.selectedBottle.y += 20;
+                gameState.selectedBottle = clicked;
+                clicked.y -= 20;
+            }
+        }
+    }
+}
+
+async function pourAction(source, target) {
+    gameState.isPouring = true;
+    gameState.moves++;
+    
+    gameState.history.push({
+        sId: source.id, tId: target.id,
+        sL: [...source.layers], tL: [...target.layers]
+    });
+
+    const color = source.topColor();
+    let count = 0;
+    for(let i=source.layers.length-1; i>=0; i--) {
+        if(source.layers[i] === color && target.layers.length < 4) count++;
+        else break;
+    }
+
+    const ox = source.x; const oy = source.y + 20;
+    const tx = target.x + (source.x < target.x ? -source.w * 0.7 : source.w * 0.7);
+    const ty = target.y - source.h * 0.3;
+
+    await animateProperty(source, 'x', ox, tx, 300);
+    await animateProperty(source, 'y', oy, ty, 300);
+    await animateProperty(source, 'tilt', 0, (source.x < target.x ? 85 : -85), 250);
+
+    for(let i=0; i<count; i++) {
+        AudioEngine.playPop(800 + (i * 100));
+        source.layers.pop();
+        target.layers.push(color);
+        spawnParticles(source.x + source.w/2, source.y, color);
+        updateUI();
+        await wait(180);
+    }
+
+    await animateProperty(source, 'tilt', source.tilt, 0, 250);
+    await animateProperty(source, 'x', source.x, ox, 300);
+    await animateProperty(source, 'y', source.y, oy, 300);
+
+    gameState.selectedBottle = null;
+    gameState.isPouring = false;
+    checkWin();
+}
+
+function spawnParticles(x, y, color) {
+    for(let i=0; i<8; i++) gameState.particles.push(new Particle(x, y, color));
+}
+
+function checkWin() {
+    if (gameState.bottles.every(b => b.isComplete())) {
+        gameState.isWin = true;
+        AudioEngine.playSuccess();
+        if (gameState.level === gameState.unlockedLevels) {
+            gameState.unlockedLevels++;
+            localStorage.setItem('aquaSort_unlocked', gameState.unlockedLevels);
+        }
+        setTimeout(() => {
+            uiElements.winModal.classList.remove('hidden');
+        }, 600);
+    }
+}
+
+function nextLevel() { 
+    AudioEngine.playPop(500);
+    startLevel(gameState.level + 1); 
+}
+function resetLevel() { 
+    AudioEngine.playPop(300);
+    startLevel(gameState.level); 
+}
+function undoMove() {
+    if(!gameState.history.length || gameState.isPouring) return;
+    AudioEngine.playPop(200);
+    const last = gameState.history.pop();
+    const s = gameState.bottles.find(b => b.id === last.sId);
+    const t = gameState.bottles.find(b => b.id === last.tId);
+    s.layers = last.sL; t.layers = last.tL;
+    gameState.moves--;
+    updateUI();
+}
+
+// --- Helpers ---
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+function animateProperty(obj, prop, from, to, duration) {
+    return new Promise(res => {
+        let start = null;
+        function step(time) {
+            if(!start) start = time;
+            let p = Math.min((time - start) / duration, 1);
+            obj[prop] = from + (to - from) * (p * (2 - p));
+            if(p < 1) requestAnimationFrame(step); else res();
+        }
+        requestAnimationFrame(step);
+    });
+}
+
+function updateUI() {
+    uiElements.moves.innerText = gameState.moves;
+    uiElements.lvlText.innerText = `${LANGS[currentLang].level} ${gameState.level}`;
+    uiElements.progress.style.width = `${Math.min(100, (gameState.level / 24) * 100)}%`;
+}
+
+function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.filter = 'url(#goo)';
+    gameState.particles.forEach((p, i) => {
+        p.update();
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2); ctx.fill();
+        if(p.y > canvas.height) gameState.particles.splice(i, 1);
+    });
+    ctx.restore();
+    gameState.bottles.forEach(b => b.draw(ctx));
+    requestAnimationFrame(loop);
+}
+
+// --- Init ---
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    if(gameState.currentScreen === 'game') generateBottles(gameState.level);
+});
+canvas.addEventListener('mousedown', (e) => {
+    AudioEngine.init();
+    handleInput(e);
+});
+canvas.addEventListener('touchstart', (e) => {
+    AudioEngine.init();
+    handleInput(e);
+}, {passive: true});
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+initMenu();
+loop();
+
+</script>
+</body>
+</html>

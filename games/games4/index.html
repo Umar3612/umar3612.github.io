@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8567873693670598"
+     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Profesyonel SEO Meta Etiketleri -->
+    <title id="page-title">Anadolu Çiftliği - Mobil Traktör ve Çiftlik Simülasyonu</title>
+    <meta name="description" content="Anadolu Çiftliği ile kendi çiftliğini yönet! Traktör sür, ekin ek, sula ve hasat yaparak para kazan. Mobil uyumlu, profesyonel tarım simülasyonu oyunu.">
+    <meta name="keywords" content="çiftlik oyunu, traktör sürme, tarım simülasyonu, hasat oyunu, anadolu çiftliği, mobil oyun, bedava oyun, eğitici oyun">
+    <meta name="author" content="Gemini AI">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://anadoluciftligi.example.com">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Anadolu Çiftliği - Mobil Çiftçilik Deneyimi">
+    <meta property="og:description" content="Kendi tarlanı sür, sula ve hasat et! En gerçekçi mobil çiftçilik deneyimi şimdi yayında.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop">
+    <meta property="og:url" content="https://anadoluciftligi.example.com">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Anadolu Çiftliği - Traktörünü Sür ve Kazan">
+    <meta property="twitter:description" content="Eğlenceli ve rahatlatıcı bir çiftçilik simülasyonu. Hemen oyna!">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop">
+
+    <!-- Yapılandırılmış Veri -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Anadolu Çiftliği",
+      "operatingSystem": "Web",
+      "applicationCategory": "GameApplication",
+      "genre": "Simulation",
+      "description": "Mobil cihazlar için optimize edilmiş traktör ve tarım simülasyonu oyunu.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "TRY"
+      }
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #87CEEB;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #333;
+        }
+
+        canvas {
+            background-color: #4ade80;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .ui-layer {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            z-index: 10;
+        }
+
+        .pointer-events-auto {
+            pointer-events: auto;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #8B4513;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .slot {
+            width: 55px;
+            height: 55px;
+            border: 3px solid #ccc;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255,255,255,0.9);
+            font-size: 26px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .slot.active {
+            border-color: #ef4444;
+            background: #fff;
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 4px 0 #b91c1c;
+            z-index: 10;
+        }
+        .slot .price {
+            position: absolute;
+            bottom: -8px;
+            font-size: 10px;
+            background: #333;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 4px;
+            width: 90%;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #notification {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: #fbbf24;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.5s;
+            pointer-events: none;
+            z-index: 100;
+            text-align: center;
+            white-space: nowrap;
+            border: 2px solid #fbbf24;
+        }
+
+        .controls-container {
+            display: flex;
+            width: 100%;
+            justify-content: space-between; 
+            align-items: flex-end;
+            padding: 0 10px 10px 10px;
+            margin-bottom: 5px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .pedal-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .steering-row {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .d-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            color: white;
+            user-select: none;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        
+        .d-btn:active, .d-btn.pressed { 
+            background: rgba(255,255,255,0.5); 
+            transform: scale(0.95);
+            box-shadow: none;
+        }
+
+        .btn-gas { border-color: #4ade80; background: rgba(34, 197, 94, 0.2); }
+        .btn-brake { border-color: #f87171; background: rgba(239, 68, 68, 0.2); }
+
+        .action-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(239, 68, 68, 0.9);
+            border: 4px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 34px;
+            color: white;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+            z-index: 20;
+        }
+        .action-btn:active {
+            transform: scale(0.95);
+            background: rgba(220, 38, 38, 1);
+        }
+
+        #infoModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 4px solid #8B4513;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        #toolbar::-webkit-scrollbar { display: none; }
+        #toolbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .home-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .home-btn:active {
+            transform: scale(0.9);
+            background: #fdf2f2;
+        }
+        .home-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #8B4513;
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.9);
+            padding: 4px;
+            border-radius: 8px;
+            border: 2px solid #8B4513;
+            pointer-events: auto;
+        }
+        .lang-btn {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: #8B4513;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="ui-layer">
+        <!-- Üst Bar -->
+        <div class="flex justify-between w-full p-2 items-start">
+            <div class="flex flex-col gap-2">
+                <div class="panel flex items-center gap-2 pointer-events-auto">
+                    <span class="text-2xl">💰</span>
+                    <span id="moneyDisplay" class="text-xl font-bold text-green-700">100 $</span>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <a href="../../index.html" class="home-btn" id="home-link" title="Ana Menü">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                    </a>
+
+                    <div class="lang-switch">
+                        <button onclick="setLanguage('en')" id="lang-en" class="lang-btn active">EN</button>
+                        <button onclick="setLanguage('tr')" id="lang-tr" class="lang-btn">TR</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="helpBtn" class="panel w-12 h-12 flex justify-center items-center text-2xl font-bold text-blue-600 hover:bg-blue-50 active:scale-95 transition-transform pointer-events-auto">
+                ?
+            </button>
+        </div>
+
+        <div id="notification">Notification</div>
+
+        <!-- Alt Panel (Yukarıya taşınmış hali) -->
+        <div class="w-full flex flex-col pointer-events-auto mb-12 sm:mb-16">
+            <div class="controls-container">
+                <div class="control-group pedal-column">
+                    <div class="d-btn btn-gas" id="btn-up">⬆️</div>
+                    <div class="d-btn btn-brake" id="btn-down">⬇️</div>
+                </div>
+
+                <div class="control-group steering-row">
+                    <div class="d-btn" id="btn-left">⬅️</div>
+                    <div class="action-btn" id="btn-action">🚜</div>
+                    <div class="d-btn" id="btn-right">➡️</div>
+                </div>
+            </div>
+
+            <!-- Envanter Toolbar -->
+            <div class="panel flex gap-3 overflow-x-auto w-full p-2" id="toolbar">
+                <!-- JavaScript ile doldurulacak -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="infoModal">
+    <div class="modal-content pointer-events-auto">
+        <h2 id="modal-title" class="text-2xl font-bold text-orange-700 mb-4">How to Play?</h2>
+        <ul id="modal-list" class="text-left space-y-2 mb-4 text-sm"></ul>
+        <button id="modal-close" onclick="document.getElementById('infoModal').style.display='none'" class="w-full bg-green-500 text-white py-2 rounded-lg font-bold">Got it!</button>
+    </div>
+</div>
+
+<script>
+let currentLang = 'en';
+
+const translations = {
+    en: {
+        pageTitle: "Anatolian Farm - Mobile Tractor Simulation",
+        home: "Main Menu",
+        currency: "$",
+        howToPlay: "How to Play?",
+        tutItems: [
+            "⬆️⬇️ <b>Left Hand:</b> Gas & Brake (Forward/Backward).",
+            "⬅️➡️ <b>Right Hand:</b> Steering (Left/Right).",
+            "🛠️ <b>Center Button:</b> Plow, Water, Harvest!",
+            "🏠 <b>Village:</b> Watch out for houses!",
+            "🔍 <b>Pinch:</b> Use two fingers to zoom in/out."
+        ],
+        modalClose: "Got it!",
+        crops: { wheat: "Wheat", corn: "Corn", tomato: "Tomato", pumpkin: "Pumpkin" },
+        tools: { plow: "Plow", water: "Water", harvest: "Harvest" },
+        notifs: {
+            watered: "Watered!", grown: "Grown!", noMoney: "Not enough money!",
+            areaFull: "Area occupied!", plowFirst: "Plow soil first!",
+            noAction: "Not suitable here!", harvestWait: "Not grown yet!",
+            plowWait: "Cannot plow with crops!"
+        }
+    },
+    tr: {
+        pageTitle: "Anadolu Çiftliği - Mobil Traktör Simülasyonu",
+        home: "Ana Menü",
+        currency: "TL",
+        howToPlay: "Nasıl Oynanır?",
+        tutItems: [
+            "⬆️⬇️ <b>Sol El:</b> Gaz ve Fren (İleri/Geri).",
+            "⬅️➡️ <b>Sağ El:</b> Direksiyon (Sağ/Sol).",
+            "🛠️ <b>Orta Tuş:</b> Sür, Sula, Topla!",
+            "🏠 <b>Köy:</b> Evlere dikkat et!",
+            "🔍 <b>Zoom:</b> İki parmağınızla ekranı küçültüp büyütebilirsiniz."
+        ],
+        modalClose: "Anladım!",
+        crops: { wheat: "Buğday", corn: "Mısır", tomato: "Domates", pumpkin: "Kabak" },
+        tools: { plow: "Sür", water: "Sula", harvest: "Topla" },
+        notifs: {
+            watered: "Sulandı!", grown: "Büyüdü!", noMoney: "Para yetersiz!",
+            areaFull: "Dolu alan!", plowFirst: "Önce toprağı sür!",
+            noAction: "Burası uygun değil!", harvestWait: "Daha büyümedi!",
+            plowWait: "Ürün varken süremezsin!"
+        }
+    }
+};
+
+const TILE_SIZE = 50; 
+const MAP_ROWS = 25;
+const MAP_COLS = 25;
+
+const CROPS = {
+    wheat: { emoji: '🌾', cost: 10, sell: 20, growthTime: 4000 },
+    corn:  { emoji: '🌽', cost: 25, sell: 45, growthTime: 8000 },
+    tomato:{ emoji: '🍅', cost: 40, sell: 90, growthTime: 12000 },
+    pumpkin:{emoji: '🎃', cost: 80, sell: 200, growthTime: 20000 }
+};
+
+const TOOLS = {
+    plow: { emoji: '🚜', type: 'tool' },
+    water:{ emoji: '💧', type: 'tool' },
+    harvest:{ emoji: '🧺', type: 'tool' }
+};
+
+let state = {
+    money: 100,
+    tiles: [],
+    selectedItem: 'plow',
+    selectedType: 'tool',
+    zoomLevel: 1,
+    minZoom: 0.35,
+    maxZoom: 2,
+    initialPinchDistance: null,
+    initialZoom: 1,
+    tractor: {
+        x: 400, y: 300, angle: 0, speed: 0, maxSpeed: 5,
+        acceleration: 0.25, friction: 0.92, turnSpeed: 0.09, radius: 15
+    }
+};
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const keys = {};
+
+class Tile {
+    constructor(r, c) {
+        this.r = r; this.c = c;
+        this.type = 'grass'; this.crop = null; this.watered = false;
+        this.plantedAt = 0; this.fullyGrown = false; this.variant = Math.random(); 
+    }
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    const t = translations[lang];
+    document.getElementById('page-title').innerText = t.pageTitle;
+    document.getElementById('moneyDisplay').innerText = `${state.money} ${t.currency}`;
+    document.getElementById('modal-title').innerText = t.howToPlay;
+    document.getElementById('modal-close').innerText = t.modalClose;
+    document.getElementById('home-link').title = t.home;
+    const list = document.getElementById('modal-list');
+    list.innerHTML = '';
+    t.tutItems.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = item;
+        list.appendChild(li);
+    });
+    document.getElementById('lang-en').className = `lang-btn ${lang === 'en' ? 'active' : ''}`;
+    document.getElementById('lang-tr').className = `lang-btn ${lang === 'tr' ? 'active' : ''}`;
+    createToolbar();
+}
+
+function getDistance(touches) {
+    return Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY);
+}
+
+canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+        state.initialPinchDistance = getDistance(e.touches);
+        state.initialZoom = state.zoomLevel;
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && state.initialPinchDistance) {
+        e.preventDefault();
+        const currentDistance = getDistance(e.touches);
+        const ratio = currentDistance / state.initialPinchDistance;
+        state.zoomLevel = Math.max(state.minZoom, Math.min(state.maxZoom, state.initialZoom * ratio));
+    }
+}, { passive: false });
+
+function init() {
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    for (let r = 0; r < MAP_ROWS; r++) {
+        let row = [];
+        for (let c = 0; c < MAP_COLS; c++) {
+            let t = new Tile(r, c);
+            if (!((r > MAP_ROWS - 8 && c < 8) || (r > MAP_ROWS - 8 && c > MAP_COLS - 9))) {
+                if (r < 2 || r > MAP_ROWS - 3 || c < 2 || c > MAP_COLS - 3) {
+                    if (Math.random() < 0.3) t.type = 'house';
+                    else if (Math.random() < 0.5) t.type = 'tree';
+                } else if (Math.random() < 0.05) t.type = 'tree';
+            }
+            if (r > 5 && r < 15 && c > 5 && c < 15) t.type = 'grass';
+            row.push(t);
+        }
+        state.tiles.push(row);
+    }
+    setLanguage('tr'); 
+    requestAnimationFrame(gameLoop);
+}
+
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+
+document.getElementById('helpBtn').addEventListener('click', () => {
+    document.getElementById('infoModal').style.display = 'flex';
+});
+
+function createToolbar() {
+    const toolbar = document.getElementById('toolbar');
+    toolbar.innerHTML = '';
+    const renderSlot = (key, item, isTool) => {
+        const div = document.createElement('div');
+        div.className = `slot ${state.selectedItem === key ? 'active' : ''}`;
+        div.innerHTML = item.emoji;
+        if (!isTool) div.innerHTML += `<div class="price">${item.cost}</div>`;
+        div.onclick = () => {
+            state.selectedItem = key;
+            state.selectedType = isTool ? 'tool' : 'seed';
+            document.getElementById('btn-action').innerHTML = item.emoji;
+            createToolbar();
+        };
+        toolbar.appendChild(div);
+    };
+    Object.entries(TOOLS).forEach(([k, v]) => renderSlot(k, v, true));
+    const sep = document.createElement('div');
+    sep.style.cssText = "width:2px; background:#aaa; margin:0 5px; flex-shrink:0;";
+    toolbar.appendChild(sep);
+    Object.entries(CROPS).forEach(([k, v]) => renderSlot(k, v, false));
+}
+
+function updateMoney(amt) {
+    state.money += amt;
+    const currency = translations[currentLang].currency;
+    document.getElementById('moneyDisplay').innerText = `${state.money} ${currency}`;
+    showNotification(amt > 0 ? `+${amt} ${currency}` : `${amt} ${currency}`, amt > 0 ? '#4ade80' : '#ef4444');
+}
+
+function showNotification(msg, color='white') {
+    const notif = document.getElementById('notification');
+    notif.innerText = msg; notif.style.color = color; notif.style.borderColor = color;
+    notif.style.opacity = 1; notif.style.top = '30%';
+    setTimeout(() => { notif.style.opacity = 0; notif.style.top = '20%'; }, 1500);
+}
+
+function update() {
+    if (keys['ArrowUp'] || keys['w']) state.tractor.speed += state.tractor.acceleration;
+    if (keys['ArrowDown'] || keys['s']) state.tractor.speed -= state.tractor.acceleration;
+    state.tractor.speed *= state.tractor.friction;
+    if (Math.abs(state.tractor.speed) < 0.05) state.tractor.speed = 0;
+    state.tractor.speed = Math.max(Math.min(state.tractor.speed, state.tractor.maxSpeed), -state.tractor.maxSpeed/2);
+    if (Math.abs(state.tractor.speed) > 0.1) {
+        const dir = state.tractor.speed > 0 ? 1 : -1;
+        if (keys['ArrowLeft'] || keys['a']) state.tractor.angle -= state.tractor.turnSpeed * dir;
+        if (keys['ArrowRight'] || keys['d']) state.tractor.angle += state.tractor.turnSpeed * dir;
+    }
+    const nextX = state.tractor.x + Math.cos(state.tractor.angle) * state.tractor.speed;
+    const nextY = state.tractor.y + Math.sin(state.tractor.angle) * state.tractor.speed;
+    const gridX = Math.floor(nextX / TILE_SIZE), gridY = Math.floor(nextY / TILE_SIZE);
+    let canMove = true;
+    if (gridX < 0 || gridX >= MAP_COLS || gridY < 0 || gridY >= MAP_ROWS) {
+        canMove = false; state.tractor.speed *= -0.5;
+    } else if (state.tiles[gridY][gridX].type === 'house' || state.tiles[gridY][gridX].type === 'tree') {
+        canMove = false; state.tractor.speed *= -0.5;
+    }
+    if (canMove) { state.tractor.x = nextX; state.tractor.y = nextY; }
+    const now = Date.now();
+    state.tiles.forEach(row => row.forEach(tile => {
+        if (tile.crop && !tile.fullyGrown) {
+            const data = CROPS[tile.crop];
+            if (now - tile.plantedAt >= (data.growthTime / (tile.watered ? 2 : 1))) {
+                tile.fullyGrown = true; tile.watered = false;
+            }
+        }
+    }));
+}
+
+function performAction() {
+    const gridX = Math.floor(state.tractor.x / TILE_SIZE), gridY = Math.floor(state.tractor.y / TILE_SIZE);
+    const t = translations[currentLang].notifs;
+    if (gridX < 0 || gridX >= MAP_COLS || gridY < 0 || gridY >= MAP_ROWS) return;
+    const tile = state.tiles[gridY][gridX];
+    if (tile.type === 'house' || tile.type === 'tree') { showNotification(t.noAction); return; }
+    if (state.selectedType === 'tool') {
+        const tool = state.selectedItem;
+        if (tool === 'plow') { if (tile.crop) { showNotification(t.plowWait); return; } if (tile.type === 'grass') tile.type = 'soil'; }
+        else if (tool === 'water') { if (tile.type === 'soil' || (tile.crop && !tile.fullyGrown)) { tile.watered = true; showNotification(t.watered, "#60a5fa"); } }
+        else if (tool === 'harvest') {
+            if (tile.crop && tile.fullyGrown) { updateMoney(CROPS[tile.crop].sell); tile.crop = null; tile.fullyGrown = false; tile.type = 'soil'; }
+            else if (tile.crop) showNotification(t.harvestWait);
+        }
+    } else if (state.selectedType === 'seed') {
+        if (tile.type !== 'soil') showNotification(t.plowFirst);
+        else if (tile.crop) showNotification(t.areaFull);
+        else {
+            const cost = CROPS[state.selectedItem].cost;
+            if (state.money >= cost) { updateMoney(-cost); tile.crop = state.selectedItem; tile.plantedAt = Date.now(); tile.fullyGrown = false; }
+            else showNotification(t.noMoney, "#ef4444");
+        }
+    }
+}
+
+function draw() {
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    ctx.translate(cx, cy); ctx.scale(state.zoomLevel, state.zoomLevel); ctx.translate(-state.tractor.x, -state.tractor.y);
+    for (let r = 0; r < MAP_ROWS; r++) {
+        for (let c = 0; c < MAP_COLS; c++) {
+            const tile = state.tiles[r][c], x = c * TILE_SIZE, y = r * TILE_SIZE;
+            if (tile.type === 'grass') ctx.fillStyle = (r+c)%2===0 ? '#4ade80' : '#45d676';
+            else if (tile.type === 'soil') ctx.fillStyle = tile.watered ? '#5D4037' : '#8D6E63';
+            else ctx.fillStyle = '#4ade80';
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            if (tile.type === 'soil') { ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1; ctx.strokeRect(x,y,TILE_SIZE,TILE_SIZE); }
+            if (tile.crop) {
+                if (tile.fullyGrown) { ctx.font = '32px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(CROPS[tile.crop].emoji, x+TILE_SIZE/2, y+TILE_SIZE/2); }
+                else {
+                    ctx.fillStyle = '#166534'; const prog = Math.min(1, (Date.now()-tile.plantedAt)/CROPS[tile.crop].growthTime);
+                    ctx.beginPath(); ctx.arc(x+TILE_SIZE/2, y+TILE_SIZE/2, 5+(prog*15), 0, Math.PI*2); ctx.fill();
+                    if (tile.watered) { ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(x+TILE_SIZE-8, y+8, 4, 0, Math.PI*2); ctx.fill(); }
+                }
+            }
+            if (tile.type === 'house') {
+                ctx.fillStyle = '#fce7f3'; ctx.fillRect(x+5, y+15, TILE_SIZE-10, TILE_SIZE-15);
+                ctx.fillStyle = '#9f1239'; ctx.fillRect(x+TILE_SIZE/2-6, y+30, 12, TILE_SIZE-30);
+                ctx.fillStyle = '#be123c'; ctx.beginPath(); ctx.moveTo(x, y+15); ctx.lineTo(x+TILE_SIZE/2, y-5); ctx.lineTo(x+TILE_SIZE, y+15); ctx.fill();
+            } else if (tile.type === 'tree') {
+                ctx.fillStyle = '#78350f'; ctx.fillRect(x+TILE_SIZE/2-4, y+20, 8, TILE_SIZE-20);
+                ctx.fillStyle = '#15803d'; ctx.beginPath(); ctx.arc(x+TILE_SIZE/2, y+15, 18, 0, Math.PI*2); ctx.fill();
+            }
+            if (r === Math.floor(state.tractor.y/TILE_SIZE) && c === Math.floor(state.tractor.x/TILE_SIZE)) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 4; ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+            }
+        }
+    }
+    ctx.translate(state.tractor.x, state.tractor.y); ctx.rotate(state.tractor.angle);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-12, -8, 24, 16);
+    ctx.fillStyle = '#dc2626'; ctx.fillRect(-15, -12, 30, 24);
+    ctx.fillStyle = '#fca5a5'; ctx.fillRect(0, -8, 10, 16);
+    ctx.fillStyle = '#1e1b4b'; ctx.fillRect(-14, -20, 10, 8); ctx.fillRect(-14, 12, 10, 8); ctx.fillRect(10, -18, 8, 6); ctx.fillRect(10, 12, 8, 6);
+    ctx.fillStyle = '#bfdbfe'; ctx.fillRect(-10, -8, 8, 16);
+    ctx.restore();
+}
+
+function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+
+const btnMap = {'btn-up': 'ArrowUp', 'btn-down': 'ArrowDown', 'btn-left': 'ArrowLeft', 'btn-right': 'ArrowRight'};
+Object.entries(btnMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    const prs = (e) => { e.preventDefault(); keys[key] = true; el.classList.add('pressed'); };
+    const rel = (e) => { e.preventDefault(); keys[key] = false; el.classList.remove('pressed'); };
+    el.addEventListener('mousedown', prs); el.addEventListener('mouseup', rel); el.addEventListener('mouseleave', rel);
+    el.addEventListener('touchstart', prs); el.addEventListener('touchend', rel);
+});
+
+const actB = document.getElementById('btn-action');
+actB.addEventListener('touchstart', (e) => { e.preventDefault(); performAction(); actB.style.transform = "scale(0.9)"; });
+actB.addEventListener('touchend', (e) => { e.preventDefault(); actB.style.transform = "scale(1)"; });
+
+window.addEventListener('keydown', e => { keys[e.key] = true; if(e.code === 'Space') performAction(); });
+window.addEventListener('keyup', e => keys[e.key] = false);
+init();
+</script>
+</body>
+</html>

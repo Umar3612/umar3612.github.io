@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- SEO Temel Etiketleri -->
+    <title>Candy Match-3 Pro - Eğlenceli Şeker Eşleştirme ve Bulmaca Oyunu</title>
+    <meta name="description" content="Candy Match-3 Pro ile tatlı şekerleri eşleştirin, özel bombaları patlatın ve 10 zorlu seviyeyi tamamlayın. Ücretsiz, sesli ve eğlenceli çevrimiçi puzzle deneyimi.">
+    <meta name="keywords" content="candy match 3, şeker eşleştirme oyunu, puzzle oyunu, bulmaca oyunları, ücretsiz oyun oyna, online eşleştirme oyunu">
+    <meta name="author" content="Gemini">
+    <link rel="canonical" href="https://yourdomain.com/candy-match-3-pro">
+
+    <!-- Sosyal Medya (Open Graph / Facebook) SEO -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Candy Match-3 Pro - Tatlı Bulmaca Macerası">
+    <meta property="og:description" content="Şekerleri eşleştir, puanları topla! 10 farklı seviye ve özel güçlerle dolu Match-3 keyfi sizi bekliyor.">
+    <meta property="og:image" content="https://flagcdn.com/w160/gb.png"> 
+    <meta property="og:url" content="https://yourdomain.com/candy-match-3-pro">
+
+    <!-- Twitter SEO -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Candy Match-3 Pro - Ücretsiz Puzzle">
+    <meta name="twitter:description" content="En iyi şeker eşleştirme deneyimi. Hemen oyna ve en yüksek skoru yap!">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        body {
+            background: radial-gradient(circle, #2d1b4d 0%, #1a0b2e 100%);
+            height: 100dvh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+            color: white;
+        }
+        /* Başlangıç Ekranı Stilleri */
+        #startScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: radial-gradient(circle, #3e2b5d 0%, #1a0b2e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .lang-btn {
+            width: 260px;
+            padding: 18px;
+            margin: 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .lang-btn:active { transform: scale(0.95); }
+        .lang-btn:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .help-link {
+            margin-top: 20px;
+            color: #ffd700;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .help-link:hover { opacity: 1; }
+
+        /* Ana Menü Ev Butonu Stili */
+        .home-menu-btn {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+            z-index: 1100;
+        }
+        .home-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+            color: #ffd700;
+        }
+
+        /* Yardım Penceresi Stilleri */
+        #helpModal {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: left;
+        }
+        .help-content {
+            max-width: 400px;
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .game-wrapper {
+            width: 100%;
+            height: 100%;
+            max-width: 450px;
+            display: none; 
+            flex-direction: column;
+            padding: env(safe-area-inset-top, 10px) 15px calc(env(safe-area-inset-bottom, 20px) + 30px) 15px;
+            box-sizing: border-box;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            aspect-ratio: 1/1;
+            width: 100%;
+            position: relative;
+        }
+        .candy {
+            aspect-ratio: 1/1;
+            border-radius: 20%;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 1.5rem;
+        }
+        .candy.selected {
+            outline: 3px solid white;
+            z-index: 10;
+            box-shadow: 0 0 15px white;
+            transform: scale(1.1);
+        }
+        .special-line::after {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 4px;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 10px white;
+            border-radius: 2px;
+        }
+        .special-bomb {
+            border: 2px solid white;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+        .candy.hint { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+            100% { transform: scale(1); }
+        }
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: explode 0.6s ease-out forwards;
+        }
+        @keyframes explode {
+            to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Başlangıç Dil Seçimi -->
+    <div id="startScreen">
+        <!-- Ev Şeklinde Ana Menü Butonu -->
+        <a href="../../index.html" class="home-menu-btn" title="Ana Menü">
+            <i class="fas fa-home"></i>
+        </a>
+
+        <div class="mb-10 animate-bounce">
+            <i class="fas fa-candy-cane text-7xl text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]"></i>
+        </div>
+        <h1 class="text-4xl font-black tracking-tighter uppercase mb-2">Candy Match-3 Pro</h1>
+        <p class="text-white/40 mb-10 text-sm font-medium">Please choose your language / Dilinizi seçin</p>
+        
+        <button onclick="startGame('en')" class="lang-btn">
+            <img src="https://flagcdn.com/w40/gb.png" class="w-6 rounded-sm" alt="EN">
+            ENGLISH (Main)
+        </button>
+        <button onclick="startGame('tr')" class="lang-btn">
+            <img src="https://flagcdn.com/w40/tr.png" class="w-6 rounded-sm" alt="TR">
+            TÜRKÇE (Destek)
+        </button>
+
+        <div onclick="toggleHelp(true)" class="help-link">
+            Nasıl Oynanır? / How to Play?
+        </div>
+    </div>
+
+    <!-- Nasıl Oynanır Penceresi -->
+    <div id="helpModal">
+        <div class="help-content mb-8">
+            <h2 class="text-2xl font-black mb-6 text-yellow-400 uppercase tracking-tight">How to Play? / Nasıl Oynanır?</h2>
+            <div class="space-y-4 text-sm">
+                <div class="flex gap-3">
+                    <i class="fas fa-info-circle text-blue-400 mt-1"></i>
+                    <p><b>EN:</b> Swipe candies to match 3 or more of the same color.<br><b>TR:</b> Aynı renkten 3 veya daha fazlasını yan yana getirmek için şekerleri kaydırın.</p>
+                </div>
+                <div class="flex gap-3">
+                    <i class="fas fa-bolt text-yellow-400 mt-1"></i>
+                    <p><b>EN:</b> Match 4 to get a Line Candy, match 5 for a Bomb!<br><b>TR:</b> 4'lü eşleşmede Çizgi Şekeri, 5'li eşleşmede Bomba kazanırsınız!</p>
+                </div>
+                <div class="flex gap-3">
+                    <i class="fas fa-bullseye text-red-500 mt-1"></i>
+                    <p><b>EN:</b> Reach the target score before you run out of 25 moves.<br><b>TR:</b> 25 hamleniz bitmeden hedef skora ulaşmaya çalışın.</p>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleHelp(false)" class="bg-white/10 px-10 py-3 rounded-full font-bold hover:bg-white/20 transition border border-white/20 uppercase text-xs tracking-widest">Kapat / Close</button>
+    </div>
+
+    <div class="game-wrapper" id="gameWrapper">
+        <!-- Üst Panel -->
+        <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-md border border-white/10 mb-4 shadow-lg">
+            <div class="flex justify-between items-center mb-2">
+                <span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/30">
+                    <span id="labelLevel">SEVİYE</span> <span id="levelDisplay">1</span>
+                </span>
+                <div class="text-right">
+                    <p class="text-[10px] uppercase font-bold text-blue-300" id="labelTarget">Hedef</p>
+                    <p id="targetDisplay" class="text-lg font-black leading-tight">3000</p>
+                </div>
+            </div>
+            <div class="flex justify-between items-center gap-4">
+                <div class="flex-1 bg-black/20 p-2 rounded-xl text-center shadow-inner">
+                    <p class="text-[10px] uppercase font-bold text-purple-200" id="labelScore">Skor</p>
+                    <p id="scoreDisplay" class="text-xl font-black">0</p>
+                </div>
+                <div class="flex-1 bg-black/20 p-2 rounded-xl text-center shadow-inner">
+                    <p class="text-[10px] uppercase font-bold text-red-300" id="labelMoves">Hamle</p>
+                    <p id="movesDisplay" class="text-xl font-black">25</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oyun Izgarası -->
+        <div class="flex-1 flex items-center justify-center">
+            <div id="grid" class="grid-container"></div>
+        </div>
+
+        <!-- Kontroller -->
+        <div class="grid grid-cols-2 gap-4 mt-6">
+            <button onclick="aiHint()" class="flex items-center justify-center gap-2 bg-blue-600/30 hover:bg-blue-600/50 p-4 rounded-xl border border-blue-500/30 transition shadow-lg active:scale-90">
+                <i class="fas fa-lightbulb text-yellow-300"></i> <span id="btnHint">İPUCU</span>
+            </button>
+            <button onclick="autoMove()" class="flex items-center justify-center gap-2 bg-green-600/40 hover:bg-green-600/60 p-4 rounded-xl border border-green-500/30 transition shadow-lg active:scale-90">
+                <i class="fas fa-robot text-green-300"></i> <span id="btnAuto">OTO</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mesaj Ekranı -->
+    <div id="overlay" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-center p-6 backdrop-blur-sm">
+        <div id="overlayIcon" class="text-6xl mb-4"></div>
+        <h2 id="overlayTitle" class="text-5xl font-black mb-2 tracking-tighter uppercase"></h2>
+        <p id="overlayMessage" class="text-lg mb-8 opacity-70 italic font-medium"></p>
+        <button id="overlayBtn" class="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black px-12 py-4 rounded-full hover:scale-105 transition active:scale-95 shadow-2xl uppercase tracking-wider">Devam Et</button>
+    </div>
+
+    <script>
+        // --- Sound Engine ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            switch(type) {
+                case 'click':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                    break;
+                case 'match3':
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                    break;
+                case 'match4':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(659.25, now); // E5
+                    osc.frequency.linearRampToValueAtTime(1046.50, now + 0.1); // C6
+                    osc.frequency.linearRampToValueAtTime(1318.51, now + 0.3); // E6
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                    break;
+                case 'match5':
+                    // Explosion sound
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(40, now + 0.5);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                    break;
+                case 'swap':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.linearRampToValueAtTime(300, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                    break;
+            }
+        }
+
+        const GRID_SIZE = 8;
+        const COLORS = [
+            { id: 'red', color: '#ff4757', icon: 'fa-apple-whole' },
+            { id: 'blue', color: '#1e90ff', icon: 'fa-droplet' },
+            { id: 'green', color: '#2ed573', icon: 'fa-leaf' },
+            { id: 'yellow', color: '#eccc68', icon: 'fa-bolt' },
+            { id: 'purple', color: '#a29bfe', icon: 'fa-gem' },
+            { id: 'orange', color: '#ffa502', icon: 'fa-sun' }
+        ];
+
+        // Seviye listesi 10'a genişletildi, hamleler 25'te sabitlendi. Hedeflere 2000 eklendi.
+        const LEVELS = [
+            { target: 3000, moves: 25 },
+            { target: 4500, moves: 25 },
+            { target: 7000, moves: 25 },
+            { target: 10000, moves: 25 },
+            { target: 14000, moves: 25 },
+            { target: 19000, moves: 25 },
+            { target: 25000, moves: 25 },
+            { target: 32000, moves: 25 },
+            { target: 42000, moves: 25 },
+            { target: 57000, moves: 25 }
+        ];
+
+        const translations = {
+            en: {
+                level: "LEVEL",
+                target: "Target",
+                score: "Score",
+                moves: "Moves",
+                hint: "HINT",
+                auto: "AUTO",
+                winTitle: "LEVEL COMPLETE!",
+                winMsg: "Great! Moving to the next level.",
+                finalWinTitle: "GAME COMPLETE",
+                finalWinMsg: "You finished all levels! You are a master.",
+                loseTitle: "GAME OVER",
+                loseMsg: "Out of moves. Try again!",
+                nextBtn: "Next",
+                restartBtn: "Restart"
+            },
+            tr: {
+                level: "SEVİYE",
+                target: "Hedef",
+                score: "Skor",
+                moves: "Hamle",
+                hint: "İPUCU",
+                auto: "OTO",
+                winTitle: "SEVİYE TAMAM!",
+                winMsg: "Harika! Bir sonraki seviyeye geçiyorsun.",
+                finalWinTitle: "OYUN BİTTİ",
+                finalWinMsg: "Tüm seviyeleri tamamladın! Sen bir ustasın.",
+                loseTitle: "KAYBETTİN",
+                loseMsg: "Hamlelerin bitti. Tekrar dene!",
+                nextBtn: "Devam Et",
+                restartBtn: "Tekrar Dene"
+            }
+        };
+
+        let currentLang = 'en';
+        let currentLevel = 0;
+        let grid = [];
+        let score = 0;
+        let moves = 25;
+        let target = 3000;
+        let selectedCandy = null;
+        let isProcessing = false;
+        let idleTimer = 0;
+
+        const gridElement = document.getElementById('grid');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const movesDisplay = document.getElementById('movesDisplay');
+        const targetDisplay = document.getElementById('targetDisplay');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const overlay = document.getElementById('overlay');
+
+        // Yardım Penceresini Aç/Kapat
+        function toggleHelp(show) {
+            playSound('click');
+            document.getElementById('helpModal').style.display = show ? 'flex' : 'none';
+        }
+
+        // Oyun Başlatma ve Dil Seçimi
+        function startGame(lang) {
+            initAudio(); // Initialize audio context on first click
+            playSound('click');
+            currentLang = lang;
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameWrapper').style.display = 'flex';
+            applyTranslations();
+            init();
+        }
+
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.getElementById('labelLevel').innerText = t.level;
+            document.getElementById('labelTarget').innerText = t.target;
+            document.getElementById('labelScore').innerText = t.score;
+            document.getElementById('labelMoves').innerText = t.moves;
+            document.getElementById('btnHint').innerText = t.hint;
+            document.getElementById('btnAuto').innerText = t.auto;
+        }
+
+        function init() {
+            const config = LEVELS[currentLevel];
+            target = config.target;
+            moves = config.moves;
+            score = 0;
+            levelDisplay.innerText = currentLevel + 1;
+            createBoard();
+            updateUI();
+            checkAndResolve();
+            startIdleTracker();
+        }
+
+        function createBoard() {
+            gridElement.innerHTML = '';
+            grid = [];
+            for (let r = 0; r < GRID_SIZE; r++) {
+                grid[r] = [];
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const data = { ...getRandomCandy(), special: null };
+                    const el = createCandyElement(r, c, data);
+                    grid[r][c] = { data, element: el };
+                    gridElement.appendChild(el);
+                }
+            }
+        }
+
+        function getRandomCandy() {
+            return COLORS[Math.floor(Math.random() * COLORS.length)];
+        }
+
+        function createCandyElement(r, c, data) {
+            const el = document.createElement('div');
+            el.className = 'candy';
+            el.dataset.row = r;
+            el.dataset.col = c;
+            el.onclick = () => handleSelection(r, c);
+            return el;
+        }
+
+        function handleSelection(r, c) {
+            if (isProcessing) return;
+            resetIdle();
+            playSound('click');
+
+            if (!selectedCandy) {
+                selectedCandy = { r, c };
+                grid[r][c].element.classList.add('selected');
+            } else {
+                const r1 = selectedCandy.r;
+                const c1 = selectedCandy.c;
+                if (isNeighbor(r1, c1, r, c)) {
+                    grid[r1][c1].element.classList.remove('selected');
+                    swap(r1, c1, r, c);
+                    selectedCandy = null;
+                } else {
+                    grid[r1][c1].element.classList.remove('selected');
+                    selectedCandy = { r, c };
+                    grid[r][c].element.classList.add('selected');
+                }
+            }
+        }
+
+        function isNeighbor(r1, c1, r2, c2) {
+            return (Math.abs(r1 - r2) === 1 && c1 === c2) || (Math.abs(c1 - c2) === 1 && r1 === r2);
+        }
+
+        async function swap(r1, c1, r2, c2, isAuto = false) {
+            isProcessing = true;
+            clearHints();
+            playSound('swap');
+
+            const d1 = grid[r1][c1].data;
+            const d2 = grid[r2][c2].data;
+            grid[r1][c1].data = d2;
+            grid[r2][c2].data = d1;
+
+            updateVisuals();
+            await sleep(300);
+
+            const matches = findMatches();
+            if (matches.length > 0) {
+                moves--; 
+                await resolveMatches(r2, c2); 
+            } else {
+                grid[r1][c1].data = d1;
+                grid[r2][c2].data = d2;
+                updateVisuals();
+            }
+
+            isProcessing = false;
+            updateUI();
+            checkGameStatus();
+        }
+
+        function findMatches() {
+            let groups = [];
+            for (let r = 0; r < GRID_SIZE; r++) {
+                let count = 1;
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (c < GRID_SIZE - 1 && grid[r][c].data.id === grid[r][c+1].data.id && grid[r][c].data.id !== 'empty') {
+                        count++;
+                    } else {
+                        if (count >= 3) {
+                            let g = [];
+                            for (let i = 0; i < count; i++) g.push({r, c: c - i});
+                            groups.push(g);
+                        }
+                        count = 1;
+                    }
+                }
+            }
+            for (let c = 0; c < GRID_SIZE; c++) {
+                let count = 1;
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    if (r < GRID_SIZE - 1 && grid[r][c].data.id === grid[r+1][c].data.id && grid[r][c].data.id !== 'empty') {
+                        count++;
+                    } else {
+                        if (count >= 3) {
+                            let g = [];
+                            for (let i = 0; i < count; i++) g.push({r: r - i, c});
+                            groups.push(g);
+                        }
+                        count = 1;
+                    }
+                }
+            }
+            return groups;
+        }
+
+        async function resolveMatches(originR = -1, originC = -1) {
+            let groups = findMatches();
+            
+            // Determine match sound type
+            let maxMatchLen = 0;
+            groups.forEach(g => maxMatchLen = Math.max(maxMatchLen, g.length));
+            if (maxMatchLen === 3) playSound('match3');
+            else if (maxMatchLen === 4) playSound('match4');
+            else if (maxMatchLen >= 5) playSound('match5');
+
+            while (groups.length > 0) {
+                let toClear = new Set();
+                let specialsToCreate = [];
+
+                groups.forEach(group => {
+                    let type = null;
+                    if (group.length === 4) type = 'line';
+                    else if (group.length >= 5) type = 'bomb';
+
+                    if (type) {
+                        let target = group.find(p => p.r === originR && p.c === originC) || group[0];
+                        specialsToCreate.push({ r: target.r, c: target.c, type });
+                    }
+
+                    group.forEach(p => {
+                        toClear.add(`${p.r},${p.c}`);
+                        if (grid[p.r][p.c].data.special) {
+                            triggerSpecial(p.r, p.c, toClear);
+                        }
+                    });
+                });
+
+                const clearedList = Array.from(toClear).map(s => {
+                    const [r, c] = s.split(',').map(Number);
+                    return { r, c };
+                });
+
+                score += clearedList.length * 60;
+                updateUI();
+
+                clearedList.forEach(p => {
+                    createParticles(grid[p.r][p.c].element);
+                    grid[p.r][p.c].data = { id: 'empty', color: 'transparent', icon: '', special: null };
+                    grid[p.r][p.c].element.style.opacity = '0';
+                });
+
+                specialsToCreate.forEach(s => {
+                    grid[s.r][s.c].data = { ...getRandomCandy(), special: s.type };
+                });
+
+                await sleep(400);
+
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    let empty = 0;
+                    for (let r = GRID_SIZE - 1; r >= 0; r--) {
+                        if (grid[r][c].data.id === 'empty') {
+                            empty++;
+                        } else if (empty > 0) {
+                            grid[r + empty][c].data = grid[r][c].data;
+                            grid[r][c].data = { id: 'empty', color: 'transparent', icon: '', special: null };
+                        }
+                    }
+                    for (let r = 0; r < empty; r++) {
+                        grid[r][c].data = { ...getRandomCandy(), special: null };
+                    }
+                }
+
+                updateVisuals();
+                await sleep(300);
+                groups = findMatches();
+                if (groups.length > 0) playSound('match3'); // Chain reaction sound
+                originR = -1;
+            }
+        }
+
+        function triggerSpecial(r, c, set) {
+            const spec = grid[r][c].data.special;
+            if (spec === 'line') {
+                for (let i = 0; i < GRID_SIZE; i++) set.add(`${r},${i}`);
+            } else if (spec === 'bomb') {
+                for (let i = r-1; i <= r+1; i++) {
+                    for (let j = c-1; j <= c+1; j++) {
+                        if (i >= 0 && i < GRID_SIZE && j >= 0 && j < GRID_SIZE) set.add(`${i},${j}`);
+                    }
+                }
+            }
+        }
+
+        function updateVisuals() {
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const d = grid[r][c].data;
+                    const el = grid[r][c].element;
+                    if (!d) continue;
+                    el.className = 'candy';
+                    if (d.special) el.classList.add(`special-${d.special}`);
+                    el.style.backgroundColor = d.color;
+                    el.innerHTML = d.icon ? `<i class="fas ${d.icon} text-white/30"></i>` : '';
+                    el.style.opacity = d.id === 'empty' ? '0' : '1';
+                }
+            }
+        }
+
+        function createParticles(parent) {
+            const rect = parent.getBoundingClientRect();
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.width = '6px';
+                p.style.height = '6px';
+                p.style.backgroundColor = parent.style.backgroundColor;
+                p.style.left = (rect.left + rect.width / 2) + 'px';
+                p.style.top = (rect.top + rect.height / 2) + 'px';
+                p.style.setProperty('--tx', (Math.random() - 0.5) * 120 + 'px');
+                p.style.setProperty('--ty', (Math.random() - 0.5) * 120 + 'px');
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 600);
+            }
+        }
+
+        function updateUI() {
+            scoreDisplay.innerText = score;
+            movesDisplay.innerText = moves;
+            targetDisplay.innerText = target;
+        }
+
+        function checkGameStatus() {
+            const t = translations[currentLang];
+            if (score >= target) {
+                if (currentLevel < LEVELS.length - 1) {
+                    showOverlay(t.winTitle, t.winMsg, "fa-star text-yellow-400", () => {
+                        currentLevel++;
+                        init();
+                        overlay.classList.add('hidden');
+                    }, t.nextBtn);
+                } else {
+                    showOverlay(t.finalWinTitle, t.finalWinMsg, "fa-trophy text-yellow-400", () => {
+                        currentLevel = 0;
+                        init();
+                        overlay.classList.add('hidden');
+                    }, t.restartBtn);
+                }
+            } else if (moves <= 0) {
+                showOverlay(t.loseTitle, t.loseMsg, "fa-heart-crack text-red-500", () => {
+                    init();
+                    overlay.classList.add('hidden');
+                }, t.restartBtn);
+            }
+        }
+
+        function showOverlay(title, msg, icon, btnFn, btnText = "Devam Et") {
+            const t = translations[currentLang];
+            document.getElementById('overlayTitle').innerText = title;
+            document.getElementById('overlayMessage').innerText = msg;
+            document.getElementById('overlayIcon').innerHTML = `<i class="fas ${icon}"></i>`;
+            const btn = document.getElementById('overlayBtn');
+            btn.innerText = btnText;
+            btn.onclick = () => {
+                playSound('click');
+                btnFn();
+            };
+            overlay.classList.remove('hidden');
+        }
+
+        function findAllMoves() {
+            const movesList = [];
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (c < GRID_SIZE - 1 && testSwap(r, c, r, c + 1)) movesList.push({r1:r, c1:c, r2:r, c2:c+1});
+                    if (r < GRID_SIZE - 1 && testSwap(r, c, r + 1, c)) movesList.push({r1:r, c1:c, r2:r+1, c2:c});
+                }
+            }
+            return movesList;
+        }
+
+        function testSwap(r1, c1, r2, c2) {
+            const d1 = grid[r1][c1].data, d2 = grid[r2][c2].data;
+            grid[r1][c1].data = d2; grid[r2][c2].data = d1;
+            const hasMatch = findMatches().length > 0;
+            grid[r1][c1].data = d1; grid[r2][c2].data = d2;
+            return hasMatch;
+        }
+
+        function aiHint() {
+            if (isProcessing) return;
+            playSound('click');
+            const movesList = findAllMoves();
+            if (movesList.length > 0) {
+                const m = movesList[Math.floor(Math.random() * movesList.length)];
+                grid[m.r1][m.c1].element.classList.add('hint');
+                grid[m.r2][m.c2].element.classList.add('hint');
+            }
+        }
+
+        function autoMove() {
+            if (isProcessing) return;
+            playSound('click');
+            const list = findAllMoves();
+            if (list.length > 0) swap(list[0].r1, list[0].c1, list[0].r2, list[0].c2, true);
+        }
+
+        function startIdleTracker() {
+            setInterval(() => {
+                if (!isProcessing) {
+                    idleTimer++;
+                    if (idleTimer >= 5) { aiHint(); idleTimer = 0; }
+                }
+            }, 1000);
+        }
+
+        function resetIdle() { idleTimer = 0; clearHints(); }
+        function clearHints() { document.querySelectorAll('.hint').forEach(e => e.classList.remove('hint')); }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        async function checkAndResolve() { isProcessing = true; await resolveMatches(); isProcessing = false; }
+    </script>
+</body>
+</html>

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Temel SEO Etiketleri -->
+    <title>Bug Hunter Pro - Online Arena Game | Hunt & Grow</title>
+    <meta name="description" content="Hunt bugs, grow your snake, and clear the arena in Bug Hunter Pro. An addictive, fast-paced browser arcade game with multiple levels and language support.">
+    <meta name="keywords" content="bug hunter, snake game, browser game, arcade game, retro gaming, online game, free browser game, bug hunter pro">
+    <meta name="author" content="Gemini">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://your-domain.com/bug-hunter-pro">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-domain.com/bug-hunter-pro">
+    <meta property="og:title" content="Bug Hunter Pro - Online Arena Game">
+    <meta property="og:description" content="Eat bugs, get bigger, and dominate the arena. Play now for free in your browser!">
+    <meta property="og:image" content="https://your-domain.com/assets/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://your-domain.com/bug-hunter-pro">
+    <meta property="twitter:title" content="Bug Hunter Pro - Online Arena Game">
+    <meta property="twitter:description" content="Eat bugs, get bigger, and dominate the arena. Play now for free in your browser!">
+    <meta property="twitter:image" content="https://your-domain.com/assets/og-image.jpg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        
+        :root {
+            --primary: #38bdf8;
+            --bg: #020617;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg);
+            font-family: 'Outfit', sans-serif;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        }
+
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: env(safe-area-inset-top, 20px);
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .stats-bar {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 10px 28px;
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            pointer-events: auto;
+            z-index: 100;
+        }
+
+        .lang-btn {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .stat-value {
+            font-weight: 900;
+            color: white;
+            line-height: 1.2;
+        }
+
+        #menu, #game-over, #level-up, #how-to-play-modal {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 32px;
+            text-align: center;
+            color: white;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            width: 90%;
+            max-width: 420px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+            color: white;
+            padding: 18px 32px;
+            border-radius: 20px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1.5rem;
+            display: inline-block;
+            pointer-events: auto;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            border: none;
+            outline: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 10px 20px;
+            font-size: 12px;
+            border-radius: 14px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            pointer-events: auto;
+            text-decoration: none;
+        }
+
+        .btn:active, .btn-secondary:active {
+            transform: scale(0.96);
+            filter: brightness(1.1);
+        }
+
+        .hidden { display: none !important; }
+        
+        #message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<main id="game-container">
+    <!-- Screen Reader Friendly Hidden H1 for SEO -->
+    <h1 class="sr-only">Bug Hunter Pro - Browser Snake Arena Game</h1>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Language Selector -->
+    <div class="lang-selector">
+        <button id="lang-en" class="lang-btn active" onclick="setLanguage('en')" aria-label="Change language to English">EN</button>
+        <button id="lang-tr" class="lang-btn" onclick="setLanguage('tr')" aria-label="Dili Türkçe olarak değiştir">TR</button>
+    </div>
+
+    <div class="ui-layer">
+        <div class="stats-bar" role="status">
+            <div class="stat-item">
+                <span class="stat-label" id="label-level">Level</span>
+                <span id="level-val" class="stat-value text-sky-400 text-lg">1</span>
+            </div>
+            <div class="w-px h-6 bg-white/10"></div>
+            <div class="stat-item">
+                <span class="stat-label" id="label-left">Left</span>
+                <span id="bugs-left-val" class="stat-value text-xl">20</span>
+            </div>
+            <div class="w-px h-6 bg-white/10"></div>
+            <div class="stat-item">
+                <span class="stat-label" id="label-score">Score</span>
+                <span id="score-val" class="stat-value text-xl">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Menu -->
+    <section id="menu">
+        <h2 class="text-4xl font-black mb-2 text-white italic tracking-tighter">BUG HUNTER <span class="text-sky-400">PRO</span></h2>
+        <p class="mb-6 text-slate-400 text-sm" id="menu-desc">Clean all bugs in the arena. You grow as you eat!</p>
+        
+        <div class="grid grid-cols-1 gap-2 text-left text-[11px] mb-6 font-bold">
+            <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-white/5">
+                <span id="lvl1-text">LEVEL 1</span>
+                <span class="text-green-400" id="lvl1-count">20 BUGS</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-white/5">
+                <span id="lvl2-text">LEVEL 2</span>
+                <span class="text-yellow-400" id="lvl2-count">30 BUGS</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-white/5">
+                <span id="lvl3-text">LEVEL 3</span>
+                <span class="text-red-400" id="lvl3-count">40 BUGS</span>
+            </div>
+        </div>
+
+        <button class="btn" onclick="startGame()" id="btn-start">START HUNTING</button>
+        
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+            <button class="btn-secondary" onclick="toggleInstructions(true)" id="btn-how">How to Play?</button>
+            <a href="../../index.html" class="btn-secondary" title="Go to Main Menu">
+                <span>🏠</span>
+                <span id="btn-home-text">Home Menu</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- How to Play Modal -->
+    <section id="how-to-play-modal" class="hidden">
+        <h2 class="text-2xl font-black mb-4 text-sky-400 italic" id="how-title">HOW TO PLAY?</h2>
+        <div class="space-y-4 text-sm text-slate-300 text-left mb-6">
+            <div class="flex gap-3">
+                <div class="bg-sky-500/20 p-2 rounded-lg shrink-0">🖱️</div>
+                <p><span class="text-white font-bold" id="how-move-label">Movement:</span> <span id="how-move-desc">Direct the snake by dragging your mouse or finger.</span></p>
+            </div>
+            <div class="flex gap-3">
+                <div class="bg-green-500/20 p-2 rounded-lg shrink-0">🦟</div>
+                <p><span class="text-white font-bold" id="how-hunt-label">Hunting:</span> <span id="how-hunt-desc">Eat bugs; each bug grows and speeds you up.</span></p>
+            </div>
+            <div class="flex gap-3">
+                <div class="bg-yellow-500/20 p-2 rounded-lg shrink-0">⚡</div>
+                <p><span class="text-white font-bold" id="how-types-label">Types:</span> <span id="how-types-desc">Yellow bugs are fast, purple bugs are unpredictable.</span></p>
+            </div>
+        </div>
+        <button class="btn" onclick="toggleInstructions(false)" id="btn-gotit">GOT IT</button>
+    </section>
+
+    <!-- Game Over -->
+    <section id="game-over" class="hidden">
+        <h2 id="game-over-title" class="text-3xl font-black mb-2 text-green-500 italic">CONGRATULATIONS!</h2>
+        <p id="game-over-msg" class="text-slate-400 mb-6 italic">All areas have been cleaned.</p>
+        <div class="bg-slate-800/50 p-4 rounded-2xl mb-6">
+            <div class="text-[10px] uppercase text-slate-500 font-bold mb-1" id="final-score-label">Total Score</div>
+            <div id="final-score" class="text-4xl font-black text-white">0</div>
+        </div>
+        <button class="btn" onclick="startGame()" id="btn-restart">RESTART</button>
+        
+        <div class="flex justify-center mt-4">
+            <a href="../../index.html" class="btn-secondary" title="Go to Main Menu">
+                <span>🏠</span>
+                <span id="btn-home-text-over">Home Menu</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Level Up -->
+    <section id="level-up" class="hidden">
+        <h2 class="text-3xl font-black mb-2 text-yellow-400 italic" id="lvlup-title">CLEANED!</h2>
+        <p id="level-msg" class="text-slate-400 mb-8">More bugs detected.</p>
+        <button class="btn" onclick="nextLevel()" id="btn-next">NEXT LEVEL</button>
+    </section>
+    
+    <div id="message-box" aria-live="polite"></div>
+</main>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score-val');
+    const levelEl = document.getElementById('level-val');
+    const bugsLeftEl = document.getElementById('bugs-left-val');
+    const menuEl = document.getElementById('menu');
+    const gameOverEl = document.getElementById('game-over');
+    const levelUpEl = document.getElementById('level-up');
+    const howToModal = document.getElementById('how-to-play-modal');
+    const finalScoreEl = document.getElementById('final-score');
+    const msgBox = document.getElementById('message-box');
+
+    // Çeviri Sözlüğü
+    const i18n = {
+        en: {
+            title: "Bug Hunter Pro - Online Arena Game | Hunt & Grow",
+            btn_home: "Home Menu",
+            label_level: "Level", label_left: "Left", label_score: "Score",
+            menu_desc: "Clean all bugs in the arena. You grow as you eat!",
+            lvl1: "LEVEL 1", lvl2: "LEVEL 2", lvl3: "LEVEL 3", bugs_unit: "BUGS",
+            btn_start: "START HUNTING", btn_how: "How to Play?",
+            how_title: "HOW TO PLAY?", how_move: "Movement:", how_move_d: "Direct the snake by dragging your mouse or finger.",
+            how_hunt: "Hunting:", how_hunt_d: "Eat bugs; each bug grows and speeds you up.",
+            how_types: "Types:", how_types_d: "Yellow bugs are fast, purple bugs are unpredictable.",
+            btn_gotit: "GOT IT",
+            go_title: "CONGRATULATIONS!", go_msg: "All areas have been cleaned.", go_score: "Total Score", btn_restart: "RESTART",
+            lu_title: "CLEANED!", lu_msg: "More bugs detected.", btn_next: "NEXT LEVEL",
+            arena_msg: "Arena is fully secured!"
+        },
+        tr: {
+            title: "Bug Hunter Pro - Online Arena Oyunu | Avlan ve Büyü",
+            btn_home: "Ana Menü",
+            label_level: "Seviye", label_left: "Kalan", label_score: "Puan",
+            menu_desc: "Arenadaki tüm böcekleri temizle. Yedikçe daha da büyüyeceksin!",
+            lvl1: "SEVİYE 1", lvl2: "SEVİYE 2", lvl3: "SEVİYE 3", bugs_unit: "BÖCEK",
+            btn_start: "AVLANMAYA BAŞLA", btn_how: "Nasıl Oynanır?",
+            how_title: "NASIL OYNANIR?", how_move: "Hareket:", how_move_d: "Fareyi veya parmağını ekranda sürükleyerek yılanı yönlendir.",
+            how_hunt: "Avlanma:", how_hunt_d: "Böcekleri ye; her böcek seni uzatır ve hızlandırır.",
+            how_types: "Türler:", how_types_d: "Sarı böcekler hızlı, mor böcekler ise tahmin edilemezdir.",
+            btn_gotit: "ANLADIM",
+            go_title: "TEBRİKLER!", go_msg: "Tüm bölgeler temizlendi.", go_score: "Toplam Skor", btn_restart: "YENİDEN BAŞLA",
+            lu_title: "TEMİZLENDİ!", lu_msg: "Daha fazla böcek tespit edildi.", btn_next: "SIRADAKİ SEVİYE",
+            arena_msg: "Arena tamamen temizlendi!"
+        }
+    };
+
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`lang-${lang}`).classList.add('active');
+
+        const t = i18n[lang];
+        document.title = t.title; 
+        document.getElementById('btn-home-text').innerText = t.btn_home;
+        if(document.getElementById('btn-home-text-over')) {
+            document.getElementById('btn-home-text-over').innerText = t.btn_home;
+        }
+        document.getElementById('label-level').innerText = t.label_level;
+        document.getElementById('label-left').innerText = t.label_left;
+        document.getElementById('label-score').innerText = t.label_score;
+        document.getElementById('menu-desc').innerText = t.menu_desc;
+        document.getElementById('lvl1-text').innerText = t.lvl1;
+        document.getElementById('lvl2-text').innerText = t.lvl2;
+        document.getElementById('lvl3-text').innerText = t.lvl3;
+        document.getElementById('lvl1-count').innerText = `20 ${t.bugs_unit}`;
+        document.getElementById('lvl2-count').innerText = `30 ${t.bugs_unit}`;
+        document.getElementById('lvl3-count').innerText = `40 ${t.bugs_unit}`;
+        document.getElementById('btn-start').innerText = t.btn_start;
+        document.getElementById('btn-how').innerText = t.btn_how;
+        document.getElementById('how-title').innerText = t.how_title;
+        document.getElementById('how-move-label').innerText = t.how_move;
+        document.getElementById('how-move-desc').innerText = t.how_move_d;
+        document.getElementById('how-hunt-label').innerText = t.how_hunt;
+        document.getElementById('how-hunt-desc').innerText = t.how_hunt_d;
+        document.getElementById('how-types-label').innerText = t.how_types;
+        document.getElementById('how-types-desc').innerText = t.how_types_d;
+        document.getElementById('btn-gotit').innerText = t.btn_gotit;
+        document.getElementById('game-over-title').innerText = t.go_title;
+        document.getElementById('game-over-msg').innerText = t.go_msg;
+        document.getElementById('final-score-label').innerText = t.go_score;
+        document.getElementById('btn-restart').innerText = t.btn_restart;
+        document.getElementById('lvlup-title').innerText = t.lu_title;
+        document.getElementById('btn-next').innerText = t.btn_next;
+
+        if(!gameActive) {
+            document.getElementById('level-msg').innerText = t.lu_msg;
+        }
+
+        playTone(440, 'sine', 0.1);
+    }
+
+    let WIDTH, HEIGHT;
+    let arena = { x: 0, y: 0, w: 0, h: 0 };
+    let score = 0;
+    let level = 1;
+    let gameActive = false;
+    let particles = [];
+    let insects = [];
+    let snake;
+    let mouse = { x: 0, y: 0, active: false };
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function playTone(freq, type, duration) {
+        try {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function showMessage(text) {
+        msgBox.innerText = text;
+        msgBox.style.opacity = 1;
+        setTimeout(() => msgBox.style.opacity = 0, 2000);
+    }
+
+    function toggleInstructions(show) {
+        if(show) {
+            howToModal.classList.remove('hidden');
+            menuEl.classList.add('hidden');
+        } else {
+            howToModal.classList.add('hidden');
+            menuEl.classList.remove('hidden');
+        }
+        playTone(660, 'sine', 0.1);
+    }
+
+    class Snake {
+        constructor() {
+            this.segments = [];
+            const startX = arena.x + arena.w / 2;
+            const startY = arena.y + arena.h / 2;
+            for(let i=0; i<15; i++) {
+                this.segments.push({ x: startX, y: startY });
+            }
+            this.angle = 0;
+            this.speed = 2.2; 
+            this.size = 12;
+            this.pendingGrowth = 0; 
+        }
+
+        grow(amount) {
+            this.pendingGrowth += amount;
+        }
+
+        update() {
+            const head = { ...this.segments[0] };
+            
+            if (mouse.active) {
+                const dx = mouse.x - head.x;
+                const dy = mouse.y - head.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist > 5) {
+                    const targetAngle = Math.atan2(dy, dx);
+                    let diff = targetAngle - this.angle;
+                    while (diff < -Math.PI) diff += Math.PI * 2;
+                    while (diff > Math.PI) diff -= Math.PI * 2;
+                    this.angle += diff * 0.12; 
+                }
+            }
+
+            head.x += Math.cos(this.angle) * this.speed;
+            head.y += Math.sin(this.angle) * this.speed;
+
+            const margin = this.size;
+            if (head.x < arena.x + margin) head.x = arena.x + margin;
+            if (head.x > arena.x + arena.w - margin) head.x = arena.x + arena.w - margin;
+            if (head.y < arena.y + margin) head.y = arena.y + margin;
+            if (head.y > arena.y + arena.h - margin) head.y = arena.y + arena.h - margin;
+
+            this.segments.unshift(head);
+            
+            if (this.pendingGrowth > 0) {
+                this.pendingGrowth--;
+            } else {
+                this.segments.pop();
+            }
+        }
+
+        draw() {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(56, 189, 248, 0.5)';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            for (let i = this.segments.length - 1; i > 0; i--) {
+                const ratio = i / this.segments.length;
+                const opacity = 1 - (ratio * 0.8); 
+                const size = this.size * (1 - ratio * 0.4);
+                
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(56, 189, 248, ${opacity})`;
+                ctx.lineWidth = size * 2;
+                ctx.moveTo(this.segments[i].x, this.segments[i].y);
+                ctx.lineTo(this.segments[i-1].x, this.segments[i-1].y);
+                ctx.stroke();
+            }
+
+            const head = this.segments[0];
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(head.x + Math.cos(this.angle + 0.6) * 6, head.y + Math.sin(this.angle + 0.6) * 6, 2.5, 0, Math.PI * 2);
+            ctx.arc(head.x + Math.cos(this.angle - 0.6) * 6, head.y + Math.sin(this.angle - 0.6) * 6, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    class Insect {
+        constructor(type) {
+            this.type = type;
+            this.x = arena.x + 30 + Math.random() * (arena.w - 60);
+            this.y = arena.y + 30 + Math.random() * (arena.h - 60);
+            this.angle = Math.random() * Math.PI * 2;
+            this.baseSpeed = 0.3 + (level * 0.2); 
+            this.speed = this.baseSpeed;
+            this.size = 8;
+            this.color = this.getColor();
+            this.pulse = 0;
+        }
+
+        getColor() {
+            switch(this.type) {
+                case 'sprinter': return '#facc15';
+                case 'zigzagger': return '#c084fc';
+                default: return '#4ade80';
+            }
+        }
+
+        update(snakeHead) {
+            const dx = this.x - snakeHead.x;
+            const dy = this.y - snakeHead.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            this.pulse += 0.15;
+
+            if (dist < 120) {
+                const escapeAngle = Math.atan2(dy, dx);
+                let diff = escapeAngle - this.angle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                this.angle += diff * 0.08;
+                this.speed = this.baseSpeed * 1.35; 
+            } else {
+                this.speed = this.baseSpeed;
+                this.angle += (Math.random() - 0.5) * 0.05;
+            }
+
+            if (this.type === 'zigzagger') {
+                this.angle += Math.sin(this.pulse * 1.5) * 0.1;
+            }
+
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed;
+
+            if (this.x < arena.x + this.size || this.x > arena.x + arena.w - this.size) {
+                this.angle = Math.PI - this.angle;
+            }
+            if (this.y < arena.y + this.size || this.y > arena.y + arena.h - this.size) {
+                this.angle = -this.angle;
+            }
+
+            this.x = Math.max(arena.x + this.size, Math.min(arena.x + arena.w - this.size, this.x));
+            this.y = Math.max(arena.y + this.size, Math.min(arena.y + arena.h - this.size, this.y));
+
+            if (dist < snake.size + this.size) return true;
+            return false;
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.size, this.size * 0.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+            ctx.lineWidth = 1.5;
+            const wingY = Math.sin(this.pulse * 8) * 6;
+            ctx.beginPath();
+            ctx.moveTo(-2, 0); ctx.lineTo(-8, -wingY - 4);
+            ctx.moveTo(-2, 0); ctx.lineTo(-8, wingY + 4);
+            ctx.stroke();
+            ctx.restore();
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    function createParticles(x, y, color) {
+        for(let i=0; i<12; i++) {
+            particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                life: 1.0,
+                color
+            });
+        }
+    }
+
+    function spawnInsects() {
+        insects = [];
+        let count = 20 + (level - 1) * 10;
+        const types = ['common', 'sprinter', 'zigzagger'];
+        
+        for(let i=0; i<count; i++) {
+            const type = level === 1 ? 'common' : types[Math.floor(Math.random() * types.length)];
+            insects.push(new Insect(type));
+        }
+        bugsLeftEl.innerText = insects.length;
+    }
+
+    function checkLevelProgress() {
+        if (insects.length === 0) {
+            gameActive = false;
+            if (level < 3) {
+                levelUpEl.classList.remove('hidden');
+                document.getElementById('level-msg').innerText = i18n[currentLang].lu_msg;
+                playTone(880, 'square', 0.2);
+            } else {
+                gameOverEl.classList.remove('hidden');
+                finalScoreEl.innerText = score;
+                playTone(1000, 'square', 0.5);
+                showMessage(i18n[currentLang].arena_msg);
+            }
+        }
+    }
+
+    function nextLevel() {
+        level++;
+        levelEl.innerText = level;
+        levelUpEl.classList.add('hidden');
+        resetGame();
+    }
+
+    function startGame() {
+        level = 1;
+        score = 0;
+        scoreEl.innerText = "0";
+        levelEl.innerText = "1";
+        menuEl.classList.add('hidden');
+        gameOverEl.classList.add('hidden');
+        howToModal.classList.add('hidden');
+        resetGame();
+    }
+
+    function resetGame() {
+        resize();
+        snake = new Snake();
+        spawnInsects();
+        particles = [];
+        gameActive = true;
+    }
+
+    function resize() {
+        WIDTH = window.innerWidth;
+        HEIGHT = window.innerHeight;
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+
+        const arenaW = Math.min(WIDTH * 0.92, 800);
+        const arenaH = Math.min(HEIGHT * 0.75, 600);
+        
+        arena = {
+            x: (WIDTH - arenaW) / 2,
+            y: (HEIGHT - arenaH) / 2 + 40,
+            w: arenaW,
+            h: arenaH
+        };
+    }
+
+    window.addEventListener('resize', resize);
+    
+    const updateInput = (e) => {
+        const x = (e.touches ? e.touches[0].clientX : e.clientX);
+        const y = (e.touches ? e.touches[0].clientY : e.clientY);
+        mouse.x = x;
+        mouse.y = y;
+        mouse.active = true;
+        if (e.touches && gameActive) e.preventDefault();
+    };
+
+    window.addEventListener('mousedown', updateInput);
+    window.addEventListener('mousemove', updateInput);
+    window.addEventListener('mouseup', () => mouse.active = false);
+    window.addEventListener('touchstart', updateInput, {passive: false});
+    window.addEventListener('touchmove', updateInput, {passive: false});
+    window.addEventListener('touchend', () => mouse.active = false);
+
+    function loop() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(arena.x, arena.y, arena.w, arena.h);
+        
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.04)';
+        ctx.lineWidth = 1;
+        for(let x = arena.x; x <= arena.x + arena.w; x += 40) {
+            ctx.beginPath(); ctx.moveTo(x, arena.y); ctx.lineTo(x, arena.y + arena.h); ctx.stroke();
+        }
+        for(let y = arena.y; y <= arena.y + arena.h; y += 40) {
+            ctx.beginPath(); ctx.moveTo(arena.x, y); ctx.lineTo(arena.x + arena.w, y); ctx.stroke();
+        }
+
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(arena.x, arena.y, arena.w, arena.h);
+
+        if (gameActive) {
+            snake.update();
+            snake.draw();
+
+            for (let i = insects.length - 1; i >= 0; i--) {
+                const ins = insects[i];
+                const caught = ins.update(snake.segments[0]);
+                if (caught) {
+                    score += ins.type === 'common' ? 10 : 25;
+                    scoreEl.innerText = score;
+                    snake.grow(4);
+                    snake.speed += 0.02; 
+                    createParticles(ins.x, ins.y, ins.color);
+                    playTone(500 + Math.random() * 300, 'sine', 0.1);
+                    insects.splice(i, 1);
+                    bugsLeftEl.innerText = insects.length;
+                    checkLevelProgress();
+                } else {
+                    ins.draw();
+                }
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life -= 0.03;
+                if (p.life <= 0) particles.splice(i, 1);
+                else {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3 * p.life, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        requestAnimationFrame(loop);
+    }
+
+    window.onload = () => {
+        resize();
+        setLanguage('en'); 
+        loop();
+    };
+</script>
+</body>
+</html>

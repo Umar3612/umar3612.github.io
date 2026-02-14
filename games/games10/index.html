@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- SEO Meta Etiketleri -->
+    <title>Pisti Pro - Modern ve Profesyonel Kart Oyunu</title>
+    <meta name="description" content="Klasik Türk kart oyunu Pişti'yi (Pişpirik) oynayın. Akıllı yapay zeka, modern arayüz ve çoklu dil desteği ile profesyonel oyun deneyimi.">
+    <meta name="keywords" content="pişti, pişpirik, kart oyunu, iskambil oyunları, yapay zekaya karşı pişti, bedava oyunlar">
+    <meta name="author" content="Pisti Pro Ekibi">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Pisti Pro - Profesyonel Kart Oyunu Deneyimi">
+    <meta property="og:description" content="Yapay zekaya karşı en modern Pişti deneyimine katılın. Yüksek kaliteli animasyonlar ve stratejik hamleler sizi bekliyor.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=1200">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Pisti Pro - Modern Kart Oyunu">
+    <meta property="twitter:description" content="Bu profesyonel Pişti uyarlamasında kartların ustası olun. Mobil ve masaüstü uyumlu tasarım.">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=1200">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠️</text></svg>">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --table-green: #064e3b;
+            --table-light: #065f46;
+            --card-ratio: 1.4;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--table-green);
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            height: 100svh;
+            width: 100vw;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-rows: auto auto 1fr auto auto;
+            height: 100%;
+            width: 100%;
+            background: radial-gradient(circle at center, var(--table-light) 0%, var(--table-green) 100%);
+        }
+
+        .card {
+            aspect-ratio: 1 / var(--card-ratio);
+            height: 16vh;
+            max-height: 140px;
+            min-height: 80px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            border: 3px solid white;
+        }
+
+        .card-back::after {
+            content: "♠";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: rgba(255,255,255,0.1);
+        }
+
+        .table-area {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .pile-card {
+            position: absolute;
+            height: 16vh;
+            max-height: 140px;
+            pointer-events: none;
+        }
+
+        #pistiOverlay {
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0);
+            opacity: 0;
+        }
+        #pistiOverlay.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .glass-panel {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: #10b981;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #059669;
+        }
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #059669;
+        }
+
+        .modal-bg {
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ana Menü -->
+    <div id="mainMenu" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 p-8">
+        <a href="../../index.html" class="absolute top-6 left-6 p-4 bg-white/5 hover:bg-emerald-500/20 rounded-2xl transition-all border border-white/10 group flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white group-hover:scale-110 transition-transform">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span class="text-xs font-bold tracking-widest text-white/70 group-hover:text-white uppercase">Ana Sayfa</span>
+        </a>
+
+        <div class="text-center mb-8">
+            <h1 class="text-6xl font-black text-emerald-400 italic mb-2 tracking-tighter">PİŞTİ PRO</h1>
+            <div class="h-1 w-24 bg-emerald-500 mx-auto rounded-full"></div>
+        </div>
+        
+        <div class="w-full max-w-xs space-y-4">
+            <button onclick="startGame()" class="w-full py-5 btn-primary rounded-2xl font-bold text-xl uppercase lang-key" data-key="start">Oyuna Başla</button>
+            <button onclick="toggleModal('howToModal', true)" class="w-full py-4 bg-gray-800 hover:bg-gray-700 rounded-2xl font-semibold lang-key" data-key="rules">Kurallar</button>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <div class="flex flex-col space-y-1">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase ml-2 lang-key" data-key="difficulty">Zorluk</label>
+                    <select id="difficulty" class="w-full bg-gray-800 border-2 border-emerald-900/50 p-3 rounded-xl font-bold text-center appearance-none text-sm">
+                        <option value="easy" class="lang-key" data-key="easy">Kolay</option>
+                        <option value="medium" selected class="lang-key" data-key="medium">Orta</option>
+                        <option value="hard" class="lang-key" data-key="hard">Zor</option>
+                    </select>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase ml-2 lang-key" data-key="language">Dil</label>
+                    <select id="langSelect" onchange="changeLanguage(this.value)" class="w-full bg-gray-800 border-2 border-blue-900/50 p-3 rounded-xl font-bold text-center appearance-none text-sm">
+                        <option value="tr">Türkçe</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nasıl Oynanır Modalı -->
+    <div id="howToModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center modal-bg p-6">
+        <div class="max-w-md w-full glass-panel p-8 rounded-3xl">
+            <h2 class="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center">?</span>
+                <span class="lang-key" data-key="rules_title">Oyun Kuralları</span>
+            </h2>
+            <div id="rulesContent" class="space-y-4 text-sm text-gray-300 leading-relaxed">
+                <!-- İçerik JS ile doldurulur -->
+            </div>
+            <button onclick="toggleModal('howToModal', false)" class="mt-8 w-full py-4 bg-emerald-600 rounded-2xl font-bold lang-key" data-key="got_it">Anladım</button>
+        </div>
+    </div>
+
+    <!-- Yeniden Başlatma Onay Modalı -->
+    <div id="confirmRestartModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center modal-bg p-6">
+        <div class="max-w-xs w-full glass-panel p-6 rounded-3xl text-center">
+            <h3 class="text-xl font-bold mb-4 lang-key" data-key="confirm_restart">Yeniden Başlat?</h3>
+            <p class="text-sm text-gray-400 mb-6 lang-key" data-key="restart_warning">Mevcut ilerlemeniz kaybolacak.</p>
+            <div class="flex gap-3">
+                <button onclick="toggleModal('confirmRestartModal', false)" class="flex-1 py-3 bg-gray-800 rounded-xl font-bold lang-key" data-key="cancel">İptal</button>
+                <button onclick="location.reload()" class="flex-1 py-3 bg-red-600 rounded-xl font-bold lang-key" data-key="yes">Evet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oyun Ekranı -->
+    <div id="gameScreen" class="hidden game-container">
+        
+        <!-- Üst Panel -->
+        <header class="p-3 flex justify-between items-center glass-panel z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-400 font-bold">AI</div>
+                <div>
+                    <div class="text-[10px] text-gray-400 uppercase font-bold leading-none lang-key" data-key="opponent">Rakip</div>
+                    <div id="aiScore" class="text-xl font-black">0</div>
+                </div>
+            </div>
+            
+            <div id="turnBadge" class="px-6 py-2 bg-yellow-400 text-black font-black rounded-full text-[10px] shadow-lg uppercase tracking-widest transition-all">
+                SIRA SENDE
+            </div>
+
+            <div class="flex items-center gap-3 text-right">
+                <div>
+                    <div class="text-[10px] text-blue-400 uppercase font-bold leading-none lang-key" data-key="you">Sen</div>
+                    <div id="playerScore" class="text-xl font-black">0</div>
+                </div>
+                <div class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 font-bold">S</div>
+            </div>
+        </header>
+
+        <!-- AI Alanı -->
+        <div id="aiHand" class="h-20 md:h-28 flex justify-center items-center gap-2 pt-4"></div>
+
+        <!-- Masa -->
+        <main class="table-area">
+            <div id="tablePile" class="relative flex items-center justify-center w-full h-full"></div>
+
+            <div id="pistiOverlay" class="absolute z-50 flex flex-col items-center">
+                <div class="bg-yellow-400 text-black text-4xl font-black px-12 py-4 rounded-3xl shadow-[0_0_50px_rgba(250,204,21,0.6)]">PİŞTİ!</div>
+            </div>
+        </main>
+
+        <!-- Oyuncu Eli -->
+        <div id="playerHand" class="h-[25vh] flex justify-center items-center gap-3 px-4"></div>
+
+        <!-- Alt Bilgi -->
+        <footer class="p-4 flex justify-between items-center glass-panel">
+            <button onclick="toggleModal('confirmRestartModal', true)" class="text-[10px] font-bold text-gray-400 border border-white/10 px-4 py-2 rounded-lg hover:bg-white/5 lang-key" data-key="restart_btn">YENİDEN BAŞLAT</button>
+            <div id="lastAction" class="text-[10px] text-emerald-400 font-bold italic tracking-wide lang-key" data-key="game_started">Oyun başladı...</div>
+            <div class="flex items-center gap-4">
+                <div class="text-[10px] font-mono text-white/30" id="deckStatus">DESTE: 52</div>
+                <button id="soundToggle" onclick="toggleMute()" class="p-2 bg-white/5 rounded-lg hover:bg-white/10">
+                    <svg id="soundOnIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/50"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <svg id="soundOffIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/50 hidden"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Oyun Sonu Ekranı -->
+    <div id="endScreen" class="fixed inset-0 z-[200] hidden flex flex-col items-center justify-center bg-black/95 p-8">
+        <h2 id="endTitle" class="text-6xl font-black mb-8 italic">KAZANDIN!</h2>
+        <div class="w-full max-w-sm bg-gray-900 rounded-3xl p-8 border border-white/10 space-y-6 mb-10">
+            <div class="flex justify-between items-center border-b border-white/5 pb-4">
+                <span class="text-blue-400 font-bold lang-key" data-key="your_score">Senin Skorun</span>
+                <span id="finalUserScore" class="text-3xl font-black">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-red-400 font-bold lang-key" data-key="ai_score">Rakip Skor</span>
+                <span id="finalAiScore" class="text-3xl font-black">0</span>
+            </div>
+        </div>
+        <button onclick="location.reload()" class="w-full max-w-xs py-6 btn-primary rounded-2xl font-black text-2xl uppercase lang-key" data-key="play_again">Tekrar Oyna</button>
+    </div>
+
+    <script>
+        // --- Ses Motoru ---
+        const SoundEngine = {
+            ctx: null,
+            isMuted: false,
+            init() {
+                if (this.ctx) return;
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            play(type) {
+                if (this.isMuted) return;
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+
+                switch(type) {
+                    case 'click': this.beep(440, 0.05, 'sine', 0.1); break;
+                    case 'card': this.beep(150, 0.1, 'triangle', 0.2, 50); break;
+                    case 'capture': this.chord([330, 440], 0.2); break;
+                    case 'pisti': this.fanfare(); break;
+                    case 'victory': this.melody([440, 554, 659, 880], 0.1); break;
+                    case 'defeat': this.melody([220, 200, 180], 0.3); break;
+                }
+            },
+            beep(freq, duration, type, volume, sweep = 0) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                if (sweep) osc.frequency.exponentialRampToValueAtTime(freq - sweep, this.ctx.currentTime + duration);
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            chord(freqs, duration) {
+                freqs.forEach(f => this.beep(f, duration, 'sine', 0.05));
+            },
+            melody(notes, speed) {
+                notes.forEach((n, i) => {
+                    setTimeout(() => this.beep(n, speed * 1.5, 'sine', 0.1), i * speed * 1000);
+                });
+            },
+            fanfare() {
+                this.melody([523, 659, 783, 1046], 0.1);
+            }
+        };
+
+        function toggleMute() {
+            SoundEngine.isMuted = !SoundEngine.isMuted;
+            document.getElementById('soundOnIcon').classList.toggle('hidden', SoundEngine.isMuted);
+            document.getElementById('soundOffIcon').classList.toggle('hidden', !SoundEngine.isMuted);
+            SoundEngine.play('click');
+        }
+
+        const translations = {
+            en: {
+                start: "Start Game",
+                rules: "Rules",
+                difficulty: "Difficulty",
+                language: "Language",
+                easy: "Easy",
+                medium: "Medium",
+                hard: "Hard",
+                rules_title: "Game Rules",
+                rules_txt: `
+                    <p><strong class="text-white">Match:</strong> Play the same value as the card on the table to capture the pile.</p>
+                    <p><strong class="text-white">Jack (J):</strong> Captures everything on the table.</p>
+                    <p><strong class="text-white">Pisti (10 Pts):</strong> Capture a single card with its identical match.</p>
+                    <p><strong class="text-white">Points (Total 16):</strong> Ace (1), Jack (1), Club 2 (2), Diamond 10 (3), Most Cards (3).</p>
+                `,
+                got_it: "Got It",
+                confirm_restart: "Restart Game?",
+                restart_warning: "Current progress will be lost.",
+                cancel: "Cancel",
+                yes: "Yes",
+                opponent: "Opponent",
+                you: "You",
+                turn_player: "YOUR TURN",
+                turn_ai: "AI THINKING",
+                restart_btn: "RESTART",
+                game_started: "Game started...",
+                deck: "DECK",
+                win: "YOU WIN!",
+                lose: "YOU LOSE",
+                your_score: "Your Score",
+                ai_score: "AI Score",
+                play_again: "Play Again",
+                captured: " captured the pile!",
+                reveal: "Hidden cards you took: "
+            },
+            tr: {
+                start: "Oyuna Başla",
+                rules: "Kurallar",
+                difficulty: "Zorluk",
+                language: "Dil",
+                easy: "Kolay",
+                medium: "Orta",
+                hard: "Zor",
+                rules_title: "Oyun Kuralları",
+                rules_txt: `
+                    <p><strong class="text-white">Eşleşme:</strong> Yerdeki kartın aynısını atarsan tümünü alırsın.</p>
+                    <p><strong class="text-white">Vale (J):</strong> Yerdeki her şeyi temizler.</p>
+                    <p><strong class="text-white">Pişti (10 Puan):</strong> Yerde tek kart varken aynısını atarsan olur.</p>
+                    <p><strong class="text-white">Puanlar (Toplam 16):</strong> As (1), Vale (1), Sinek 2 (2), Karo 10 (3), Kart Çoğunluğu (3).</p>
+                `,
+                got_it: "Anladım",
+                confirm_restart: "Yeniden Başlat?",
+                restart_warning: "Mevcut oyununuz silinecektir.",
+                cancel: "İptal",
+                yes: "Evet",
+                opponent: "Rakip",
+                you: "Sen",
+                turn_player: "SIRA SENDE",
+                turn_ai: "RAKİP DÜŞÜNÜYOR",
+                restart_btn: "YENİDEN BAŞLAT",
+                game_started: "Oyun başladı...",
+                deck: "DESTE",
+                win: "KAZANDIN!",
+                lose: "KAYBETTİN",
+                your_score: "Senin Skorun",
+                ai_score: "Rakip Skor",
+                play_again: "Tekrar Oyna",
+                captured: " eli aldı!",
+                reveal: "Yerden aldığın kapalı kartlar: "
+            }
+        };
+
+        let currentLang = 'tr';
+        const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+        const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        let deck = [], playerHand = [], aiHand = [], table = [];
+        let scores = { player: 0, ai: 0 }, difficultySetting = 'medium';
+        let captured = { player: [], ai: [] }, lastWinner = null, isPlayerTurn = true;
+        let initialHiddenCards = [];
+        let hiddenCardsRevealed = false;
+        const suitIcons = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-key').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if(translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+            document.getElementById('rulesContent').innerHTML = translations[lang].rules_txt;
+            updateStats();
+            SoundEngine.play('click');
+        }
+
+        function toggleModal(id, show) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('hidden', !show);
+            if (show) SoundEngine.play('click');
+        }
+
+        function startGame() {
+            SoundEngine.play('click');
+            difficultySetting = document.getElementById('difficulty').value;
+            toggleModal('mainMenu', false);
+            document.getElementById('gameScreen').classList.remove('hidden');
+            initGame();
+        }
+
+        function initGame() {
+            deck = [];
+            for (let s of suits) for (let v of values) deck.push({ suit: s, value: v });
+            deck = deck.sort(() => Math.random() - 0.5);
+            table = [];
+            for (let i = 0; i < 4; i++) table.push(deck.pop());
+            
+            // İlk 3 kapalı kartı hafızaya al
+            initialHiddenCards = [...table.slice(0, 3)];
+            hiddenCardsRevealed = false;
+            
+            deal();
+        }
+
+        function deal() {
+            if (deck.length === 0) return;
+            for (let i = 0; i < 4; i++) {
+                playerHand.push(deck.pop());
+                aiHand.push(deck.pop());
+            }
+            renderAll();
+        }
+
+        function renderAll() {
+            renderTable();
+            renderPlayerHand();
+            renderAiHand();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('playerScore').innerText = scores.player;
+            document.getElementById('aiScore').innerText = scores.ai;
+            document.getElementById('deckStatus').innerText = `${translations[currentLang].deck}: ${deck.length}`;
+            
+            const badge = document.getElementById('turnBadge');
+            badge.innerText = isPlayerTurn ? translations[currentLang].turn_player : translations[currentLang].turn_ai;
+            badge.className = isPlayerTurn 
+                ? "px-6 py-2 bg-blue-500 text-white font-black rounded-full text-[10px] shadow-lg uppercase"
+                : "px-6 py-2 bg-gray-700 text-gray-400 font-black rounded-full text-[10px] shadow-lg uppercase opacity-50";
+        }
+
+        function createCardElement(card, isHidden = false) {
+            const div = document.createElement('div');
+            div.className = `card ${isHidden ? 'card-back' : ''}`;
+            if (!isHidden && card) {
+                const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
+                const colorClass = isRed ? 'text-red-500' : 'text-black';
+                div.innerHTML = `
+                    <div class="absolute top-2 left-2 flex flex-col items-center leading-none ${colorClass}">
+                        <span class="text-sm font-black">${card.value}</span>
+                        <span class="text-xs">${suitIcons[card.suit]}</span>
+                    </div>
+                    <div class="flex items-center justify-center h-full text-4xl ${colorClass}">${suitIcons[card.suit]}</div>
+                    <div class="absolute bottom-2 right-2 flex flex-col items-center leading-none rotate-180 ${colorClass}">
+                        <span class="text-sm font-black">${card.value}</span>
+                        <span class="text-xs">${suitIcons[card.suit]}</span>
+                    </div>
+                `;
+            }
+            return div;
+        }
+
+        function renderTable() {
+            const container = document.getElementById('tablePile');
+            container.innerHTML = '';
+            table.forEach((card, idx) => {
+                const isTop = idx === table.length - 1;
+                const el = createCardElement(card, !isTop);
+                el.classList.add('pile-card');
+                el.style.transform = `rotate(${idx * 1.5 - 2}deg) translate(${idx * 0.5}px, ${idx * -0.5}px)`;
+                el.style.zIndex = idx;
+                container.appendChild(el);
+            });
+        }
+
+        function renderPlayerHand() {
+            const container = document.getElementById('playerHand');
+            container.innerHTML = '';
+            playerHand.forEach((card, idx) => {
+                const el = createCardElement(card);
+                el.onclick = () => playCard(idx, 'player');
+                container.appendChild(el);
+            });
+        }
+
+        function renderAiHand() {
+            const container = document.getElementById('aiHand');
+            container.innerHTML = '';
+            aiHand.forEach(() => {
+                const el = createCardElement(null, true);
+                el.style.height = '10vh';
+                el.style.maxHeight = '90px';
+                container.appendChild(el);
+            });
+        }
+
+        async function playCard(idx, owner) {
+            if (owner === 'player' && !isPlayerTurn) return;
+            
+            const hand = owner === 'player' ? playerHand : aiHand;
+            if (idx < 0 || idx >= hand.length) return;
+
+            const card = hand.splice(idx, 1)[0];
+            if (!card) return;
+
+            const topCard = table.length > 0 ? table[table.length - 1] : null;
+            let isCapture = false, isPisti = false;
+
+            SoundEngine.play('card');
+
+            if (topCard) {
+                if (card.value === topCard.value) {
+                    isCapture = true;
+                    if (table.length === 1) isPisti = true;
+                } else if (card.value === 'J') {
+                    isCapture = true;
+                    if (table.length === 1 && topCard.value === 'J') isPisti = true;
+                }
+            }
+
+            // Kart atılmadan önce masada ilk kapalı kartlar duruyor mu kontrol et
+            let takingStartingPile = !hiddenCardsRevealed && table.length >= 4 && table[0] === initialHiddenCards[0];
+
+            table.push(card);
+            renderAll();
+            
+            isPlayerTurn = !isPlayerTurn;
+
+            if (isCapture) {
+                await new Promise(r => setTimeout(r, 600));
+                if (isPisti) {
+                    scores[owner] += 10;
+                    showPisti();
+                    SoundEngine.play('pisti');
+                } else {
+                    SoundEngine.play('capture');
+                }
+
+                // Kapalı kartları görme mantığı
+                if (takingStartingPile) {
+                    hiddenCardsRevealed = true;
+                    if (owner === 'player') {
+                        const revealText = initialHiddenCards.map(c => `${c.value}${suitIcons[c.suit]}`).join(' ');
+                        document.getElementById('lastAction').innerText = translations[currentLang].reveal + revealText;
+                    } else {
+                        document.getElementById('lastAction').innerText = (owner === 'player' ? translations[currentLang].you : translations[currentLang].opponent) + translations[currentLang].captured;
+                    }
+                } else {
+                    const actionText = (owner === 'player' ? translations[currentLang].you : translations[currentLang].opponent) + translations[currentLang].captured;
+                    document.getElementById('lastAction').innerText = actionText;
+                }
+
+                captured[owner].push(...table);
+                table = [];
+                lastWinner = owner;
+            }
+
+            renderAll();
+            
+            if (playerHand.length === 0 && aiHand.length === 0) {
+                if (deck.length > 0) {
+                    setTimeout(deal, 600);
+                } else {
+                    setTimeout(finishGame, 800);
+                }
+            } else if (!isPlayerTurn) {
+                setTimeout(aiMove, 1000);
+            }
+        }
+
+        function aiMove() {
+            if (aiHand.length === 0 || isPlayerTurn) return;
+
+            let idx = 0;
+            const top = table[table.length - 1];
+            
+            if (difficultySetting !== 'easy') {
+                const matchIdx = aiHand.findIndex(c => top && c.value === top.value);
+                const jackIdx = aiHand.findIndex(c => c.value === 'J');
+                
+                if (matchIdx !== -1) {
+                    idx = matchIdx;
+                } else if (jackIdx !== -1 && (table.length > 2 || difficultySetting === 'hard')) {
+                    idx = jackIdx;
+                } else {
+                    idx = Math.floor(Math.random() * aiHand.length);
+                }
+            } else {
+                idx = Math.floor(Math.random() * aiHand.length);
+            }
+            
+            if (idx >= 0 && idx < aiHand.length) {
+                playCard(idx, 'ai');
+            }
+        }
+
+        function showPisti() {
+            const overlay = document.getElementById('pistiOverlay');
+            if (overlay) {
+                overlay.classList.add('active');
+                setTimeout(() => overlay.classList.remove('active'), 1500);
+            }
+        }
+
+        function finishGame() {
+            if (table.length > 0 && lastWinner) {
+                captured[lastWinner].push(...table);
+                table = [];
+            }
+            
+            const calc = (cards) => {
+                let p = 0;
+                cards.forEach(c => {
+                    if (c.value === 'A') p += 1;
+                    if (c.value === 'J') p += 1;
+                    if (c.suit === 'clubs' && c.value === '2') p += 2;
+                    if (c.suit === 'diamonds' && c.value === '10') p += 3;
+                });
+                return p;
+            };
+
+            scores.player += calc(captured.player);
+            scores.ai += calc(captured.ai);
+
+            if (captured.player.length > captured.ai.length) {
+                scores.player += 3;
+            } else if (captured.ai.length > captured.player.length) {
+                scores.ai += 3;
+            }
+
+            document.getElementById('finalUserScore').innerText = scores.player;
+            document.getElementById('finalAiScore').innerText = scores.ai;
+            
+            const won = scores.player >= scores.ai;
+            document.getElementById('endTitle').innerText = won ? translations[currentLang].win : translations[currentLang].lose;
+            document.getElementById('endTitle').className = won ? "text-6xl font-black mb-8 italic text-emerald-400" : "text-6xl font-black mb-8 italic text-red-500";
+            
+            SoundEngine.play(won ? 'victory' : 'defeat');
+            document.getElementById('endScreen').classList.remove('hidden');
+        }
+
+        changeLanguage('tr');
+    </script>
+</body>
+</html>
